@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Merlin Project</title>
+    <style>
+        svg, textarea {
+            height: 800px;
+            width: 100%;
+        }
+        .left, .right {
+            width: 50%;
+            float: left;
+            padding: 6px;
+            box-sizing: border-box;
+        }
+        .colored:hover {
+            fill: red;
+        }
+    </style>
+    <script src="js/lib/angular.js"></script>
+    <script src="js/merlin.js"></script>
+    <script src="js/lib/d3.min.js"></script>
+    <script src="js/lib/jquery-1.11.1.js"></script>
+    <script src="js/lib/barricade.js"></script>
+    <script src="js/lib/js-yaml.js"></script>
+    <script src="js/lib/raphael.js"></script>
+    <script src="js/merlin-d3.js"></script>
+</head>
+<body ng-app="Merlin">
+<div ng-controller="TemplateCtrl"><label for="hot_template">HOT Template</label>
+    <div class="app">
+        <div class="left">
+            <textarea rows="50" id="hot_template" ng-model="template">
+                {{ template }}
+            </textarea>
+        </div>
+        <div class="right">
+            <!--<svg>-->
+                <!--<g ng-attr-font-size="{{canvas.fontSize}}" font-family="Verdana" stroke="black" stroke-width="1">-->
+                    <!--<g ng-repeat="resource in canvas.resources"-->
+                       <!--ng-attr-transform="translate(0  {{$index>0 ? (canvas.fontSize+10)*(canvas.resources[$index-1].properties.length+2) + 20 : 0}})">-->
+                        <!--<rect class="red" x="10" y="10" fill="white" ng-attr-width="{{canvas.fontSize*canvas.max*0.6+10}}"-->
+                              <!--ng-attr-height="{{(canvas.fontSize+10)*(resource.properties.length+2)}}"></rect>-->
+                        <!--<text x="15" ng-attr-y="{{canvas.fontSize+5}}" fill="black">{{resource.name}}</text>-->
+                        <!--<g class="colored" ng-repeat="rect in resource.properties" ng-attr-transform="translate(15 {{(canvas.fontSize+20)*($index+1)}})">-->
+                            <!--<rect x="0" y="0" ng-attr-height="{{canvas.fontSize+10}}" ng-attr-width="{{canvas.fontSize*rect.length*0.6}}" fill="white"></rect>-->
+                            <!--<text fill="black" x="5" ng-attr-y="{{canvas.fontSize+5}}">{{rect.name}}</text>-->
+                        <!--</g>-->
+                    <!--</g>-->
+                <!--</g>-->
+            <!--</svg>-->
+    </div>
+</div>
+</body>
+</html>

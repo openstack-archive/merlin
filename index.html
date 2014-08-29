@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Merlin Project</title>
+    <style>
+        svg, textarea {
+            height: 800px;
+            width: 100%;
+        }
+        .left, .right {
+            width: 50%;
+            float: left;
+            padding: 6px;
+            box-sizing: border-box;
+        }
+        .colored:hover {
+            fill: red;
+        }
+    </style>
+    <script src="js/lib/angular.js"></script>
+    <script src="js/merlin.js"></script>
+    <script src="js/lib/d3.min.js"></script>
+    <script src="js/lib/jquery-1.11.1.js"></script>
+    <script src="js/lib/barricade.js"></script>
+    <script src="js/lib/js-yaml.js"></script>
+    <script src="js/lib/raphael.js"></script>
+    <script src="js/merlin-d3.js"></script>
+</head>
+<body ng-app="Merlin">
+<div ng-controller="TemplateCtrl"><label for="hot_template">HOT Template</label>
+    <div class="app">
+        <div class="left">
+            <textarea rows="50" id="hot_template" ng-model="template">
+                {{ template }}
+            </textarea>
+        </div>
+        <div class="right">
+        </div>
+    </div>
+</div>
+</body>
+</html>
