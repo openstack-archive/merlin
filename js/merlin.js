@@ -23,52 +23,61 @@ var types = {
 types.Mistral.Action =  Barricade({
     '@type': Object,
 
-    'Version': {'@type': String},
+    'version': {'@type': Number},
     'name': {'@type': String},
     'base': {'@type': String},
     'base-parameters': {
-        '@type': String,
+        '@type': Object,
+        '@required': false,
+        '?': {'@type': String}
+    }
+});
+
+types.Mistral.Policy = Barricade({
+    '@type': Object,
+
+    'wait-before': {
+        '@type': Number,
         '@required': false
     },
-    'parameters': {
-        '@type': Array,
-        '@required': false,
-        '*': {'@type': String}
+    'wait-after': {
+        '@type': Number,
+        '@requred': false
+    },
+    'retry': {
+        '@type': Object,
+        '@requred': false,
+        'count': {'@type': Number},
+        'delay': {'@type': Number},
+        'break-on': {
+            '@type': String,
+            '@required': false
+        }
     }
 });
 
 types.Mistral.Task = Barricade({
     '@type': Object,
 
-    'Version': {'@type': String},
+    'version': {'@type': Number},
     'name': {'@type': String},
-    'action': {
-        '@type': String,
-        '@required': false
-    },
-    'workflow': { // 'action' and 'workflow' are mutually-exclusive but at least one is required
-        '@type': String,
-        '@required': false
-    },
-    'workflow-parameters': {
-        '@type': String,
-        '@required': false
-    },
     'parameters': {
-        '@type': String,
-        '@required': false
+        '@type': Object,
+        '@required': false,
+        '?': {'@type': String}
     },
     'publish': {
         '@type': String,
         '@required': false
     },
     'policies': {
-        '@type': String,
+        '@class': types.Mistral.Policy,
         '@required': false
     },
-    'requires': {
-        '@type': String,
-        '@required': false
+    'requires': { // array of Task-s existing in the same workflow
+        '@type': Array,
+        '@required': false,
+        '*': {'@type': String}
     },
     'on-complete': {
         '@type': String,
@@ -85,38 +94,43 @@ types.Mistral.Task = Barricade({
 
 });
 
+types.Mistral.WorkflowTask = types.Mistral.Task.extend({},
+    {
+        'workflow': {
+            '@type': String,
+            '@required': false
+        }
+    });
+
+types.Mistral.ActionTask = types.Mistral.Task.extend({},
+    {
+        'action': {
+            '@type': String,
+            '@required': false
+        }
+    });
+
 types.Mistral.Workflow = Barricade({
     '@type': Object,
 
-    'Version': {'@type': String},
+    'version': {'@type': Number},
     'name': {'@type': String},
     'type': {
         '@type': String,
-        '@constraints': [function(type) {
-            var possibleTypes = ['reverse', 'direct'],
-                validType = possibleTypes.indexOf(type) > -1;
-            return validType || ('Expected: ' + possibleTypes + ' while ' + type + ' found');
-        }]
-    },
-    'start-task': {
-        '@type': String,
-        '@required': false
-    },
-    'policies': {
-        '@type': String,
-        '@required': false
+        '@enum': ['reverse', 'direct']
     },
     'parameters': {
-        '@type': String,
-        '@required': false
+        '@type': Object,
+        '@required': false,
+        '?': {'@type': String}
     },
     'output': {
         '@type': String,
         '@required': false
     },
     'tasks': {
-        '@type': Array,
-        '*': {'@class': types.Mistral.Task}
+        '@type': Object,
+        '?': {'@class': types.Mistral.Task}
     }
 
 });
@@ -124,19 +138,19 @@ types.Mistral.Workflow = Barricade({
 types.Mistral.Workbook = Barricade({
     '@type': Object,
 
-    'Version': {'@type': Number},
-    'Description': {
+    'version': {'@type': Number},
+    'description': {
         '@type': String,
         '@required': false
     },
-    'Actions': {
+    'actions': {
         '@type': Array,
         '@required': false,
         '*': {
             '@class': types.Mistral.Action
         }
     },
-    'Workflows': {
+    'workflows': {
         '@type': Array,
         '*': {
             '@class': types.Mistral.Workflow
@@ -147,28 +161,52 @@ types.Mistral.Workbook = Barricade({
 var workbook,
     counter = 0;
 $(function() {
-    function drawTextNode(label, item) {
+    function drawBaseNode(label, item, type, converter) {
         var $item = $('<div></div>'),
             $label = $('<label></label>').text(label),
-            $input = $('<input>');
+            $input = $('<input>'),
+            $set = $('<button>').text('Set');
+        converter = converter || function(x) { return x;};
+        $set.click(function() {
+            item.set(converter($input.val()));
+        });
         $item.append($label);
-        return $item.append($input.attr('type', 'text'));
+        $item.append($input.attr('type', type));
+        $item.append($set);
+        return $item;
+    }
+
+    function drawSelectNode(label, item) {
+        var $item = $('<div></div>'),
+            $label = $('<label></label>').text(label),
+            $input = $('<select>'),
+            labels = item.getEnumLabels(),
+            values = item.getEnumValues(),
+            $set = $('<button>').text('Set');
+        $set.click(function() {
+            item.set($input.val());
+        });
+        values.forEach(function(value, index) {
+            var $opt = $('<option></option>').val(value).text(labels[index]);
+            $input.append($opt);
+        });
+        $item.append($label);
+        $item.append($input);
+        $item.append($set);
+        return $item;
+
+    }
+
+    function drawTextNode(label, item) {
+        return drawBaseNode(label, item, 'text');
     }
 
     function drawNumberNode(label, item) {
-        var $item = $('<div></div>'),
-            $label = $('<label></label>').text(label),
-            $input = $('<input>');
-        $item.append($label);
-        return $item.append($input.attr('type', 'number'));
+        return drawBaseNode(label, item, 'number', Number);
     }
 
     function drawBooleanNode(label, item) {
-        var $item = $('<div></div>'),
-            $label = $('<label></label>').text(label),
-            $input = $('<input>');
-        $item.append($label);
-        return $item.append($input.attr('type', 'checkbox'));
+        return drawBaseNode(label, item, 'checkbox');
     }
 
     function drawArrayNode(label, item) {
@@ -218,6 +256,43 @@ $(function() {
         return $item;
     }
 
+    function drawFluidContainerNode(label, item) {
+        var $item = $('<div class="inner-node"></div>'),
+            labelId = 'label-' + counter,
+            containerId = 'container-' + counter,
+            $label = $('<label></label>').attr('id', labelId).text(label).toggleClass('expandable'),
+            $keyName = $('<input>'),
+            $addAction = $('<button>').text('Add').attr('disabled', true),
+            $container = $('<div></div>').attr('id', containerId).hide();
+        counter++;
+        $item.append($label);
+        $item.append($keyName);
+        $item.append($addAction);
+        drawContainer($container, item);
+        $item.append($container);
+        $keyName.change(function(value) {
+            if ( !value ) {
+                $addAction.attr('disabled', true);
+            } else {
+                $addAction.attr('disabled', false);
+            }
+        });
+        $addAction.click(function() {
+            var key = $keyName.val();
+            item.push(undefined, {id: key});
+            drawTypedNode($container, key, item.getByID(key));
+        });
+        $label.click(function() {
+            $label.toggleClass('expanded');
+            if ( $label.hasClass('expanded') ) {
+                $container.show();
+            } else {
+                $container.hide();
+            }
+        });
+        return $item;
+    }
+
     function isPrimitiveType(item, primitiveType) {
         return item.instanceof(Barricade.primitive) && Barricade.getType(item.get()) === primitiveType;
     }
@@ -230,7 +305,10 @@ $(function() {
 
     function drawTypedNode($canvas, label, item) {
         var $node;
-        if ( isPrimitiveType(item, Number) ) {
+        if ( item.instanceof(Barricade.enumerated) ) {
+            $node = drawSelectNode(label, item);
+            $canvas.append($node);
+        } else if ( isPrimitiveType(item, Number) ) {
             $node = drawNumberNode(label, item);
             $canvas.append($node);
         } else if ( isPrimitiveType(item, String) ) {
@@ -241,6 +319,9 @@ $(function() {
             $canvas.append($node);
         } else if ( item.instanceof(Barricade.array) ) {
             $node = drawArrayNode(label, item);
+            $canvas.append($node);
+        } else if ( item.instanceof(Barricade.mutableObject) ) {
+            $node = drawFluidContainerNode(label, item);
             $canvas.append($node);
         } else if ( item.instanceof(Barricade.container) ) {
             $node = drawContainerNode(label, item);

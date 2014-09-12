@@ -92,7 +92,6 @@ Barricade = (function () {
 
     barricade.validatable = blueprint.create(function (schema) {
         var constraints = schema['@constraints'],
-            self = this,
             error = null;
 
         if (barricade.getType(constraints) !== Array) {
@@ -112,17 +111,43 @@ Barricade = (function () {
                 return null;
             }
             error = getConstraintMessage(0, true);
-
-            if ( !this.hasError()) {
-                this.getKeys && this.getKeys().forEach(function(key) {
-                    var obj = self._data[key],
-                        ret = obj._validate();
-                        if (!ret)
-                            error = obj.getError();
-                });
-            }
             return !this.hasError();
         };
+
+        this.addConstraint = function (newConstraint) {
+            constraints.push(newConstraint);
+        };
+    });
+
+    barricade.enumerated = blueprint.create(function(enum_) {
+        var self = this;
+
+        function getEnum() {
+            return (typeof enum_ === 'function') ? enum_() : enum_;
+        }
+
+        this.getEnumLabels = function () {
+            var curEnum = getEnum();
+            if (barricade.getType(curEnum[0]) === Object) {
+                return curEnum.map(function (value) { return value.label; });
+            } else {
+                return curEnum;
+            }
+        };
+
+        this.getEnumValues = function () {
+            var curEnum = getEnum();
+            if (barricade.getType(curEnum[0]) === Object) {
+                return curEnum.map(function (value) { return value.value; });
+            } else {
+                return curEnum;
+            }
+        };
+
+        this.addConstraint(function (value) {
+            return (self.getEnumValues().indexOf(value) > -1) ||
+                'Value can only be one of ' + self.getEnumLabels().join(', ');
+        });
     });
 
     var eventEmitter = blueprint.create(function () {
@@ -340,6 +365,10 @@ Barricade = (function () {
                 barricade.omittable.call(self, parameters.isUsed !== false);
                 barricade.deferrable.call(self, schema);
                 barricade.validatable.call(self, schema);
+
+                if (schema.hasOwnProperty('@enum')) {
+                    barricade.enumerated.call(self, schema['@enum']);
+                }
 
                 if (parameters.hasOwnProperty('id')) {
                     barricade.identifiable.call(self, parameters.id);
@@ -843,6 +872,7 @@ Barricade = (function () {
     BarricadeMain.deferrable = barricade.deferrable;
     BarricadeMain.omittable = barricade.omittable;
     BarricadeMain.identifiable = barricade.identifiable;
+    BarricadeMain.enumerated = barricade.enumerated;
 
     return BarricadeMain;
 
