@@ -127,7 +127,7 @@ Barricade = (function () {
         var self = this;
 
         function getEnum() {
-            return (typeof enum_ === 'function') ? enum_() : enum_;
+            return (typeof enum_ === 'function') ? enum_.call(self) : enum_;
         }
 
         this.getEnumLabels = function () {

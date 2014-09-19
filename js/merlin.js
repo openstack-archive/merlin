@@ -20,15 +20,43 @@ var types = {
     HOT: {}
 };
 
+types.Mistral.Version = Barricade.create({
+    '@type': Number,
+    '@default': 2
+});
+
 types.Mistral.Action =  Barricade.create({
     '@type': Object,
 
     'version': {
         '@type': Number,
-        '@default': 2
+        '@ref': {
+            to: types.Mistral.Version,
+            needs: function () {
+                return types.Mistral.Workbook;
+            },
+            resolver: function(json, parentObj) {
+                return parentObj.get('version')
+            }
+        }
     },
+
+//    'version': {
+//        '@type': Number,
+//        '@default': 2
+//    },
     'name': {'@type': String},
-    'base': {'@type': String},
+    'base': {
+        '@type': String,
+//        '@enum': function() {
+//            // TODO: obtain list of predefined actions from Mistral server-side
+//            var predefinedActions = ['createInstance', 'terminateInstance'],
+//                name = this.get()
+//            workbook.get('actions').each(function(actionItem) {
+//                console.log(actionItem);
+//            });
+//        }
+    },
     'base-parameters': {
         '@type': Object,
         '@required': false,
@@ -149,8 +177,7 @@ types.Mistral.Workbook = Barricade.create({
     '@type': Object,
 
     'version': {
-        '@type': Number,
-        '@default': 2
+        '@class': types.Mistral.Version
     },
     'description': {
         '@type': String,
