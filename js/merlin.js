@@ -20,15 +20,44 @@ var types = {
     HOT: {}
 };
 
+types.Mistral.Version = Barricade.create({
+    '@type': Number,
+    '@default': 2
+});
+
 types.Mistral.Action =  Barricade.create({
     '@type': Object,
 
     'version': {
         '@type': Number,
-        '@default': 2
+        '@ref': {
+            to: types.Mistral.Version,
+            needs: function () {
+                return types.Mistral.Workbook;
+            },
+            resolver: function(json, parentObj) {
+                return parentObj.get('version')
+            }
+        }
     },
+
     'name': {'@type': String},
-    'base': {'@type': String},
+    'base': {
+        '@type': String,
+        '@enum': function() {
+            // TODO: obtain list of predefined actions from Mistral server-side
+            var predefinedActions = ['createInstance', 'terminateInstance'],
+                actions = workbook.get('actions'),
+                currentItemIndex = actions.length() - 1;
+            actions.each(function(index, actionItem) {
+                var name = actionItem.get('name');
+                if ( index < currentItemIndex && !name.isEmpty() ) {
+                    predefinedActions = predefinedActions.concat(name.get())
+                }
+            });
+            return predefinedActions;
+        }
+    },
     'base-parameters': {
         '@type': Object,
         '@required': false,
@@ -64,7 +93,15 @@ types.Mistral.Task = Barricade.create({
 
     'version': {
         '@type': Number,
-        '@default': 2
+        '@ref': {
+            to: types.Mistral.Version,
+            needs: function () {
+                return types.Mistral.Workbook;
+            },
+            resolver: function(json, parentObj) {
+                return parentObj.get('version')
+            }
+        }
     },
     'name': {'@type': String},
     'parameters': {
@@ -121,7 +158,15 @@ types.Mistral.Workflow = Barricade.create({
 
     'version': {
         '@type': Number,
-        '@default': 2
+        '@ref': {
+            to: types.Mistral.Version,
+            needs: function () {
+                return types.Mistral.Workbook;
+            },
+            resolver: function(json, parentObj) {
+                return parentObj.get('version')
+            }
+        }
     },
     'name': {'@type': String},
     'type': {
@@ -149,8 +194,7 @@ types.Mistral.Workbook = Barricade.create({
     '@type': Object,
 
     'version': {
-        '@type': Number,
-        '@default': 2
+        '@class': types.Mistral.Version
     },
     'description': {
         '@type': String,

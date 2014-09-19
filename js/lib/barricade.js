@@ -127,7 +127,7 @@ Barricade = (function () {
         var self = this;
 
         function getEnum() {
-            return (typeof enum_ === 'function') ? enum_() : enum_;
+            return (typeof enum_ === 'function') ? enum_.call(self) : enum_;
         }
 
         this.getEnumLabels = function () {
@@ -212,11 +212,11 @@ Barricade = (function () {
                 }
 
                 ref = onResolve(obj);
-                isResolved = true;
 
                 if (ref === undefined) {
                     logError('Could not resolve reference');
                 } else {
+                    isResolved = true;
                     callbacks.forEach(function (callback) {
                         callback(ref);
                     });
@@ -475,6 +475,50 @@ Barricade = (function () {
             self.on('_addedElement', attachListeners);
             self.each(attachListeners);
 
+            self.on('_addedElement', function(index) {
+                var element = self.get(index);
+
+                attachDeferredCallback(index, element);
+                addDeferredToList(element);
+
+                resolveDeferreds.call(self);
+                if ( (element.instanceof(Barricade.Container) &&
+                    element.getAllDeferred().length ) ||
+                    (element.instanceof(Barricade.Primitive) &&
+                        element.hasDependency() &&
+                        !element.getDeferred().isResolved()) ) {
+                    element.emit('_resolveUp');
+                }
+            });
+
+            function mergeBubblingDeferreds(deferreds) {
+                var currentIds = {},
+                    bubblingDeferreds = {},
+                    id;
+                if ( deferreds && deferreds.length ) {
+                    allDeferred.forEach(function(deferred) {
+                        if (!(deferred.id in currentIds)) {
+                            currentIds[deferred.id] = true;
+                        }
+                    });
+                    deferreds.forEach(function(deferred) {
+                        if (!(deferred.id in bubblingDeferreds)) {
+                            bubblingDeferreds[deferred.id] = deferred;
+                        }
+                    });
+                    for ( id in bubblingDeferreds ) {
+                        if (!(id in currentIds)) {
+                            allDeferred.push(bubblingDeferreds[id]);
+                        }
+                    }
+                }
+            }
+
+            self.on('_resolveUp', function(deferreds) {
+                mergeBubblingDeferreds(deferreds);
+                resolveDeferreds.call(self);
+            });
+
             self.each(function (key, value) {
                 attachDeferredCallback(key, value);
             });
@@ -510,6 +554,15 @@ Barricade = (function () {
             function onReplace(newValue) {
                 self.set(key, newValue);
             }
+
+            element.on('_resolveUp', function() {
+                if ( element.instanceof(Barricade.Container) ) {
+                    self.emit('_resolveUp', element.getAllDeferred());
+                } else {
+                    self.emit('_resolveUp', [element.getDeferred()]);
+                }
+
+            });
 
             element.on('childChange', onChildChange);
             element.on('change', onDirectChildChange);
