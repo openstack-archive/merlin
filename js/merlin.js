@@ -23,7 +23,10 @@ var types = {
 types.Mistral.Action =  Barricade.create({
     '@type': Object,
 
-    'version': {'@type': Number},
+    'version': {
+        '@type': Number,
+        '@default': 2
+    },
     'name': {'@type': String},
     'base': {'@type': String},
     'base-parameters': {
@@ -42,11 +45,11 @@ types.Mistral.Policy = Barricade.create({
     },
     'wait-after': {
         '@type': Number,
-        '@requred': false
+        '@required': false
     },
     'retry': {
         '@type': Object,
-        '@requred': false,
+        '@required': false,
         'count': {'@type': Number},
         'delay': {'@type': Number},
         'break-on': {
@@ -59,7 +62,10 @@ types.Mistral.Policy = Barricade.create({
 types.Mistral.Task = Barricade.create({
     '@type': Object,
 
-    'version': {'@type': Number},
+    'version': {
+        '@type': Number,
+        '@default': 2
+    },
     'name': {'@type': String},
     'parameters': {
         '@type': Object,
@@ -113,11 +119,15 @@ types.Mistral.ActionTask = types.Mistral.Task.extend({},
 types.Mistral.Workflow = Barricade.create({
     '@type': Object,
 
-    'version': {'@type': Number},
+    'version': {
+        '@type': Number,
+        '@default': 2
+    },
     'name': {'@type': String},
     'type': {
         '@type': String,
-        '@enum': ['reverse', 'direct']
+        '@enum': ['reverse', 'direct'],
+        '@default': 'direct'
     },
     'parameters': {
         '@type': Object,
@@ -138,7 +148,10 @@ types.Mistral.Workflow = Barricade.create({
 types.Mistral.Workbook = Barricade.create({
     '@type': Object,
 
-    'version': {'@type': Number},
+    'version': {
+        '@type': Number,
+        '@default': 2
+    },
     'description': {
         '@type': String,
         '@required': false
@@ -170,6 +183,7 @@ $(function() {
         $set.click(function() {
             item.set(converter($input.val()));
         });
+        $input.val(item.get());
         $item.append($label);
         $item.append($input.attr('type', type));
         $item.append($set);
@@ -190,6 +204,7 @@ $(function() {
             var $opt = $('<option></option>').val(value).text(labels[index]);
             $input.append($opt);
         });
+        $input.val(item.get());
         $item.append($label);
         $item.append($input);
         $item.append($set);
