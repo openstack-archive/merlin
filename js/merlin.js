@@ -13,208 +13,6 @@
     under the License.
 */
 
-var types = {
-    Mistral: {
-        actions: {}
-    },
-    HOT: {}
-};
-
-types.Mistral.Version = Barricade.create({
-    '@type': Number,
-    '@default': 2
-});
-
-types.Mistral.Action =  Barricade.create({
-    '@type': Object,
-
-    'version': {
-        '@type': Number,
-        '@ref': {
-            to: types.Mistral.Version,
-            needs: function () {
-                return types.Mistral.Workbook;
-            },
-            resolver: function(json, parentObj) {
-                return parentObj.get('version')
-            }
-        }
-    },
-
-    'name': {'@type': String},
-    'base': {
-        '@type': String,
-        '@enum': function() {
-            // TODO: obtain list of predefined actions from Mistral server-side
-            var predefinedActions = ['createInstance', 'terminateInstance'],
-                actions = workbook.get('actions'),
-                currentItemIndex = actions.length() - 1;
-            actions.each(function(index, actionItem) {
-                var name = actionItem.get('name');
-                if ( index < currentItemIndex && !name.isEmpty() ) {
-                    predefinedActions = predefinedActions.concat(name.get())
-                }
-            });
-            return predefinedActions;
-        }
-    },
-    'base-parameters': {
-        '@type': Object,
-        '@required': false,
-        '?': {'@type': String}
-    }
-});
-
-types.Mistral.Policy = Barricade.create({
-    '@type': Object,
-
-    'wait-before': {
-        '@type': Number,
-        '@required': false
-    },
-    'wait-after': {
-        '@type': Number,
-        '@required': false
-    },
-    'retry': {
-        '@type': Object,
-        '@required': false,
-        'count': {'@type': Number},
-        'delay': {'@type': Number},
-        'break-on': {
-            '@type': String,
-            '@required': false
-        }
-    }
-});
-
-types.Mistral.Task = Barricade.create({
-    '@type': Object,
-
-    'version': {
-        '@type': Number,
-        '@ref': {
-            to: types.Mistral.Version,
-            needs: function () {
-                return types.Mistral.Workbook;
-            },
-            resolver: function(json, parentObj) {
-                return parentObj.get('version')
-            }
-        }
-    },
-    'name': {'@type': String},
-    'parameters': {
-        '@type': Object,
-        '@required': false,
-        '?': {'@type': String}
-    },
-    'publish': {
-        '@type': String,
-        '@required': false
-    },
-    'policies': {
-        '@class': types.Mistral.Policy,
-        '@required': false
-    },
-    'requires': { // array of Task-s existing in the same workflow
-        '@type': Array,
-        '@required': false,
-        '*': {'@type': String}
-    },
-    'on-complete': {
-        '@type': String,
-        '@required': false
-    },
-    'on-success': {
-        '@type': String,
-        '@required': false
-    },
-    'on-error': {
-        '@type': String,
-        '@required': false
-    }
-
-});
-
-types.Mistral.WorkflowTask = types.Mistral.Task.extend({},
-    {
-        'workflow': {
-            '@type': String,
-            '@required': false
-        }
-    });
-
-types.Mistral.ActionTask = types.Mistral.Task.extend({},
-    {
-        'action': {
-            '@type': String,
-            '@required': false
-        }
-    });
-
-types.Mistral.Workflow = Barricade.create({
-    '@type': Object,
-
-    'version': {
-        '@type': Number,
-        '@ref': {
-            to: types.Mistral.Version,
-            needs: function () {
-                return types.Mistral.Workbook;
-            },
-            resolver: function(json, parentObj) {
-                return parentObj.get('version')
-            }
-        }
-    },
-    'name': {'@type': String},
-    'type': {
-        '@type': String,
-        '@enum': ['reverse', 'direct'],
-        '@default': 'direct'
-    },
-    'parameters': {
-        '@type': Object,
-        '@required': false,
-        '?': {'@type': String}
-    },
-    'output': {
-        '@type': String,
-        '@required': false
-    },
-    'tasks': {
-        '@type': Object,
-        '?': {'@class': types.Mistral.Task}
-    }
-
-});
-
-types.Mistral.Workbook = Barricade.create({
-    '@type': Object,
-
-    'version': {
-        '@class': types.Mistral.Version
-    },
-    'description': {
-        '@type': String,
-        '@required': false
-    },
-    'actions': {
-        '@type': Array,
-        '@required': false,
-        '*': {
-            '@class': types.Mistral.Action
-        }
-    },
-    'workflows': {
-        '@type': Array,
-        '*': {
-            '@class': types.Mistral.Workflow
-        }
-    }
-});
-
 var workbook,
     counter = 0;
 $(function() {
@@ -234,23 +32,25 @@ $(function() {
         return $item;
     }
 
-    function drawSelectNode(label, item) {
-        var $item = $('<div></div>'),
-            $label = $('<label></label>').text(label),
-            $input = $('<select>'),
-            labels = item.getEnumLabels(),
-            values = item.getEnumValues(),
-            $set = $('<button>').text('Set');
-        $set.click(function() {
-            item.set($input.val());
-        });
+    function drawSelectElement(labels, values, selected) {
+        var $input = $('<select>');
         values.forEach(function(value, index) {
             var $opt = $('<option></option>').val(value).text(labels[index]);
             $input.append($opt);
         });
-        $input.val(item.get());
+        $input.val(selected);
+        return $input;
+    }
+
+    function drawSelectNode(label, item) {
+        var $item = $('<div></div>'),
+            $label = $('<label></label>').text(label),
+            $set = $('<button>').text('Set');
+        $set.click(function() {
+            item.set($input.val());
+        });
         $item.append($label);
-        $item.append($input);
+        $item.append(drawSelectElement(item.getEnumLabels(), item.getEnumValues(), item.get()));
         $item.append($set);
         return $item;
 
@@ -322,10 +122,16 @@ $(function() {
             $label = $('<label></label>').attr('id', labelId).text(label).toggleClass('expandable'),
             $keyName = $('<input>'),
             $addAction = $('<button>').text('Add').attr('disabled', true),
-            $container = $('<div></div>').attr('id', containerId).hide();
+            $container = $('<div></div>').attr('id', containerId).hide(),
+            $typeSelector;
         counter++;
         $item.append($label);
         $item.append($keyName);
+        if ( item.instanceof(types.base.AcceptsMixin) ) {
+            var labels = item.getLabels();
+            $typeSelector = drawSelectElement(labels, labels, labels[0]);
+            $item.append($typeSelector);
+        }
         $item.append($addAction);
         drawContainer($container, item);
         $item.append($container);
@@ -337,8 +143,12 @@ $(function() {
             }
         });
         $addAction.click(function() {
-            var key = $keyName.val();
-            item.push(undefined, {id: key});
+            var key = $keyName.val(), child, cls;
+            if ( item.instanceof(types.base.AcceptsMixin) ) {
+                cls = item.getValue($typeSelector.val());
+                child = cls.create();
+            }
+            item.push(child, {id: key});
             drawTypedNode($container, key, item.getByID(key));
         });
         $label.click(function() {
