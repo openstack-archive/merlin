@@ -145,7 +145,32 @@
      'requires': { // array of Task-s existing in the same workflow
          '@type': Array,
          '@required': false,
-         '*': {'@type': String}
+         '*': {
+             '@type': String,
+             '@enum': function() {
+                 var container = this._container,
+                     workflow, task;
+                 while ( container ) {
+                     if ( container.instanceof(types.Mistral.Task) ) {
+                         task = container;
+                     }
+                     if ( container.instanceof(types.Mistral.Workflow) ) {
+                         workflow = container;
+                         break;
+                     }
+                     container = container._container;
+                 }
+                 if ( workflow && task ) {
+                     return workflow.get('tasks').toArray().filter(function(taskItem) {
+                         return !(taskItem === task) && taskItem.get('name').get();
+                     }).map(function(taskItem) {
+                         return taskItem.get('name').get();
+                     });
+                 } else {
+                     return [];
+                 }
+             }
+         }
      },
      'on-complete': {
          '@type': String,

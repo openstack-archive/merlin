@@ -410,6 +410,7 @@ Barricade = (function () {
 
             function attachListeners(key) {
                 self._attachListeners(key);
+                self.get(key)._container = self;
             }
 
             self.on('_addedElement', function (key) {
