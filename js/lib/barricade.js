@@ -668,10 +668,13 @@ Barricade = (function () {
                 return value.getID();
             });
         },
+        getPosByID: function(id) {
+            return this.toArray().map(function (value) {
+                return value.getID();
+            }).indexOf(id);
+        },
         getByID: function (id) {
-            var pos = this.toArray().map(function (value) {
-                    return value.getID();
-                }).indexOf(id);
+            var pos = this.getPosByID(id);
             return this.get(pos);
         },
         contains: function (element) {

@@ -74,8 +74,9 @@ $(function() {
     }
 
     function createNewLabel(text) {
-        var labelId = 'label-' + getNextCounter();
-        return $('<label></label>').text(text).attr('id', labelId);
+        var labelId = 'label-' + getNextCounter(),
+            $label = $('<label></label>').text(text);
+        return $('<span></span>').append($label).attr('id', labelId);
     }
 
     function drawArrayNode($label, item) {
@@ -97,12 +98,15 @@ $(function() {
             }
         });
         $addAction.click(function() {
+            var $removeAction = $('<button>').text('Remove').toggleClass('container-action'),
+                $node;
+
             item.push();
             var length = item.length(),
                 subItem = item.get(length-1),
                 nameEntity = extractNameSubItem(subItem),
                 label = 'Element #'+length,
-                $label = createNewLabel(label);
+                $label = createNewLabel(label).append($removeAction);
 
             if ( nameEntity ) {
                 nameEntity.set(label);
@@ -111,8 +115,12 @@ $(function() {
                     $label.text(newName);
                 });
             }
+            $node = drawTypedNode($container, $label, subItem);
 
-            drawTypedNode($container, $label, subItem);
+            $removeAction.click(function() {
+                $node.remove();
+                item.remove(length-1);
+            });
         });
         return $item;
     }
@@ -169,8 +177,10 @@ $(function() {
         });
         $addAction.click(function() {
             var key = $keyName.val(),
-                $label = createNewLabel(key),
-                child, cls;
+                $removeAction = $('<button>').text('Remove').toggleClass('container-action'),
+                $label = createNewLabel(key).append($removeAction),
+                child, cls, $node;
+
             if ( item.instanceof(types.base.AcceptsMixin) ) {
                 cls = item.getValue($typeSelector.val());
                 child = cls.create(undefined, {id: key});
@@ -188,7 +198,12 @@ $(function() {
                     $label.text(newName);
                 });
             }
-            drawTypedNode($container, $label, child);
+            $node = drawTypedNode($container, $label, child);
+
+            $removeAction.click(function() {
+                $node.remove();
+                item.remove(item.getPosByID(key));
+            });
         });
         $label.click(function() {
             $label.toggleClass('expanded');
