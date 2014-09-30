@@ -13,12 +13,18 @@
     under the License.
 */
 
-var workbook,
-    counter = 0;
+var workbook;
+
 $(function() {
-    function drawBaseNode(label, item, type, converter) {
+    var __counter = 0;
+
+    function getNextCounter() {
+        __counter++;
+        return __counter;
+    }
+
+    function drawBaseNode($label, item, type, converter) {
         var $item = $('<div></div>'),
-            $label = $('<label></label>').text(label),
             $input = $('<input>'),
             $set = $('<button>').text('Set');
         converter = converter || function(x) { return x;};
@@ -42,9 +48,8 @@ $(function() {
         return $input;
     }
 
-    function drawSelectNode(label, item) {
+    function drawSelectNode($label, item) {
         var $item = $('<div></div>'),
-            $label = $('<label></label>').text(label),
             $set = $('<button>').text('Set');
         $set.click(function() {
             item.set($input.val());
@@ -56,24 +61,29 @@ $(function() {
 
     }
 
-    function drawTextNode(label, item) {
-        return drawBaseNode(label, item, 'text');
+    function drawTextNode($label, item) {
+        return drawBaseNode($label, item, 'text');
     }
 
-    function drawNumberNode(label, item) {
-        return drawBaseNode(label, item, 'number', Number);
+    function drawNumberNode($label, item) {
+        return drawBaseNode($label, item, 'number', Number);
     }
 
-    function drawBooleanNode(label, item) {
-        return drawBaseNode(label, item, 'checkbox');
+    function drawBooleanNode($label, item) {
+        return drawBaseNode($label, item, 'checkbox');
     }
 
-    function drawArrayNode(label, item) {
+    function createNewLabel(text) {
+        var labelId = 'label-' + getNextCounter();
+        return $('<label></label>').text(text).attr('id', labelId);
+    }
+
+    function drawArrayNode($label, item) {
         var $item = $('<div class="inner-node"></div>'),
-            $label = $('<label></label>').text(label).toggleClass('expandable'),
             $addAction = $('<button>').text('Add').toggleClass('container-action'),
             $container = $('<div></div>').hide();
 
+        $label.toggleClass('expandable');
         $item.append($label);
         $label.after($addAction);
         drawArray($container, item);
@@ -88,19 +98,31 @@ $(function() {
         });
         $addAction.click(function() {
             item.push();
-            var length = item.length();
-            drawTypedNode($container, 'Element #'+length, item.get(length-1));
+            var length = item.length(),
+                subItem = item.get(length-1),
+                nameEntity = extractNameSubItem(subItem),
+                label = 'Element #'+length,
+                $label = createNewLabel(label);
+
+            if ( nameEntity ) {
+                nameEntity.set(label);
+                nameEntity.on('change', function() {
+                    var newName = this.get();
+                    $label.text(newName);
+                });
+            }
+
+            drawTypedNode($container, $label, subItem);
         });
         return $item;
     }
 
-    function drawContainerNode(label, item) {
+    function drawContainerNode($label, item) {
         var $item = $('<div class="inner-node"></div>'),
-            labelId = 'label-' + counter,
-            containerId = 'container-' + counter,
-            $label = $('<label></label>').attr('id', labelId).text(label).toggleClass('expandable'),
+            labelId = $label.attr('id'),
+            containerId = 'container-' + labelId,
             $container = $('<div></div>').attr('id', containerId).hide();
-        counter++;
+        $label.toggleClass('expandable');
         $item.append($label);
         drawContainer($container, item);
         $item.append($container);
@@ -115,16 +137,19 @@ $(function() {
         return $item;
     }
 
-    function drawFluidContainerNode(label, item) {
+    function extractNameSubItem(item) {
+        return item.instanceof(Barricade.Container) && item.get('name');
+    }
+
+    function drawFluidContainerNode($label, item) {
         var $item = $('<div class="inner-node"></div>'),
-            labelId = 'label-' + counter,
-            containerId = 'container-' + counter,
-            $label = $('<label></label>').attr('id', labelId).text(label).toggleClass('expandable'),
+            labelId = $label.attr('id'),
+            containerId = 'container-' + labelId,
             $keyName = $('<input>'),
             $addAction = $('<button>').text('Add').attr('disabled', true),
             $container = $('<div></div>').attr('id', containerId).hide(),
             $typeSelector;
-        counter++;
+        $label.toggleClass('expandable');
         $item.append($label);
         $item.append($keyName);
         if ( item.instanceof(types.base.AcceptsMixin) ) {
@@ -143,13 +168,26 @@ $(function() {
             }
         });
         $addAction.click(function() {
-            var key = $keyName.val(), child, cls;
+            var key = $keyName.val(),
+                $label = createNewLabel(key),
+                child, cls;
             if ( item.instanceof(types.base.AcceptsMixin) ) {
                 cls = item.getValue($typeSelector.val());
                 child = cls.create(undefined, {id: key});
+            } else {
+                child = item._elementClass.create(undefined, {id: key});
             }
             item.push(child, {id: key});
-            drawTypedNode($container, key, item.getByID(key));
+
+            var nameEntity = extractNameSubItem(child);
+            if ( nameEntity ) {
+                nameEntity.set(key);
+                nameEntity.on('change', function() {
+                    var newName = this.get();
+                    $label.text(newName);
+                });
+            }
+            drawTypedNode($container, $label, child);
         });
         $label.click(function() {
             $label.toggleClass('expanded');
@@ -172,28 +210,28 @@ $(function() {
         });
     }
 
-    function drawTypedNode($canvas, label, item) {
+    function drawTypedNode($canvas, $label, item) {
         var $node;
         if ( item.instanceof(Barricade.Enumerated) ) {
-            $node = drawSelectNode(label, item);
+            $node = drawSelectNode($label, item);
             $canvas.append($node);
         } else if ( isPrimitiveType(item, Number) ) {
-            $node = drawNumberNode(label, item);
+            $node = drawNumberNode($label, item);
             $canvas.append($node);
         } else if ( isPrimitiveType(item, String) ) {
-            $node = drawTextNode(label, item);
+            $node = drawTextNode($label, item);
             $canvas.append($node);
         } else if ( isPrimitiveType(item, Boolean) ) {
-            $node = drawBooleanNode(label, item);
+            $node = drawBooleanNode($label, item);
             $canvas.append($node);
         } else if ( item.instanceof(Barricade.Array) ) {
-            $node = drawArrayNode(label, item);
+            $node = drawArrayNode($label, item);
             $canvas.append($node);
         } else if ( item.instanceof(Barricade.MutableObject) ) {
-            $node = drawFluidContainerNode(label, item);
+            $node = drawFluidContainerNode($label, item);
             $canvas.append($node);
         } else if ( item.instanceof(Barricade.Container) ) {
-            $node = drawContainerNode(label, item);
+            $node = drawContainerNode($label, item);
             $canvas.append($node);
         } else {
             $node = $('<label></label>').text('Unknown elt');
@@ -204,16 +242,18 @@ $(function() {
 
     function drawContainer($canvas, container) {
         container.each(function(key, item) {
-            drawTypedNode($canvas, key, item);
+            var $label = createNewLabel(key);
+            drawTypedNode($canvas, $label, item);
         });
     }
 
     $('button#create-workbook').click(function() {
-        var $controls = $('div#controls');
+        var $controls = $('div#controls'),
+            $label = createNewLabel('Mistral Workbook');
         $controls.empty();
         workbook = types.Mistral.Workbook.create();
 
-        drawTypedNode($controls, 'Mistral Workbook', workbook).find('label').click();
+        drawTypedNode($controls, $label, workbook).find('label').click();
     });
 
     $('button#save-workbook').click(function() {
