@@ -15,10 +15,16 @@
 */
 
  var types = {
-     Mistral: {
-         actions: {}
+     Mistral: {},
+     base: {},
+     OpenStack: {
+         // TODO: obtain list of predefined OpenStack actions from Mistral server-side
+         // for now a stubbed list of predefined actions suffices
+         actions: ['createInstance', 'terminateInstance']
      },
-     base: {}
+     getOpenStackActions: function() {
+         return this.OpenStack.actions.slice();
+     }
  };
 
  types.base.AcceptsMixin = Barricade.Blueprint.create(function (acceptsList) {
@@ -65,8 +71,7 @@
      'base': {
          '@type': String,
          '@enum': function() {
-             // TODO: obtain list of predefined actions from Mistral server-side
-             var predefinedActions = ['createInstance', 'terminateInstance'],
+             var predefinedActions = types.getOpenStackActions(),
                  actions = workbook.get('actions'),
                  currentItemIndex = actions.length() - 1;
              actions.each(function(index, actionItem) {
@@ -180,7 +185,14 @@
      {
          'workflow': {
              '@type': String,
-             '@required': false
+             '@enum': function() {
+                 var workflows = workbook.get('workflows').toArray();
+                 return workflows.map(function(workflowItem) {
+                     return workflowItem.get('name').get();
+                 }).filter(function (name) {
+                     return name;
+                 });
+             }
          }
      });
 
@@ -188,7 +200,15 @@
      {
          'action': {
              '@type': String,
-             '@required': false
+             '@enum': function() {
+                 var predefinedActions = types.getOpenStackActions(),
+                     actions = workbook.get('actions').toArray();
+                 return predefinedActions.concat(actions.map(function(actionItem) {
+                     return actionItem.get('name').get();
+                 }).filter(function(name) {
+                     return name; }
+                 ));
+             }
          }
      });
 
