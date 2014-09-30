@@ -106,16 +106,22 @@ $(function() {
                 subItem = item.get(length-1),
                 nameEntity = extractNameSubItem(subItem),
                 label = 'Element #'+length,
-                $label = createNewLabel(label).append($removeAction);
+                $childLabel = createNewLabel(label).append($removeAction);
 
             if ( nameEntity ) {
                 nameEntity.set(label);
                 nameEntity.on('change', function() {
                     var newName = this.get();
-                    $label.text(newName);
+                    $childLabel.text(newName);
                 });
             }
-            $node = drawTypedNode($container, $label, subItem);
+            $node = drawTypedNode($container, $childLabel, subItem);
+
+            // make sure newly added item will be immediately shown
+            if ( !$label.hasClass('expanded') ) {
+                $label.click();
+            }
+            $childLabel.click();
 
             $removeAction.click(function() {
                 $node.remove();
@@ -168,7 +174,8 @@ $(function() {
         $item.append($addAction);
         drawContainer($container, item);
         $item.append($container);
-        $keyName.change(function(value) {
+        $keyName.keyup(function() {
+            var value = $(this).val();
             if ( !value ) {
                 $addAction.attr('disabled', true);
             } else {
@@ -178,7 +185,7 @@ $(function() {
         $addAction.click(function() {
             var key = $keyName.val(),
                 $removeAction = $('<button>').text('Remove').toggleClass('container-action'),
-                $label = createNewLabel(key).append($removeAction),
+                $childLabel = createNewLabel(key).append($removeAction),
                 child, cls, $node;
 
             if ( item.instanceof(types.base.AcceptsMixin) ) {
@@ -195,10 +202,16 @@ $(function() {
                 nameEntity.on('change', function() {
                     var newName = this.get();
                     child.setID(newName);
-                    $label.text(newName);
+                    $childLabel.text(newName);
                 });
             }
-            $node = drawTypedNode($container, $label, child);
+            $node = drawTypedNode($container, $childLabel, child);
+
+            // make sure newly added item will be immediately shown
+            if ( !$label.hasClass('expanded') ) {
+                $label.click();
+            }
+            $childLabel.click();
 
             $removeAction.click(function() {
                 $node.remove();
