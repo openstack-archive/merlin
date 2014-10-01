@@ -25,16 +25,14 @@ $(function() {
 
     function drawBaseNode($label, item, type, converter) {
         var $item = $('<div></div>'),
-            $input = $('<input>'),
-            $set = $('<button>').text('Set');
+            $input = $('<input>');
         converter = converter || function(x) { return x;};
-        $set.click(function() {
-            item.set(converter($input.val()));
-        });
         $input.val(item.get());
+        $input.change(function() {
+            item.set(converter($input.val()))
+        });
         $item.append($label);
         $item.append($input.attr('type', type));
-        $item.append($set);
         return $item;
     }
 
@@ -50,14 +48,12 @@ $(function() {
 
     function drawSelectNode($label, item) {
         var $item = $('<div></div>'),
-            $set = $('<button>').text('Set'),
             $select = drawSelectElement(item.getEnumLabels(), item.getEnumValues(), item.get());
-        $set.click(function() {
+        $select.change(function() {
             item.set($select.val());
         });
         $item.append($label);
         $item.append($select);
-        $item.append($set);
         return $item;
 
     }
