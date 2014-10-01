@@ -54,19 +54,6 @@
  types.Mistral.Action =  Barricade.create({
      '@type': Object,
 
-     'version': {
-         '@type': Number,
-         '@ref': {
-             to: types.Mistral.Version,
-             needs: function () {
-                 return types.Mistral.Workbook;
-             },
-             resolver: function(json, parentObj) {
-                 return parentObj.get('version')
-             }
-         }
-     },
-
      'name': {'@type': String},
      'base': {
          '@type': String,
@@ -116,18 +103,6 @@
  types.Mistral.Task = Barricade.create({
      '@type': Object,
 
-     'version': {
-         '@type': Number,
-         '@ref': {
-             to: types.Mistral.Version,
-             needs: function () {
-                 return types.Mistral.Workbook;
-             },
-             resolver: function(json, parentObj) {
-                 return parentObj.get('version')
-             }
-         }
-     },
      'name': {'@type': String},
      'parameters': {
          '@type': Object,
@@ -240,18 +215,19 @@
  types.Mistral.Workflow = Barricade.create({
      '@type': Object,
 
-     'version': {
-         '@type': Number,
-         '@ref': {
-             to: types.Mistral.Version,
-             needs: function () {
-                 return types.Mistral.Workbook;
-             },
-             resolver: function(json, parentObj) {
-                 return parentObj.get('version')
-             }
-         }
-     },
+     // keep this just for reference
+//     'version': {
+//         '@type': Number,
+//         '@ref': {
+//             to: types.Mistral.Version,
+//             needs: function () {
+//                 return types.Mistral.Workbook;
+//             },
+//             resolver: function(json, parentObj) {
+//                 return parentObj.get('version')
+//             }
+//         }
+//     },
      'name': {'@type': String},
      'type': {
          '@type': String,
