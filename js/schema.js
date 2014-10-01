@@ -66,7 +66,7 @@
          },
          '@default': types.getOpenStackActions()[0]
      },
-     'base-parameters': {
+     'base-input': {
          '@type': Object,
          '@required': false,
          '?': {'@type': String}
@@ -100,7 +100,7 @@
      '@type': Object,
 
      'name': {'@type': String},
-     'parameters': {
+     'input': {
          '@type': Array,
          '*': {
              '@class': Barricade.Primitive.extend({
@@ -258,7 +258,7 @@
          '@enum': ['reverse', 'direct'],
          '@default': 'direct'
      },
-     'parameters': {
+     'input': {
          '@type': Array,
          '@required': false,
          '*': {
