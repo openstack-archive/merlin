@@ -126,7 +126,7 @@ $(function() {
 
             $removeAction.click(function() {
                 $node.remove();
-                item.remove(length-1);
+                item.remove(item.length()-1);
             });
         });
         return $item;
@@ -195,7 +195,7 @@ $(function() {
                 child, cls, $node;
 
             if ( item.instanceof(types.base.AcceptsMixin) ) {
-                cls = item.getValue($typeSelector.val());
+                cls = item.getValue($typeSelector.val())();
                 child = cls.create(undefined, {id: key});
             } else {
                 child = item._elementClass.create(undefined, {id: key});

@@ -46,11 +46,6 @@
      }
  });
 
- types.Mistral.Version = Barricade.create({
-     '@type': Number,
-     '@default': 2
- });
-
  types.Mistral.Action =  Barricade.create({
      '@type': Object,
 
@@ -68,7 +63,8 @@
                  }
              });
              return predefinedActions;
-         }
+         },
+         '@default': types.getOpenStackActions()[0]
      },
      'base-parameters': {
          '@type': Object,
@@ -118,48 +114,6 @@
      'policies': {
          '@class': types.Mistral.Policy,
          '@required': false
-     },
-     'requires': { // array of Task-s existing in the same workflow
-         '@type': Array,
-         '@required': false,
-         '*': {
-             '@type': String,
-             '@enum': function() {
-                 var container = this._container,
-                     workflow, task;
-                 while ( container ) {
-                     if ( container.instanceof(types.Mistral.Task) ) {
-                         task = container;
-                     }
-                     if ( container.instanceof(types.Mistral.Workflow) ) {
-                         workflow = container;
-                         break;
-                     }
-                     container = container._container;
-                 }
-                 if ( workflow && task ) {
-                     return workflow.get('tasks').toArray().filter(function(taskItem) {
-                         return !(taskItem === task) && taskItem.get('name').get();
-                     }).map(function(taskItem) {
-                         return taskItem.get('name').get();
-                     });
-                 } else {
-                     return [];
-                 }
-             }
-         }
-     },
-     'on-complete': {
-         '@type': String,
-         '@required': false
-     },
-     'on-success': {
-         '@type': String,
-         '@required': false
-     },
-     'on-error': {
-         '@type': String,
-         '@required': false
      }
  });
 
@@ -167,13 +121,91 @@
      create: function(json, parameters) {
          var self = Barricade.MutableObject.create.call(this);
 
+         function getParentWorkflowType() {
+             var container = self._container,
+                 workflow;
+             while ( container ) {
+                 if ( container.instanceof(types.Mistral.Workflow) ) {
+                     workflow = container;
+                     break;
+                 }
+                 container = container._container;
+             }
+             return workflow && workflow.get('type').get();
+         }
+
+         var directSpecificData = {
+                 'on-complete': {
+                     '@type': String,
+                     '@required': false
+                 },
+                 'on-success': {
+                     '@type': String,
+                     '@required': false
+                 },
+                 'on-error': {
+                     '@type': String,
+                     '@required': false
+                 }
+             },
+             reverseSpecificData = {
+                 'requires': {
+                     '@type': Array,
+                     '*': {
+                         '@type': String,
+                         '@meta': {'name': 'Task'},
+                         '@enum': function() {
+                             var container = this._container,
+                                 workflow, task;
+                             while ( container ) {
+                                 if ( container.instanceof(types.Mistral.Task) ) {
+                                     task = container;
+                                 }
+                                 if ( container.instanceof(types.Mistral.Workflow) ) {
+                                     workflow = container;
+                                     break;
+                                 }
+                                 container = container._container;
+                             }
+                             if ( workflow && task ) {
+                                 return workflow.get('tasks').toArray().filter(function(taskItem) {
+                                     return !(taskItem === task) && taskItem.get('name').get();
+                                 }).map(function(taskItem) {
+                                     return taskItem.get('name').get();
+                                 });
+                             } else {
+                                 return [];
+                             }
+                         }
+                     }
+                 }
+             };
+
          types.base.AcceptsMixin.call(self, [
              {
                  label: 'Action-based',
-                 value: types.Mistral.ActionTask
+                 value: function() {
+                     var workflowType = getParentWorkflowType();
+                     if ( workflowType === 'direct' ) {
+                         return types.Mistral.ActionTask.extend({}, directSpecificData);
+                     } else if ( workflowType === 'reverse' ) {
+                         return types.Mistral.ActionTask.extend({}, reverseSpecificData);
+                     } else {
+                         return types.Mistral.ActionTask;
+                     }
+                 }
              }, {
                  label: 'Workflow-based',
-                 value: types.Mistral.WorkflowTask
+                 value: function() {
+                     var workflowType = getParentWorkflowType();
+                     if ( workflowType === 'direct' ) {
+                         return types.Mistral.WorkflowTask.extend({}, directSpecificData);
+                     } else if ( workflowType === 'reverse' ) {
+                         return types.Mistral.WorkflowTask.extend({}, reverseSpecificData);
+                     } else {
+                         return types.Mistral.WorkflowTask;
+                     }
+                 }
              }
          ]);
          return self;
@@ -217,19 +249,6 @@
  types.Mistral.Workflow = Barricade.create({
      '@type': Object,
 
-     // keep this just for reference
-//     'version': {
-//         '@type': Number,
-//         '@ref': {
-//             to: types.Mistral.Version,
-//             needs: function () {
-//                 return types.Mistral.Workbook;
-//             },
-//             resolver: function(json, parentObj) {
-//                 return parentObj.get('version')
-//             }
-//         }
-//     },
      'name': {'@type': String},
      'type': {
          '@type': String,
@@ -258,7 +277,8 @@
      '@type': Object,
 
      'version': {
-         '@class': types.Mistral.Version
+         '@type': Number,
+         '@default': 2
      },
      'description': {
          '@type': String,
