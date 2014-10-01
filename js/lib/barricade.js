@@ -140,6 +140,12 @@ Barricade = (function () {
         };
     });
 
+    var Describable = Blueprint.create(function (meta) {
+        this.getEntry = function (key) {
+            return meta[key];
+        };
+    });
+
     var Omittable = Blueprint.create(function (isUsed) {
         this.isUsed = function () {
             // If required, it has to be used.
@@ -351,6 +357,10 @@ Barricade = (function () {
 
             if (schema.hasOwnProperty('@enum')) {
                 Enumerated.call(self, schema['@enum']);
+            }
+
+            if (schema.hasOwnProperty('@meta')) {
+                Describable.call(self, schema['@meta']);
             }
 
             if (parameters.hasOwnProperty('id')) {
@@ -814,6 +824,7 @@ Barricade = (function () {
     BarricadeMain.Omittable = Omittable;
     BarricadeMain.Identifiable = Identifiable;
     BarricadeMain.Enumerated = Enumerated;
+    BarricadeMain.Describable = Describable;
 
     return BarricadeMain;
 
