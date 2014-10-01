@@ -50,12 +50,13 @@ $(function() {
 
     function drawSelectNode($label, item) {
         var $item = $('<div></div>'),
-            $set = $('<button>').text('Set');
+            $set = $('<button>').text('Set'),
+            $select = drawSelectElement(item.getEnumLabels(), item.getEnumValues(), item.get());
         $set.click(function() {
-            item.set($input.val());
+            item.set($select.val());
         });
         $item.append($label);
-        $item.append(drawSelectElement(item.getEnumLabels(), item.getEnumValues(), item.get()));
+        $item.append($select);
         $item.append($set);
         return $item;
 
