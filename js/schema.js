@@ -73,28 +73,67 @@
      }
  });
 
- types.Mistral.Policy = Barricade.create({
-     '@type': Object,
+ types.Mistral.Policy = (function() {
+     function makeDefaultSubPolicyGetter(path) {
+         return function() {
+             var container = this._container,
+                 workflow;
+             while ( container ) {
+                 if ( container.instanceof(types.Mistral.Workflow) ) {
+                     workflow = container;
+                     break;
+                 }
+                 container = container._container;
+             }
 
-     'wait-before': {
-         '@type': Number,
-         '@required': false
-     },
-     'wait-after': {
-         '@type': Number,
-         '@required': false
-     },
-     'retry': {
-         '@type': Object,
-         '@required': false,
-         'count': {'@type': Number},
-         'delay': {'@type': Number},
-         'break-on': {
-             '@type': String,
-             '@required': false
+             var defaultPolicy = workflow && workflow.get('task-defaults').get('policies');
+             if ( defaultPolicy ) {
+                 while ( path ) {
+                     var head = path.shift();
+                     defaultPolicy = defaultPolicy.get(head);
+                 }
+                 return defaultPolicy.get();
+             }
          }
      }
- });
+
+     return Barricade.create({
+         '@type': Object,
+
+         'wait-before': {
+             '@type': Number,
+             '@required': false,
+             '@default': makeDefaultSubPolicyGetter(['wait-before'])
+         },
+         'wait-after': {
+             '@type': Number,
+             '@required': false,
+             '@default': makeDefaultSubPolicyGetter(['wait-after'])
+         },
+         'retry': {
+             '@type': Object,
+             '@required': false,
+             'count': {
+                 '@type': Number,
+                 '@default': makeDefaultSubPolicyGetter(['retry', 'count'])
+             },
+             'delay': {
+                 '@type': Number,
+                 '@default': makeDefaultSubPolicyGetter(['retry', 'delay'])
+             },
+             'break-on': {
+                 '@type': String,
+                 '@required': false,
+                 '@default': makeDefaultSubPolicyGetter(['retry', 'break-on'])
+             }
+         },
+         'timeout': {
+             '@type': Number,
+             '@required': false,
+             '@default': makeDefaultSubPolicyGetter(['timeout'])
+         }
+     });
+ })();
 
  types.Mistral.Task = Barricade.create({
      '@type': Object,
@@ -124,7 +163,7 @@
      create: function(json, parameters) {
          var self = Barricade.MutableObject.create.call(this);
 
-         function getParentWorkflowType() {
+         function getParentWorkflow() {
              var container = self._container,
                  workflow;
              while ( container ) {
@@ -134,29 +173,28 @@
                  }
                  container = container._container;
              }
-             return workflow && workflow.get('type').get();
+             return workflow;
          }
 
-         var directSpecificData = {
-                 'on-complete': {
-                     '@type': String,
-                     '@required': false
-                 },
-                 'on-success': {
-                     '@type': String,
-                     '@required': false
-                 },
-                 'on-error': {
-                     '@type': String,
-                     '@required': false
-                 }
-             },
+         var directSpecificData = ['on-complete', 'on-success', 'on-error'].reduce(
+             function(container, fieldName) {
+                 container[fieldName] = {
+                     '@type': Array,
+                     '?': {
+                         '@type': String,
+                         '@default': function() {
+                             var workflow = getParentWorkflow();
+                             return workflow.get('task-defaults').get(fieldName);
+                         }
+                     }
+                 };
+                 return container;
+             }, {}),
              reverseSpecificData = {
                  'requires': {
                      '@type': Array,
                      '*': {
                          '@type': String,
-                         '@meta': {'name': 'Task'},
                          '@enum': function() {
                              var container = this._container,
                                  workflow, task;
@@ -188,7 +226,8 @@
              {
                  label: 'Action-based',
                  value: function() {
-                     var workflowType = getParentWorkflowType();
+                     var workflow = getParentWorkflow(),
+                         workflowType = workflow && workflow.get('type').get();
                      if ( workflowType === 'direct' ) {
                          return types.Mistral.ActionTask.extend({}, directSpecificData);
                      } else if ( workflowType === 'reverse' ) {
@@ -200,7 +239,8 @@
              }, {
                  label: 'Workflow-based',
                  value: function() {
-                     var workflowType = getParentWorkflowType();
+                     var workflow = getParentWorkflow(),
+                         workflowType = workflow && workflow.get('type').get();
                      if ( workflowType === 'direct' ) {
                          return types.Mistral.WorkflowTask.extend({}, directSpecificData);
                      } else if ( workflowType === 'reverse' ) {
@@ -272,6 +312,14 @@
      'output': {
          '@type': String,
          '@required': false
+     },
+     'task-defaults': {
+         '@type': Object,
+         '@required': false,
+         'on-error': {'@type': String},
+         'on-success': {'@type': String},
+         'on-complete': {'@type': String},
+         'policies': {'@class': types.Mistral.Policy}
      },
      'tasks': {
          '@class': types.Mistral.Tasks
