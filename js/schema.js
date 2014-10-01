@@ -105,9 +105,14 @@
 
      'name': {'@type': String},
      'parameters': {
-         '@type': Object,
-         '@required': false,
-         '?': {'@type': String}
+         '@type': Array,
+         '*': {
+             '@class': Barricade.Primitive.extend({
+                 'name': 'Parameter'
+             }, {
+                 '@type': String
+             })
+         }
      },
      'publish': {
          '@type': String,
@@ -235,9 +240,15 @@
          '@default': 'direct'
      },
      'parameters': {
-         '@type': Object,
+         '@type': Array,
          '@required': false,
-         '?': {'@type': String}
+         '*': {
+             '@class': Barricade.Primitive.extend({
+                 'name': 'Primitive'
+             }, {
+                 '@type': String
+             })
+         }
      },
      'output': {
          '@type': String,
@@ -260,15 +271,15 @@
          '@required': false
      },
      'actions': {
-         '@type': Array,
+         '@type': Object,
          '@required': false,
-         '*': {
+         '?': {
              '@class': types.Mistral.Action
          }
      },
      'workflows': {
-         '@type': Array,
-         '*': {
+         '@type': Object,
+         '?': {
              '@class': types.Mistral.Workflow
          }
      }

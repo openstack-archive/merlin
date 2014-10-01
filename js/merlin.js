@@ -106,7 +106,7 @@ $(function() {
             var length = item.length(),
                 subItem = item.get(length-1),
                 nameEntity = extractNameSubItem(subItem),
-                label = 'Element #'+length,
+                label = extractBaseName(subItem, 'Element') + '#' + length,
                 $childLabel = createNewLabel(label).append($removeAction);
 
             if ( nameEntity ) {
@@ -154,6 +154,11 @@ $(function() {
 
     function extractNameSubItem(item) {
         return item.instanceof(Barricade.Container) && item.get('name');
+    }
+
+    function extractBaseName(item, defaultBaseName) {
+        defaultBaseName = defaultBaseName || 'Element';
+        return item.name || defaultBaseName;
     }
 
     function drawFluidContainerNode($label, item) {
