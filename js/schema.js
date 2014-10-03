@@ -93,6 +93,10 @@
              '@type': String,
              '@required': false
          }
+     },
+     'timeout': {
+         '@type': Number,
+         '@required': false
      }
  });
 
@@ -156,7 +160,6 @@
                      '@type': Array,
                      '*': {
                          '@type': String,
-                         '@meta': {'name': 'Task'},
                          '@enum': function() {
                              var container = this._container,
                                  workflow, task;
@@ -272,6 +275,14 @@
      'output': {
          '@type': String,
          '@required': false
+     },
+     'task-defaults': {
+         '@type': Object,
+         '@required': false,
+         'on-error': {'@type': String},
+         'on-success': {'@type': String},
+         'on-complete': {'@type': String},
+         'policies': {'@class': types.Mistral.Policy}
      },
      'tasks': {
          '@class': types.Mistral.Tasks
