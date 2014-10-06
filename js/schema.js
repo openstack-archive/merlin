@@ -159,30 +159,34 @@
                  'requires': {
                      '@type': Array,
                      '*': {
-                         '@type': String,
-                         '@enum': function() {
-                             var container = this._container,
-                                 workflow, task;
-                             while ( container ) {
-                                 if ( container.instanceof(types.Mistral.Task) ) {
-                                     task = container;
+                         '@class': Barricade.Primitive.extend({
+                             'name': 'Action'
+                         }, {
+                             '@type': String,
+                             '@enum': function() {
+                                 var container = this._container,
+                                     workflow, task;
+                                 while ( container ) {
+                                     if ( container.instanceof(types.Mistral.Task) ) {
+                                         task = container;
+                                     }
+                                     if ( container.instanceof(types.Mistral.Workflow) ) {
+                                         workflow = container;
+                                         break;
+                                     }
+                                     container = container._container;
                                  }
-                                 if ( container.instanceof(types.Mistral.Workflow) ) {
-                                     workflow = container;
-                                     break;
+                                 if ( workflow && task ) {
+                                     return workflow.get('tasks').toArray().filter(function(taskItem) {
+                                         return !(taskItem === task) && taskItem.get('name').get();
+                                     }).map(function(taskItem) {
+                                         return taskItem.get('name').get();
+                                     });
+                                 } else {
+                                     return [];
                                  }
-                                 container = container._container;
                              }
-                             if ( workflow && task ) {
-                                 return workflow.get('tasks').toArray().filter(function(taskItem) {
-                                     return !(taskItem === task) && taskItem.get('name').get();
-                                 }).map(function(taskItem) {
-                                     return taskItem.get('name').get();
-                                 });
-                             } else {
-                                 return [];
-                             }
-                         }
+                         })
                      }
                  }
              };
