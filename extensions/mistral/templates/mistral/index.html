@@ -1,0 +1,24 @@
+{% extends "merlin/base.html" %}
+
+{% block title %}Merlin Project{% endblock %}
+{% block main %}
+<div>
+    <div class="left">
+        <div id="toolbar">
+            <button id="create-workbook">New Workbook</button>
+            <button id="save-workbook">Save Workbook</button>
+        </div>
+        <div id="controls"></div>
+    </div>
+    <pre class="right"></pre>
+</div>
+{% endblock %}
+
+{% block merlin-css %}
+  <link rel="stylesheet" href="{{ STATIC_URL }}mistral/css/mistral.css">
+{% endblock %}
+
+{% block merlin-js-scripts %}
+  <script src="{{ STATIC_URL }}mistral/js/schema.js"></script>
+  <script src="{{ STATIC_URL }}mistral/js/workbook.js"></script>
+{% endblock %}

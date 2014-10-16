@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block js %}
+  {% include "horizon/_scripts.html" %}
+  <script src="{{ STATIC_URL }}merlin/lib/barricade.js" type="text/javascript" charset="utf-8"></script>
+  <script src="{{ STATIC_URL }}merlin/lib/js-yaml.js" type="text/javascript" charset="utf-8"></script>
+  {% block merlin-js-scripts %}{% endblock %}
+{% endblock %}
+
+{% block css %}
+  {% include "_stylesheets.html" %}
+  {% block merlin-css %}{% endblock %}
+{% endblock %}
