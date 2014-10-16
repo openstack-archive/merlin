@@ -1,0 +1,32 @@
+{% extends "horizon/common/_modal_form.html" %}
+{% load i18n %}
+{% load url from future %}
+
+{% block form_id %}create_workbook{% endblock %}
+{% block form_action %}{% url 'horizon:project:mistral:create' %}{% endblock %}
+
+{% block modal-header %}{% trans "Create Workbook" %}{% endblock %}
+{% block modal_id %}create_workbook_modal{% endblock %}
+
+{% block modal-body %}
+<div class="left">
+  <div id="toolbar">
+    <button id="create-workbook">New Workbook</button>
+    <button id="save-workbook">Save Workbook</button>
+    <div id="controls"></div>
+  </div>
+</div>
+<div class="right">
+  <pre></pre>
+</div>
+{% endblock %}
+
+{% block modal-footer %}
+  <input class="btn btn-primary pull-right" type="submit" value="{% trans "Create" %}" />
+  <a href="{% url 'horizon:project:mistral:index' %}" class="btn btn-default secondary cancel close">{% trans "Cancel" %}</a>
+{% endblock %}
+
+{% block modal-js %}
+  <script src="{{ STATIC_URL }}mistral/js/schema.js"></script>
+  <script src="{{ STATIC_URL }}mistral/js/workbook.js"></script>
+{% endblock %}

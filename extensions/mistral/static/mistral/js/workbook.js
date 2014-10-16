@@ -278,16 +278,22 @@ $(function() {
         });
     }
 
-    $('button#create-workbook').click(function() {
-        var $controls = $('div#controls'),
-            $label = createNewLabel('Mistral Workbook');
-        $controls.empty();
-        workbook = types.Mistral.Workbook.create();
+    $('button#create-workbook').click(function(evt) {
+      var $controls = $('div#controls'),
+          $label = createNewLabel('Mistral Workbook');
+      $controls.empty();
+      workbook = types.Mistral.Workbook.create();
 
-        drawTypedNode($controls, $label, workbook).find('label').click();
+      drawTypedNode($controls, $label, workbook).find('label').click();
+      evt.preventDefault();
     });
 
-    $('button#save-workbook').click(function() {
-        $('.right').text(jsyaml.dump(workbook.toJSON()));
-    })
+    $('button#save-workbook').click(function(evt) {
+      $('.right pre').text(jsyaml.dump(workbook.toJSON()));
+      evt.preventDefault();
+    });
+  // to prevent modal form submit
+  $('div#controls').click(function(evt) {
+    evt.preventDefault();
+  });
 });

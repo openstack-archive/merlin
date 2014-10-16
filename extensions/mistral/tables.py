@@ -12,12 +12,23 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from django.conf.urls import patterns
-from django.conf.urls import url
+from django.utils.translation import ugettext_lazy as _
+from django.template import defaultfilters
 
-from mistral import views
+from horizon import tables
 
-urlpatterns = patterns('',
-    url(r'^$', views.IndexView.as_view(), name='index'),
-    url(r'^create$', views.WorkbookFormView.as_view(), name='create')
-)
+
+class CreateWorkbook(tables.LinkAction):
+    name = 'create'
+    verbose_name = _('Create Workbook')
+    url = 'horizon:project:mistral:create'
+    classes = ('ajax-modal',)
+    icon = 'plus'
+
+
+class WorkbooksTable(tables.DataTable):
+    name = tables.Column('name', verbose_name=_('Workbook Name'))
+    running = tables.Column('running', verbose_name=_('Running'),
+                            filters=defaultfilters.yesno)
+    class Meta:
+        table_actions=(CreateWorkbook,)

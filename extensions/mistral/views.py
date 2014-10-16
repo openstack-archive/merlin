@@ -13,7 +13,19 @@
 #    under the License.
 
 from django.views.generic import TemplateView  # noqa
+from horizon import tables
+from horizon.forms import views
+
+from mistral import tables as mistral_tables
+from mistral import forms as mistral_forms
 
 
-class IndexView(TemplateView):
+class WorkbookFormView(views.ModalFormView):
+    form_class = mistral_forms.CreateWorkbookForm
+    template_name = 'project/mistral/create.html'
+    success_url = 'horizon:project:mistral:index'
+
+
+class IndexView(tables.DataTableView):
     template_name = 'project/mistral/index.html'
+    table_class = mistral_tables.WorkbooksTable

@@ -12,12 +12,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from django.conf.urls import patterns
-from django.conf.urls import url
+from horizon import forms
 
-from mistral import views
 
-urlpatterns = patterns('',
-    url(r'^$', views.IndexView.as_view(), name='index'),
-    url(r'^create$', views.WorkbookFormView.as_view(), name='create')
-)
+class CreateWorkbookForm(forms.SelfHandlingForm):
+    def handle(self, request, data):
+        return True
