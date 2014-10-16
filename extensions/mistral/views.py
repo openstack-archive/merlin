@@ -12,8 +12,40 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from django.views.generic import TemplateView  # noqa
+from django.core.urlresolvers import reverse_lazy
+from horizon import tables
+from horizon.forms import views
+import yaml
+
+from mistral import api
+from mistral import forms as mistral_forms
+from mistral import tables as mistral_tables
 
 
-class IndexView(TemplateView):
+class CreateWorkbookView(views.ModalFormView):
+    form_class = mistral_forms.CreateWorkbookForm
+    template_name = 'project/mistral/create.html'
+    success_url = reverse_lazy('horizon:project:mistral:index')
+
+
+class EditWorkbookView(views.ModalFormView):
+    form_class = mistral_forms.EditWorkbookForm
+    template_name = 'project/mistral/create.html'
+    success_url = reverse_lazy('horizon:project:mistral:index')
+
+    def get_initial(self):
+        workbook_id = self.kwargs['workbook_id']
+        workbook = api.get_workbook(self.request, workbook_id)
+        if workbook:
+            return {'workbook': yaml.dump(workbook),
+                    'workbook_id': workbook_id}
+        else:
+            return {}
+
+
+class IndexView(tables.DataTableView):
     template_name = 'project/mistral/index.html'
+    table_class = mistral_tables.WorkbooksTable
+
+    def get_data(self):
+        return api.list_workbooks(self.request)

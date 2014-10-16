@@ -1,24 +1,15 @@
-{% extends "merlin/base.html" %}
-
-{% block title %}Merlin Project{% endblock %}
-{% block main %}
-<div>
-    <div class="left">
-        <div id="toolbar">
-            <button id="create-workbook">New Workbook</button>
-            <button id="save-workbook">Save Workbook</button>
-        </div>
-        <div id="controls"></div>
-    </div>
-    <pre class="right"></pre>
-</div>
-{% endblock %}
+{% extends 'merlin/base.html' %}
+{% load i18n %}
+{% block title %}{% trans "Workbooks" %}{% endblock %}
 
 {% block merlin-css %}
   <link rel="stylesheet" href="{{ STATIC_URL }}mistral/css/mistral.css">
 {% endblock %}
 
-{% block merlin-js-scripts %}
-  <script src="{{ STATIC_URL }}mistral/js/schema.js"></script>
-  <script src="{{ STATIC_URL }}mistral/js/workbook.js"></script>
+{% block page_header %}
+  {% include "horizon/common/_page_header.html" with title=_("Workbooks") %}
+{% endblock page_header %}
+
+{% block main %}
+    {{ table.render }}
 {% endblock %}

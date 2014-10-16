@@ -17,6 +17,7 @@ var workbook;
 
 $(function() {
     var __counter = 0;
+  var current_workbook_id;
 
     function getNextCounter() {
         __counter++;
@@ -278,16 +279,53 @@ $(function() {
         });
     }
 
-    $('button#create-workbook').click(function() {
-        var $controls = $('div#controls'),
-            $label = createNewLabel('Mistral Workbook');
-        $controls.empty();
-        workbook = types.Mistral.Workbook.create();
+  function initWorkbook(recreate) {
+    var $controls = $('div#controls'),
+      $label = createNewLabel('Mistral Workbook'),
+      json = jsyaml.load($('#json-output').val());
+    if ( json === undefined ) {
+      current_workbook_id = null
+    } else {
+      current_workbook_id = json.id;
+    }
+    $controls.empty();
+    if (recreate) {
+      workbook = types.Mistral.Workbook.create();
+    } else {
+      workbook = types.Mistral.Workbook.create(json);
+    }
 
-        drawTypedNode($controls, $label, workbook).find('label').click();
+    drawTypedNode($controls, $label, workbook).find('label').click();
+  }
+
+  $(function() {
+    initWorkbook()
+  });
+
+    $('button#create-workbook').click(function(evt) {
+      initWorkbook(true);
+      evt.preventDefault();
     });
 
-    $('button#save-workbook').click(function() {
-        $('.right').text(jsyaml.dump(workbook.toJSON()));
-    })
+  function saveWorkbook() {
+    var json = workbook.toJSON(),
+      text;
+    if ( current_workbook_id !== null ) {
+      json.id = current_workbook_id;
+    }
+    text = jsyaml.dump(json);
+    $('.right pre').text(text);
+    $('#json-output').val(text);
+  }
+
+  $('form').submit(saveWorkbook);
+
+    $('button#save-workbook').click(function(evt) {
+      saveWorkbook();
+      evt.preventDefault();
+    });
+  // to prevent modal form submit
+  $('div#controls').click(function(evt) {
+    evt.preventDefault();
+  });
 });

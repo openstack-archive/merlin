@@ -301,6 +301,9 @@
          '@type': Number,
          '@default': 2
      },
+     'name': {
+         '@type': String
+     },
      'description': {
          '@type': String,
          '@required': false

@@ -12,14 +12,24 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from django.conf.urls import patterns
-from django.conf.urls import url
+from horizon import forms
+import yaml
 
-from mistral import views
+from mistral import api
 
-urlpatterns = patterns('',
-    url(r'^$', views.IndexView.as_view(), name='index'),
-    url(r'^create$', views.CreateWorkbookView.as_view(), name='create'),
-    url(r'^edit/(?P<workbook_id>[^/]+)$', views.EditWorkbookView.as_view(),
-        name='edit')
-)
+
+class BaseWorkbookForm(forms.SelfHandlingForm):
+    workbook = forms.CharField(widget=forms.HiddenInput,
+                               required=False)
+
+
+class CreateWorkbookForm(BaseWorkbookForm):
+    def handle(self, request, data):
+        json = yaml.load(data['workbook'])
+        return api.create_workbook(request, json)
+
+
+class EditWorkbookForm(BaseWorkbookForm):
+    def handle(self, request, data):
+        json = yaml.load(data['workbook'])
+        return api.modify_workbook(request, json)
