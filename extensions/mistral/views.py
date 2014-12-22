@@ -15,6 +15,7 @@
 from django.core.urlresolvers import reverse_lazy
 from horizon import tables
 from horizon.forms import views
+from horizon.views import APIView
 import yaml
 
 from mistral import api
@@ -26,6 +27,10 @@ class CreateWorkbookView(views.ModalFormView):
     form_class = mistral_forms.CreateWorkbookForm
     template_name = 'project/mistral/create.html'
     success_url = reverse_lazy('horizon:project:mistral:index')
+
+
+class CreateWorkbookView1(APIView):
+    template_name = 'project/mistral/create.html'
 
 
 class EditWorkbookView(views.ModalFormView):

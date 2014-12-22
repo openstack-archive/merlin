@@ -13,20 +13,17 @@
     under the License.
 */
 
-.left, .right {
-    padding: 6px;
-}
-.left {
-    border: 1px solid black;
-}
+/*.left, .right {*/
+    /*padding: 6px;*/
+/*}*/
+/*.left {*/
+    /*border: 1px solid black;*/
+/*}*/
 .expandable:before {
     content: '+';
 }
 .expandable.expanded:before {
     content: '-';
-}
-label {
-    font-weight: bold;
 }
 .container-action {
     padding-left: 5px;
@@ -34,4 +31,74 @@ label {
 .inner-node {
     padding-left: 5px;
     border-left: 1px solid green;
+}
+
+div#create-workbook {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+.panel-default.merlin-panel > .panel-heading {
+    color: inherit;
+    background-color: inherit;
+    border: none;
+    padding-left: 20px;
+}
+
+.panel-default.merlin-panel .panel-body {
+    padding-left: 20px;
+}
+.panel-heading a:before {
+    font-family: 'FontAwesome';
+    content: "\f0d7";
+    margin-left: -10px;
+    float: left;
+    color: grey;
+}
+.panel-heading a.collapsed:before {
+    content:"\f0da";
+}
+
+.section .form-group {
+    padding-left: 15px;
+}
+
+.section a {
+    padding-left: 5px;
+    text-decoration: none;
+    color: black;
+    font-weight: bold;
+}
+
+.section a[data-toggle="collapse"]:before {
+    font-family: 'FontAwesome';
+    content: "\f147";
+    font-weight: normal;
+    float: left;
+    color: grey;
+}
+
+.section a[data-toggle="collapse"].collapsed:before {
+    content: "\f196";
+}
+
+i.fa-minus-circle.input-group-addon {
+    color: red;
+}
+
+.merlin-panel label {
+    font-weight: normal;
+}
+
+.merlin-panel .panel-title {
+    font-weight: bold;
+}
+
+.popover-content > button {
+    margin: 5px;
+    float: right;
+}
+
+.popover.right {
+    width: 200px;
 }
