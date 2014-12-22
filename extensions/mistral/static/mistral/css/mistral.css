@@ -16,9 +16,9 @@
 .left, .right {
     padding: 6px;
 }
-.left {
-    border: 1px solid black;
-}
+/*.left {*/
+    /*border: 1px solid black;*/
+/*}*/
 .expandable:before {
     content: '+';
 }
@@ -34,4 +34,9 @@ label {
 .inner-node {
     padding-left: 5px;
     border-left: 1px solid green;
+}
+
+div#create-workbook {
+    padding-left: 15px;
+    padding-right: 15px;
 }

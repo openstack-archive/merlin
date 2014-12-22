@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load url from future %}
+{% block title %}{% trans "Create Workbook" %}{% endblock %}
+
+{% block page_header %}
+  {% include "horizon/common/_page_header.html" with title=_("Workbooks") %}
+{% endblock page_header %}
+
+  {% include "_stylesheets.html" %}
+
+{% block css %}
+  {% include "_stylesheets.html" %}
+  <link rel="stylesheet" href="{{ STATIC_URL }}mistral/css/mistral.css">
+  {% block merlin-css %}{% endblock %}
+{% endblock %}
+
+{% block main %}
+<h3>Create Workbook</h3>
+  <div id="create-workbook" class="fluid-container">
+  <div class="row">
+    <div clas="col-md-12 col-lg-12 col-sm-12">
+      <div class="well">
+        <div class="row">
+          <div class="col-md-6 col-sm-6 col-lg-6">
+            <div class="panel panel-default">
+              <div class="panel-body">
+                forms
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6 col-sm-6 col-lg-6">
+            <div class="panel panel-default">
+              <div class="panel-body">
+                yaml
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+{% endblock %}
+{##}
+{#{% block modal-js %}#}
+{#  <script src="{{ STATIC_URL }}mistral/js/schema.js"></script>#}
+{#  <script src="{{ STATIC_URL }}mistral/js/workbook.js"></script>#}
+{#{% endblock %}#}

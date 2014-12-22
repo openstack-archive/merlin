@@ -18,11 +18,19 @@ from horizon import tables
 
 from mistral import api
 
+
 class CreateWorkbook(tables.LinkAction):
     name = 'create'
     verbose_name = _('Create Workbook')
     url = 'horizon:project:mistral:create'
     classes = ('ajax-modal',)
+    icon = 'plus'
+
+
+class CreateWorkbook1(tables.LinkAction):
+    name = 'create1'
+    verbose_name = _('Create Workbook1')
+    url = 'horizon:project:mistral:create1'
     icon = 'plus'
 
 
@@ -48,6 +56,6 @@ class WorkbooksTable(tables.DataTable):
                             filters=(defaultfilters.yesno,))
 
     class Meta:
-        table_actions = (CreateWorkbook, RemoveWorkbook)
+        table_actions = (CreateWorkbook, CreateWorkbook1, RemoveWorkbook)
         name = 'workbooks'
         row_actions = (EditWorkbook, RemoveWorkbook)
