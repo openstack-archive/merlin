@@ -86,7 +86,7 @@ div#create-workbook {
     content: "\f196";
 }
 
-i.fa-minus-circle.input-group-addon {
+.fa-minus-circle.input-group-addon {
     color: red;
 }
 
