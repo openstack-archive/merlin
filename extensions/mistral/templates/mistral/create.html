@@ -22,7 +22,9 @@
   });
 </script>
 
+  <script type="text/javascript" src="{{ STATIC_URL }}mistral/js/services.js"></script>
   <script type="text/javascript" src="{{ STATIC_URL }}mistral/js/directives.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}mistral/js/controllers.js"></script>
 {% endblock %}
 
 {% block css %}
@@ -81,533 +83,516 @@
                     </div>
                   </div>
                   <!-- Action added -->
-                  <div class="panel panel-default merlin-panel" id="panel1">
-                    <div class="panel-heading">
-                      <h4 class="panel-title">
-                        <a data-toggle="collapse" data-target="#collapseOne" href="#collapseOne">
-                          Action1</a>
-                        <i class="fa fa-times-circle pull-right"></i></h4>
-                    </div>
-                    <div id="collapseOne" class="panel-collapse collapse in">
-                      <div class="panel-body">
-                        <!-- 2 simple inputs in a single row -->
+                  <div ng-controller="actionsCtrl">
+                    <collapsible-panel panel-title="Action1" removable="true">
+                      <!-- 2 simple inputs in a single row -->
+                      <div class="row">
+                        <div class="col-md-5 col-sm-5 col-lg-5">
+                          <div class="form-group">
+                            <label for="action1Name">Name</label>
+                            <input type="text" class="form-control" id="action1Name" placeholder="Action1">
+                          </div>
+                        </div>
+                        <div class="col-md-5 col-sm-5 col-lg-5">
+                          <div class="form-group">
+                            <label for="action1Base">Base</label>
+                            <input type="text" class="form-control" id="action1Base" placeholder="nova.create_server">
+                          </div>
+                        </div>
+                      </div>
+                      <!-- collapsible dictionary section with fixed keys -->
+                      <div class="row">
+                        <div class="col-md-5 col-sm-5 col-lg-5">
+                          <div class="section">
+                            <h5><a data-toggle="collapse" data-target="#collapseTwo" id="collapseTwoLink" href="#collapseTwo">
+                              Base Input</a></h5>
+                            <div id="collapseTwo" class="collapse in">
+                              <div class="form-group">
+                                <label for="action1BaseInputFlavorId">Flavor Id</label>
+                                <input type="text" class="form-control" id="action1BaseInputFlavorId">
+                              </div>
+                              <div class="form-group">
+                                <label for="action1BaseInputImageId">Image Id</label>
+                                <input type="text" class="form-control" id="action1BaseInputImageId">
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <!-- collapsible keys list section -->
+                      <div class="section">
                         <div class="row">
-                          <div class="col-md-5 col-sm-5 col-lg-5">
-                            <div class="form-group">
-                              <label for="action1Name">Name</label>
-                              <input type="text" class="form-control" id="action1Name" placeholder="Action1">
-                            </div>
+                          <div class="col-md-10 col-sm-10 col-lg-10">
+                            <h5><a data-toggle="collapse" data-target="#collapseThree" id="collapseThreeLink" href="#collapseThree">
+                              Input</a></h5>
                           </div>
-                          <div class="col-md-5 col-sm-5 col-lg-5">
-                            <div class="form-group">
-                              <label for="action1Base">Base</label>
-                              <input type="text" class="form-control" id="action1Base" placeholder="nova.create_server">
-                            </div>
+                          <div class="add-btn col-md-2 col-sm-2 col-lg-2">
+                            <button class="btn btn-default btn-sm pull-right"><i class="fa fa-plus"></i></button>
                           </div>
                         </div>
-                        <!-- collapsible dictionary section with fixed keys -->
-                        <div class="row">
-                          <div class="col-md-5 col-sm-5 col-lg-5">
-                            <div class="section">
-                              <h5><a data-toggle="collapse" data-target="#collapseTwo" id="collapseTwoLink" href="#collapseTwo">
-                                Base Input</a></h5>
-                              <div id="collapseTwo" class="collapse in">
-                                <div class="form-group">
-                                  <label for="action1BaseInputFlavorId">Flavor Id</label>
-                                  <input type="text" class="form-control" id="action1BaseInputFlavorId">
-                                </div>
-                                <div class="form-group">
-                                  <label for="action1BaseInputImageId">Image Id</label>
-                                  <input type="text" class="form-control" id="action1BaseInputImageId">
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <!-- collapsible keys list section -->
-                        <div class="section">
+                        <div id="collapseThree" class="collapse in">
                           <div class="row">
-                            <div class="col-md-10 col-sm-10 col-lg-10">
-                              <h5><a data-toggle="collapse" data-target="#collapseThree" id="collapseThreeLink" href="#collapseThree">
-                                Input</a></h5>
-                            </div>
-                            <div class="add-btn col-md-2 col-sm-2 col-lg-2">
-                              <button class="btn btn-default btn-sm pull-right"><i class="fa fa-plus"></i></button>
-                            </div>
-                          </div>
-                          <div id="collapseThree" class="collapse in">
-                            <div class="row">
-                              <div class="col-md-5 col-sm-5 col-lg-5">
-                                <div class="form-group">
-                                  <div class="input-group">
-                                    <input type="text" class="form-control">
-                                    <i class="fa fa-minus-circle input-group-addon"></i>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <!-- collapsible section with variable type = string|list|dictionary -->
-                        <div class="section">
-                          <div class="row">
-                            <div class="col-md-10 col-sm-10 col-lg-10">
-                              <h5><a data-toggle="collapse" data-target="#collapseFour" id="collapseFourLink" href="#collapseFour">
-                                Output</a></h5>
-                            </div>
-                            <div class="add-btn col-md-2 col-sm-2 col-lg-2">
-                              <button class="btn btn-default btn-sm pull-right"><i class="fa fa-plus"></i></button>
-                            </div>
-                          </div>
-                          <div id="collapseFour" class="collapse in">
-                            <!-- string input type -->
-                            <div class="row">
-                              <div class="col-md-5 col-sm-5 col-lg-5">
-                                <div class="form-group">
-                                  <label for="collapseFourOuputF1">Key Type</label>
-                                  <select id="collapseFourOuputF1" class="form-control">
-                                    <option selected disabled>String</option>
-                                    <option disabled>List</option>
-                                    <option disabled>Dictionary</option>
-                                  </select>
-                                </div>
-                              </div>
-                              <div class="second-column col-md-5 col-sm-5 col-lg-5">
-                                <div class="form-group">
-                                  <label>&nbsp;</label>
+                            <div class="col-md-5 col-sm-5 col-lg-5">
+                              <div class="form-group">
+                                <div class="input-group">
                                   <input type="text" class="form-control">
-                                </div>
-                              </div>
-                            </div>
-                            <!-- dictionary input type -->
-                            <div class="dictionary">
-                              <div class="row">
-                                <div class="col-md-5 col-sm-5 col-lg-5">
-                                  <div class="form-group">
-                                    <label for="collapseFourOuputF2">Key Type</label>
-                                    <select id="collapseFourOuputF2" class="form-control">
-                                      <option disabled>String</option>
-                                      <option selected disabled>Dictionary</option>
-                                      <option disabled>List</option>
-                                    </select>
-                                  </div>
-                                </div>
-                                <div class="second-column col-md-5 col-sm-5 col-lg-5">
-                                  <div class="form-group">
-
-                                    <label for="collapseFourOuputF3">
-                                      <editable value="Key1" label="New Name"></editable>
-                                    </label>
-                                    <div class="input-group" id="collapseFourOuputF3">
-                                      <input type="text" class="form-control">
-                                      <i class="fa fa-minus-circle input-group-addon"></i>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="row">
-                                <div class="col-md-5 col-sm-5 col-lg-5"></div>
-                                <div class="second-column col-md-5 col-sm-5 col-lg-5">
-                                  <div class="form-group">
-                                    <label for="collapseFourOuputF4">
-                                      <editable value="Key2" label="New Name"></editable>
-                                    </label>
-                                    <div class="input-group" id="collapseFourOuputF4">
-                                      <input type="text" class="form-control">
-                                      <i class="fa fa-minus-circle input-group-addon"></i>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div class="add-btn col-md-2 col-sm-2 col-lg-2">
-                                  <button class="btn btn-default btn-sm pull-right"><i class="fa fa-plus"></i></button>
-                                </div>
-                              </div>
-                            </div>
-                            <!-- list input type -->
-                            <div class="list">
-                              <div class="row">
-                                <div class="col-md-5 col-sm-5 col-lg-5">
-                                  <div class="form-group">
-                                    <label for="collapseFourOuputF5">Key Type</label>
-                                    <select id="collapseFourOuputF5" class="form-control">
-                                      <option disabled>String</option>
-                                      <option disabled>Dictionary</option>
-                                      <option selected disabled>List</option>
-                                    </select>
-                                  </div>
-                                </div>
-                                <div class="second-column col-md-5 col-sm-5 col-lg-5">
-                                  <label>&nbsp;</label>
-                                  <div class="input-group">
-                                    <input type="text" class="form-control">
-                                    <i class="fa fa-minus-circle input-group-addon"></i>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="row">
-                                <div class="col-md-5 col-sm-5 col-lg-5"></div>
-                                <div class="second-column col-md-5 col-sm-5 col-lg-5">
-                                  <div class="input-group">
-                                    <input type="text" class="form-control">
-                                    <i class="fa fa-minus-circle input-group-addon"></i>
-                                  </div>
-                                </div>
-                                <div class="add-btn col-md-2 col-sm-2 col-lg-2">
-                                  <button class="btn btn-default btn-sm pull-right"><i class="fa fa-plus"></i></button>
+                                  <i class="fa fa-minus-circle input-group-addon"></i>
                                 </div>
                               </div>
                             </div>
                           </div>
                         </div>
                       </div>
-                    </div>
+                      <!-- collapsible section with variable type = string|list|dictionary -->
+                      <div class="section">
+                        <div class="row">
+                          <div class="col-md-10 col-sm-10 col-lg-10">
+                            <h5><a data-toggle="collapse" data-target="#collapseFour" id="collapseFourLink" href="#collapseFour">
+                              Output</a></h5>
+                          </div>
+                          <div class="add-btn col-md-2 col-sm-2 col-lg-2">
+                            <button class="btn btn-default btn-sm pull-right"><i class="fa fa-plus"></i></button>
+                          </div>
+                        </div>
+                        <div id="collapseFour" class="collapse in">
+                          <!-- string input type -->
+                          <div class="row">
+                            <div class="col-md-5 col-sm-5 col-lg-5">
+                              <div class="form-group">
+                                <label for="collapseFourOuputF1">Key Type</label>
+                                <select id="collapseFourOuputF1" class="form-control">
+                                  <option selected disabled>String</option>
+                                  <option disabled>List</option>
+                                  <option disabled>Dictionary</option>
+                                </select>
+                              </div>
+                            </div>
+                            <div class="second-column col-md-5 col-sm-5 col-lg-5">
+                              <div class="form-group">
+                                <label>&nbsp;</label>
+                                <input type="text" class="form-control">
+                              </div>
+                            </div>
+                          </div>
+                          <!-- dictionary input type -->
+                          <div class="dictionary">
+                            <div class="row">
+                              <div class="col-md-5 col-sm-5 col-lg-5">
+                                <div class="form-group">
+                                  <label for="collapseFourOuputF2">Key Type</label>
+                                  <select id="collapseFourOuputF2" class="form-control">
+                                    <option disabled>String</option>
+                                    <option selected disabled>Dictionary</option>
+                                    <option disabled>List</option>
+                                  </select>
+                                </div>
+                              </div>
+                              <div class="second-column col-md-5 col-sm-5 col-lg-5">
+                                <div class="form-group">
+
+                                  <label for="collapseFourOuputF3">
+                                    <editable value="Key1" label="New Name"></editable>
+                                  </label>
+                                  <div class="input-group" id="collapseFourOuputF3">
+                                    <input type="text" class="form-control">
+                                    <i class="fa fa-minus-circle input-group-addon"></i>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="row">
+                              <div class="col-md-5 col-sm-5 col-lg-5"></div>
+                              <div class="second-column col-md-5 col-sm-5 col-lg-5">
+                                <div class="form-group">
+                                  <label for="collapseFourOuputF4">
+                                    <editable value="Key2" label="New Name"></editable>
+                                  </label>
+                                  <div class="input-group" id="collapseFourOuputF4">
+                                    <input type="text" class="form-control">
+                                    <i class="fa fa-minus-circle input-group-addon"></i>
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="add-btn col-md-2 col-sm-2 col-lg-2">
+                                <button class="btn btn-default btn-sm pull-right"><i class="fa fa-plus"></i></button>
+                              </div>
+                            </div>
+                          </div>
+                          <!-- list input type -->
+                          <div class="list">
+                            <div class="row">
+                              <div class="col-md-5 col-sm-5 col-lg-5">
+                                <div class="form-group">
+                                  <label for="collapseFourOuputF5">Key Type</label>
+                                  <select id="collapseFourOuputF5" class="form-control">
+                                    <option disabled>String</option>
+                                    <option disabled>Dictionary</option>
+                                    <option selected disabled>List</option>
+                                  </select>
+                                </div>
+                              </div>
+                              <div class="second-column col-md-5 col-sm-5 col-lg-5">
+                                <label>&nbsp;</label>
+                                <div class="input-group">
+                                  <input type="text" class="form-control">
+                                  <i class="fa fa-minus-circle input-group-addon"></i>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="row">
+                              <div class="col-md-5 col-sm-5 col-lg-5"></div>
+                              <div class="second-column col-md-5 col-sm-5 col-lg-5">
+                                <div class="input-group">
+                                  <input type="text" class="form-control">
+                                  <i class="fa fa-minus-circle input-group-addon"></i>
+                                </div>
+                              </div>
+                              <div class="add-btn col-md-2 col-sm-2 col-lg-2">
+                                <button class="btn btn-default btn-sm pull-right"><i class="fa fa-plus"></i></button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </collapsible-panel>
                   </div>
                   <!-- panel with workflow -->
-                  <div class="panel panel-default merlin-panel" id="panel2">
-                    <div class="panel-heading">
-                      <h4 class="panel-title">
-                        <a data-toggle="collapse" data-target="#collapseFive" href="#">
-                          Workflow1</a>
-                        <i class="fa fa-times-circle pull-right"></i></h4>
-                    </div>
-                    <div id="collapseFive" class="panel-collapse collapse in">
-                      <div class="panel-body">
-                        <!-- 2 simple inputs in a single row -->
+                  <div ng-controller="workflowsCtrl">
+                    <collapsible-panel panel-title="Workflow1" removable="true">
+                      <!-- 2 simple inputs in a single row -->
+                      <div class="row">
+                        <div class="col-md-5 col-sm-5 col-lg-5">
+                          <div class="form-group">
+                            <label for="workflow1Name">Name</label>
+                            <input type="text" class="form-control" id="workflow1Name" placeholder="Workflow1">
+                          </div>
+                        </div>
+                        <div class="col-md-5 col-sm-5 col-lg-5">
+                          <div class="form-group">
+                            <label for="workflow1Type">Base</label>
+                            <select class="form-control" id="workflow1Type">
+                              <option selected>Direct</option>
+                              <option>Reverse</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                      <!-- collapsible keys list section -->
+                      <div class="section">
                         <div class="row">
-                          <div class="col-md-5 col-sm-5 col-lg-5">
-                            <div class="form-group">
-                              <label for="workflow1Name">Name</label>
-                              <input type="text" class="form-control" id="workflow1Name" placeholder="Workflow1">
-                            </div>
+                          <div class="col-md-10 col-sm-10 col-lg-10">
+                            <h5><a data-toggle="collapse" data-target="#collapseSix" id="collapseSixLink" href="#">
+                              Input</a></h5>
                           </div>
-                          <div class="col-md-5 col-sm-5 col-lg-5">
-                            <div class="form-group">
-                              <label for="workflow1Type">Base</label>
-                              <select class="form-control" id="workflow1Type">
-                                <option selected>Direct</option>
-                                <option>Reverse</option>
-                              </select>
-                            </div>
+                          <div class="add-btn col-md-2 col-sm-2 col-lg-2">
+                            <button class="btn btn-default btn-sm pull-right"><i class="fa fa-plus"></i></button>
                           </div>
                         </div>
-                        <!-- collapsible keys list section -->
-                        <div class="section">
+                        <div id="collapseSix" class="collapse in">
                           <div class="row">
-                            <div class="col-md-10 col-sm-10 col-lg-10">
-                              <h5><a data-toggle="collapse" data-target="#collapseSix" id="collapseSixLink" href="#">
-                                Input</a></h5>
-                            </div>
-                            <div class="add-btn col-md-2 col-sm-2 col-lg-2">
-                              <button class="btn btn-default btn-sm pull-right"><i class="fa fa-plus"></i></button>
-                            </div>
-                          </div>
-                          <div id="collapseSix" class="collapse in">
-                            <div class="row">
-                              <div class="col-md-5 col-sm-5 col-lg-5">
-                                <div class="form-group">
-                                  <div class="input-group">
-                                    <input type="text" class="form-control">
-                                    <i class="fa fa-minus-circle input-group-addon"></i>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <!-- collapsible section with variable type = string|list|dictionary -->
-                        <div class="section">
-                          <div class="row">
-                            <div class="col-md-10 col-sm-10 col-lg-10">
-                              <h5><a data-toggle="collapse" data-target="#collapseSeven" id="collapseSevenLink" href="#">
-                                Output</a></h5>
-                            </div>
-                            <div class="add-btn col-md-2 col-sm-2 col-lg-2">
-                              <button class="btn btn-default btn-sm pull-right"><i class="fa fa-plus"></i></button>
-                            </div>
-                          </div>
-                          <div id="collapseSeven" class="collapse in">
-                            <!-- string input type -->
-                            <div class="row">
-                              <div class="col-md-5 col-sm-5 col-lg-5">
-                                <div class="form-group">
-                                  <label for="collapseFourOuputF11">Key Type</label>
-                                  <select id="collapseFourOuputF11" class="form-control">
-                                    <option selected disabled>String</option>
-                                    <option disabled>List</option>
-                                    <option disabled>Dictionary</option>
-                                  </select>
-                                </div>
-                              </div>
-                              <div class="second-column col-md-5 col-sm-5 col-lg-5">
-                                <div class="form-group">
-                                  <label>&nbsp;</label>
+                            <div class="col-md-5 col-sm-5 col-lg-5">
+                              <div class="form-group">
+                                <div class="input-group">
                                   <input type="text" class="form-control">
+                                  <i class="fa fa-minus-circle input-group-addon"></i>
                                 </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <div class="section">
-                          <div class="row">
-                            <div class="col-md-10 col-sm-10 col-lg-10">
-                              <h5><a data-toggle="collapse" data-target="#collapseEight" id="collapseEightLink" href="#">
-                                Task defaults</a></h5>
-                            </div>
-                          </div>
-                          <div id="collapseEight" class="collapse in">
-                            <div class="section">
-                              <div class="row">
-                                <div class="col-md-10 col-sm-10 col-lg-10">
-                                  <h5><a data-toggle="collapse" data-target="#collapse21" id="collapse21Link" href="#">
-                                    On error</a></h5>
-                                </div>
-                                <div class="col-md-2 col-sm-2 col-lg-2">
-                                  <button class="btn btn-default btn-sm pull-right"><i class="fa fa-plus"></i></button>
-                                </div>
-                              </div>
-                              <div id="collapse21" class="collapse in">
-                                <yaql-field-combined></yaql-field-combined>
-                                <yaql-field-combined></yaql-field-combined>
-                              </div>
-                            </div>
-                            <div class="section">
-                              <div class="row">
-                                <div class="col-md-10 col-sm-10 col-lg-10">
-                                  <h5><a data-toggle="collapse" data-target="#collapse22" id="collapse22Link" href="#">
-                                    On success</a></h5>
-                                </div>
-                                <div class="col-md-2 col-sm-2 col-lg-2">
-                                  <button class="btn btn-default btn-sm pull-right"><i class="fa fa-plus"></i></button>
-                                </div>
-                              </div>
-                              <div id="collapse22" class="collapse in">
-                                <yaql-field-combined></yaql-field-combined>
-                              </div>
-                            </div>
-                            <div class="section">
-                              <div class="row">
-                                <div class="col-md-10 col-sm-10 col-lg-10">
-                                  <h5><a data-toggle="collapse" data-target="#collapse23" id="collapse23Link" href="#">
-                                    On complete</a></h5>
-                                </div>
-                                <div class="col-md-2 col-sm-2 col-lg-2">
-                                  <button class="btn btn-default btn-sm pull-right"><i class="fa fa-plus"></i></button>
-                                </div>
-                              </div>
-                              <div id="collapse23" class="collapse in">
-                                <yaql-field-combined></yaql-field-combined>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <div class="section">
-                          <div class="row">
-                            <div class="col-md-10 col-sm-10 col-lg-10">
-                              <h5><a data-toggle="collapse" data-target="#collapseNine" id="collapseNineLink" href="#">
-                                Tasks</a></h5>
-                            </div>
-                            <div class="add-btn col-md-2 col-sm-2 col-lg-2">
-                              <button class="btn btn-default btn-sm pull-right"><i class="fa fa-plus"></i></button>
-                            </div>
-                          </div>
-                          <div id="collapseNine" class="collapse in">
-                            <div class="section">
-                              <div class="row">
-                                <div class="col-md-10 col-sm-10 col-lg-10">
-                                  <h5><a data-toggle="collapse" data-target="#collapse51" id="collapse51Link" href="#">
-                                    TaskAutoName1</a></h5>
-                                </div>
-                                <div class="add-btn col-md-2 col-sm-2 col-lg-2">
-                                  <i class="fa fa-times-circle pull-right"></i>
-                                </div>
-                              </div>
-                              <div id="collapse51" class="collapse in">
-                                <div class="row">
-                                  <div class="col-md-5 col-sm-5 col-lg-5">
-                                    <div class="form-group">
-                                      <label for="collapseFourOuputF12">Name</label>
-                                      <input type="text" id="collapseFourOuputF12" class="form-control" value="TaskAutoName1">
-                                    </div>
-                                  </div>
-                                  <div class="col-md-5 col-sm-5 col-lg-5">
-                                    <div class="form-group">
-                                      <label for="collapseFourOuputF13">Type</label>
-                                      <select id="collapseFourOuputF13" class="form-control">
-                                        <option selected disabled>Action-based</option>
-                                        <option disabled>Workflow-based</option>
-                                      </select>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div class="row">
-                                  <div class="col-md-5 col-sm-5 col-lg-5">
-                                    <div class="form-group">
-                                      <label for="collapseFourOuputF14">Action</label>
-                                      <select id="collapseFourOuputF14" class="form-control">
-                                        <option selected disabled>Action1</option>
-                                      </select>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div class="section">
-                                  <div class="row">
-                                    <div class="col-md-10 col-sm-10 col-lg-10">
-                                      <h5><a data-toggle="collapse" data-target="#collapseTen" id="collapseTenLink" href="#">
-                                        Input</a></h5>
-                                    </div>
-                                    <div class="add-btn col-md-2 col-sm-2 col-lg-2">
-                                      <button class="btn btn-default btn-sm pull-right"><i class="fa fa-plus"></i></button>
-                                    </div>
-                                  </div>
-                                  <div id="collapseTen" class="collapse in">
-                                    <div class="section">
-                                      <div class="row">
-                                        <div class="second-column col-md-5 col-sm-5 col-lg-5">
-                                          <div class="form-group">
-                                            <label for="collapseFourOuputF15">
-                                              <editable value="Key1" label="New Name"></editable>
-                                            </label>
-                                            <div class="input-group" id="collapseFourOuputF15">
-                                              <input type="text" class="form-control">
-                                              <i class="fa fa-minus-circle input-group-addon"></i>
-                                            </div>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div class="section">
-                                  <div class="row">
-                                    <div class="col-md-10 col-sm-10 col-lg-10">
-                                      <h5><a data-toggle="collapse" data-target="#collapseEleven" id="collapseElevenLink" href="#">
-                                        Publish</a></h5>
-                                    </div>
-                                    <div class="add-btn col-md-2 col-sm-2 col-lg-2">
-                                      <button class="btn btn-default btn-sm pull-right"><i class="fa fa-plus"></i></button>
-                                    </div>
-                                  </div>
-                                  <div id="collapseEleven" class="collapse in">
-                                    <div class="section">
-                                      <div class="row">
-                                        <div class="second-column col-md-5 col-sm-5 col-lg-5">
-                                          <div class="form-group">
-                                            <label for="collapseFourOuputF16">
-                                              <editable value="Key1" label="New Name"></editable>
-                                            </label>
-                                            <div class="input-group" id="collapseFourOuputF16">
-                                              <input type="text" class="form-control">
-                                              <i class="fa fa-minus-circle input-group-addon"></i>
-                                            </div>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div class="section">
-                                  <div class="row">
-                                    <div class="col-md-10 col-sm-10 col-lg-10">
-                                      <h5><a data-toggle="collapse" data-target="#collapse24" id="collapse24Link" href="#">
-                                        On error</a></h5>
-                                    </div>
-                                    <div class="col-md-2 col-sm-2 col-lg-2">
-                                      <button class="btn btn-default btn-sm pull-right"><i class="fa fa-plus"></i></button>
-                                    </div>
-                                  </div>
-                                  <div id="collapse24" class="collapse in">
-                                    <yaql-field-combined></yaql-field-combined>
-                                  </div>
-                                </div>
-                                <div class="section">
-                                  <div class="row">
-                                    <div class="col-md-10 col-sm-10 col-lg-10">
-                                      <h5><a data-toggle="collapse" data-target="#collapse25" id="collapse25Link" href="#">
-                                        On success</a></h5>
-                                    </div>
-                                    <div class="col-md-2 col-sm-2 col-lg-2">
-                                      <button class="btn btn-default btn-sm pull-right"><i class="fa fa-plus"></i></button>
-                                    </div>
-                                  </div>
-                                  <div id="collapse25" class="collapse in">
-                                    <yaql-field-combined></yaql-field-combined>
-                                  </div>
-                                </div>
-                                <div class="section">
-                                  <div class="row">
-                                    <div class="col-md-10 col-sm-10 col-lg-10">
-                                      <h5><a data-toggle="collapse" data-target="#collapse26" id="collapse26Link" href="#">
-                                        On complete</a></h5>
-                                    </div>
-                                    <div class="col-md-2 col-sm-2 col-lg-2">
-                                      <button class="btn btn-default btn-sm pull-right"><i class="fa fa-plus"></i></button>
-                                    </div>
-                                  </div>
-                                  <div id="collapse26" class="collapse in">
-                                    <yaql-field-combined></yaql-field-combined>
-                                  </div>
-                                </div>
-                                <div class="section">
-                                  <div class="row">
-                                    <div class="col-md-10 col-sm-10 col-lg-10">
-                                      <h5><a data-toggle="collapse" data-target="#collapseTwelve" id="collapseTwelveLink" href="#">
-                                        Policies</a></h5>
-                                    </div>
-                                  </div>
-                                  <div id="collapseTwelve" class="collapse in">
-                                    <div class="row">
-                                      <div class="col-md-6 col-sm-6 col-lg-6">
-                                        <div class="form-group">
-                                          <label for="waitBefore">Wait before</label>
-                                          <input type="number" class="form-control" id="waitBefore">
-                                        </div>
-                                      </div>
-                                      <div class="col-md-6 col-sm-6 col-lg-6">
-                                        <div class="form-group">
-                                          <label for="waitAfter">Wait after</label>
-                                          <input type="number" class="form-control" id="waitAfter">
-                                        </div>
-                                      </div>
-                                    </div>
-                                    <div class="row">
-                                      <div class="col-md-6 col-sm-6 col-lg-6">
-                                        <div class="form-group">
-                                          <label for="timeout">Timeout</label>
-                                          <input type="number" class="form-control" id="timeout">
-                                        </div>
-                                      </div>
-                                    </div>
-                                    <div class="row">
-                                      <div class="col-md-6 col-sm-6 col-lg-6">
-                                        <div class="form-group">
-                                          <label for="retryCount">Retry count</label>
-                                          <input type="number" class="form-control" id="retryCount">
-                                        </div>
-                                      </div>
-                                      <div class="col-md-6 col-sm-6 col-lg-6">
-                                        <div class="form-group">
-                                          <label for="retryDelay">Retry delay</label>
-                                          <input type="number" class="form-control" id="retryDelay">
-                                        </div>
-                                      </div>
-                                    </div>
-                                    <div class="row">
-                                      <div class="col-md-6 col-sm-6 col-lg-6">
-                                        <div class="form-group">
-                                          <label for="retryBreakOn">Retry break on</label>
-                                          <input type="text" class="form-control" id="retryBreakOn">
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-
                               </div>
                             </div>
                           </div>
                         </div>
                       </div>
-                    </div>
+                      <!-- collapsible section with variable type = string|list|dictionary -->
+                      <div class="section">
+                        <div class="row">
+                          <div class="col-md-10 col-sm-10 col-lg-10">
+                            <h5><a data-toggle="collapse" data-target="#collapseSeven" id="collapseSevenLink" href="#">
+                              Output</a></h5>
+                          </div>
+                          <div class="add-btn col-md-2 col-sm-2 col-lg-2">
+                            <button class="btn btn-default btn-sm pull-right"><i class="fa fa-plus"></i></button>
+                          </div>
+                        </div>
+                        <div id="collapseSeven" class="collapse in">
+                          <!-- string input type -->
+                          <div class="row">
+                            <div class="col-md-5 col-sm-5 col-lg-5">
+                              <div class="form-group">
+                                <label for="collapseFourOuputF11">Key Type</label>
+                                <select id="collapseFourOuputF11" class="form-control">
+                                  <option selected disabled>String</option>
+                                  <option disabled>List</option>
+                                  <option disabled>Dictionary</option>
+                                </select>
+                              </div>
+                            </div>
+                            <div class="second-column col-md-5 col-sm-5 col-lg-5">
+                              <div class="form-group">
+                                <label>&nbsp;</label>
+                                <input type="text" class="form-control">
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="section">
+                        <div class="row">
+                          <div class="col-md-10 col-sm-10 col-lg-10">
+                            <h5><a data-toggle="collapse" data-target="#collapseEight" id="collapseEightLink" href="#">
+                              Task defaults</a></h5>
+                          </div>
+                        </div>
+                        <div id="collapseEight" class="collapse in">
+                          <div class="section">
+                            <div class="row">
+                              <div class="col-md-10 col-sm-10 col-lg-10">
+                                <h5><a data-toggle="collapse" data-target="#collapse21" id="collapse21Link" href="#">
+                                  On error</a></h5>
+                              </div>
+                              <div class="col-md-2 col-sm-2 col-lg-2">
+                                <button class="btn btn-default btn-sm pull-right"><i class="fa fa-plus"></i></button>
+                              </div>
+                            </div>
+                            <div id="collapse21" class="collapse in">
+                              <yaql-field-combined></yaql-field-combined>
+                              <yaql-field-combined></yaql-field-combined>
+                            </div>
+                          </div>
+                          <div class="section">
+                            <div class="row">
+                              <div class="col-md-10 col-sm-10 col-lg-10">
+                                <h5><a data-toggle="collapse" data-target="#collapse22" id="collapse22Link" href="#">
+                                  On success</a></h5>
+                              </div>
+                              <div class="col-md-2 col-sm-2 col-lg-2">
+                                <button class="btn btn-default btn-sm pull-right"><i class="fa fa-plus"></i></button>
+                              </div>
+                            </div>
+                            <div id="collapse22" class="collapse in">
+                              <yaql-field-combined></yaql-field-combined>
+                            </div>
+                          </div>
+                          <div class="section">
+                            <div class="row">
+                              <div class="col-md-10 col-sm-10 col-lg-10">
+                                <h5><a data-toggle="collapse" data-target="#collapse23" id="collapse23Link" href="#">
+                                  On complete</a></h5>
+                              </div>
+                              <div class="col-md-2 col-sm-2 col-lg-2">
+                                <button class="btn btn-default btn-sm pull-right"><i class="fa fa-plus"></i></button>
+                              </div>
+                            </div>
+                            <div id="collapse23" class="collapse in">
+                              <yaql-field-combined></yaql-field-combined>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="section">
+                        <div class="row">
+                          <div class="col-md-10 col-sm-10 col-lg-10">
+                            <h5><a data-toggle="collapse" data-target="#collapseNine" id="collapseNineLink" href="#">
+                              Tasks</a></h5>
+                          </div>
+                          <div class="add-btn col-md-2 col-sm-2 col-lg-2">
+                            <button class="btn btn-default btn-sm pull-right"><i class="fa fa-plus"></i></button>
+                          </div>
+                        </div>
+                        <div id="collapseNine" class="collapse in">
+                          <div class="section">
+                            <div class="row">
+                              <div class="col-md-10 col-sm-10 col-lg-10">
+                                <h5><a data-toggle="collapse" data-target="#collapse51" id="collapse51Link" href="#">
+                                  TaskAutoName1</a></h5>
+                              </div>
+                              <div class="add-btn col-md-2 col-sm-2 col-lg-2">
+                                <i class="fa fa-times-circle pull-right"></i>
+                              </div>
+                            </div>
+                            <div id="collapse51" class="collapse in">
+                              <div class="row">
+                                <div class="col-md-5 col-sm-5 col-lg-5">
+                                  <div class="form-group">
+                                    <label for="collapseFourOuputF12">Name</label>
+                                    <input type="text" id="collapseFourOuputF12" class="form-control" value="TaskAutoName1">
+                                  </div>
+                                </div>
+                                <div class="col-md-5 col-sm-5 col-lg-5">
+                                  <div class="form-group">
+                                    <label for="collapseFourOuputF13">Type</label>
+                                    <select id="collapseFourOuputF13" class="form-control">
+                                      <option selected disabled>Action-based</option>
+                                      <option disabled>Workflow-based</option>
+                                    </select>
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="row">
+                                <div class="col-md-5 col-sm-5 col-lg-5">
+                                  <div class="form-group">
+                                    <label for="collapseFourOuputF14">Action</label>
+                                    <select id="collapseFourOuputF14" class="form-control">
+                                      <option selected disabled>Action1</option>
+                                    </select>
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="section">
+                                <div class="row">
+                                  <div class="col-md-10 col-sm-10 col-lg-10">
+                                    <h5><a data-toggle="collapse" data-target="#collapseTen" id="collapseTenLink" href="#">
+                                      Input</a></h5>
+                                  </div>
+                                  <div class="add-btn col-md-2 col-sm-2 col-lg-2">
+                                    <button class="btn btn-default btn-sm pull-right"><i class="fa fa-plus"></i></button>
+                                  </div>
+                                </div>
+                                <div id="collapseTen" class="collapse in">
+                                  <div class="section">
+                                    <div class="row">
+                                      <div class="second-column col-md-5 col-sm-5 col-lg-5">
+                                        <div class="form-group">
+                                          <label for="collapseFourOuputF15">
+                                            <editable value="Key1" label="New Name"></editable>
+                                          </label>
+                                          <div class="input-group" id="collapseFourOuputF15">
+                                            <input type="text" class="form-control">
+                                            <i class="fa fa-minus-circle input-group-addon"></i>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="section">
+                                <div class="row">
+                                  <div class="col-md-10 col-sm-10 col-lg-10">
+                                    <h5><a data-toggle="collapse" data-target="#collapseEleven" id="collapseElevenLink" href="#">
+                                      Publish</a></h5>
+                                  </div>
+                                  <div class="add-btn col-md-2 col-sm-2 col-lg-2">
+                                    <button class="btn btn-default btn-sm pull-right"><i class="fa fa-plus"></i></button>
+                                  </div>
+                                </div>
+                                <div id="collapseEleven" class="collapse in">
+                                  <div class="section">
+                                    <div class="row">
+                                      <div class="second-column col-md-5 col-sm-5 col-lg-5">
+                                        <div class="form-group">
+                                          <label for="collapseFourOuputF16">
+                                            <editable value="Key1" label="New Name"></editable>
+                                          </label>
+                                          <div class="input-group" id="collapseFourOuputF16">
+                                            <input type="text" class="form-control">
+                                            <i class="fa fa-minus-circle input-group-addon"></i>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="section">
+                                <div class="row">
+                                  <div class="col-md-10 col-sm-10 col-lg-10">
+                                    <h5><a data-toggle="collapse" data-target="#collapse24" id="collapse24Link" href="#">
+                                      On error</a></h5>
+                                  </div>
+                                  <div class="col-md-2 col-sm-2 col-lg-2">
+                                    <button class="btn btn-default btn-sm pull-right"><i class="fa fa-plus"></i></button>
+                                  </div>
+                                </div>
+                                <div id="collapse24" class="collapse in">
+                                  <yaql-field-combined></yaql-field-combined>
+                                </div>
+                              </div>
+                              <div class="section">
+                                <div class="row">
+                                  <div class="col-md-10 col-sm-10 col-lg-10">
+                                    <h5><a data-toggle="collapse" data-target="#collapse25" id="collapse25Link" href="#">
+                                      On success</a></h5>
+                                  </div>
+                                  <div class="col-md-2 col-sm-2 col-lg-2">
+                                    <button class="btn btn-default btn-sm pull-right"><i class="fa fa-plus"></i></button>
+                                  </div>
+                                </div>
+                                <div id="collapse25" class="collapse in">
+                                  <yaql-field-combined></yaql-field-combined>
+                                </div>
+                              </div>
+                              <div class="section">
+                                <div class="row">
+                                  <div class="col-md-10 col-sm-10 col-lg-10">
+                                    <h5><a data-toggle="collapse" data-target="#collapse26" id="collapse26Link" href="#">
+                                      On complete</a></h5>
+                                  </div>
+                                  <div class="col-md-2 col-sm-2 col-lg-2">
+                                    <button class="btn btn-default btn-sm pull-right"><i class="fa fa-plus"></i></button>
+                                  </div>
+                                </div>
+                                <div id="collapse26" class="collapse in">
+                                  <yaql-field-combined></yaql-field-combined>
+                                </div>
+                              </div>
+                              <div class="section">
+                                <div class="row">
+                                  <div class="col-md-10 col-sm-10 col-lg-10">
+                                    <h5><a data-toggle="collapse" data-target="#collapseTwelve" id="collapseTwelveLink" href="#">
+                                      Policies</a></h5>
+                                  </div>
+                                </div>
+                                <div id="collapseTwelve" class="collapse in">
+                                  <div class="row">
+                                    <div class="col-md-6 col-sm-6 col-lg-6">
+                                      <div class="form-group">
+                                        <label for="waitBefore">Wait before</label>
+                                        <input type="number" class="form-control" id="waitBefore">
+                                      </div>
+                                    </div>
+                                    <div class="col-md-6 col-sm-6 col-lg-6">
+                                      <div class="form-group">
+                                        <label for="waitAfter">Wait after</label>
+                                        <input type="number" class="form-control" id="waitAfter">
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div class="row">
+                                    <div class="col-md-6 col-sm-6 col-lg-6">
+                                      <div class="form-group">
+                                        <label for="timeout">Timeout</label>
+                                        <input type="number" class="form-control" id="timeout">
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div class="row">
+                                    <div class="col-md-6 col-sm-6 col-lg-6">
+                                      <div class="form-group">
+                                        <label for="retryCount">Retry count</label>
+                                        <input type="number" class="form-control" id="retryCount">
+                                      </div>
+                                    </div>
+                                    <div class="col-md-6 col-sm-6 col-lg-6">
+                                      <div class="form-group">
+                                        <label for="retryDelay">Retry delay</label>
+                                        <input type="number" class="form-control" id="retryDelay">
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div class="row">
+                                    <div class="col-md-6 col-sm-6 col-lg-6">
+                                      <div class="form-group">
+                                        <label for="retryBreakOn">Retry break on</label>
+                                        <input type="text" class="form-control" id="retryBreakOn">
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </collapsible-panel>
                   </div>
                 </div>
               </div>

@@ -1,0 +1,11 @@
+<div class="panel panel-default merlin-panel">
+  <div class="panel-heading">
+    <h4 class="panel-title">
+      <a data-toggle="collapse" data-target="#{$ panelId $}" href="#">{$ panelTitle $}</a>
+      <i ng-show="removable" class="fa fa-times-circle pull-right"></i></h4>
+  </div>
+  <div id="{$ panelId $}" class="panel-collapse collapse in">
+    <div class="panel-body" ng-transclude>
+    </div>
+  </div>
+</div>

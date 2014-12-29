@@ -52,4 +52,26 @@
       }
     })
 
+    .directive('action', function() {
+      return {
+        restrict: 'E',
+        scope: {}
+      }
+    })
+
+    .directive('collapsiblePanel', function($parse, idGenerator) {
+      return {
+        restrict: 'E',
+        templateUrl: '/static/mistral/js/angular-templates/collapsible-panel.html',
+        transclude: true,
+        scope: {
+          panelTitle: '@',
+          removable: '='
+        },
+        link: function(scope) {
+          scope.panelId = idGenerator();
+        }
+      }
+    })
+
 })();
