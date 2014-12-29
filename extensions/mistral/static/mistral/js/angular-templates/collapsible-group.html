@@ -1,0 +1,15 @@
+<div class="section">
+  <div class="row">
+    <div class="col-md-10 col-sm-10 col-lg-10">
+      <h5><a data-toggle="collapse" data-target="#{$ groupId $}" href="#">{$ groupTitle $}</a></h5>
+    </div>
+    <div ng-show="additive" class="add-btn col-md-2 col-sm-2 col-lg-2">
+      <button class="btn btn-default btn-sm pull-right"><i class="fa fa-plus"></i></button>
+    </div>
+    <div ng-show="removable" class="add-btn col-md-2 col-sm-2 col-lg-2">
+      <i class="fa fa-times-circle pull-right"></i>
+    </div>
+  </div>
+  <div id="{$ groupId $}" class="collapse in" ng-transclude>
+  </div>
+</div>

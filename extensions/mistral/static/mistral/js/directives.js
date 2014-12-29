@@ -3,6 +3,14 @@
  */
 
 (function() {
+  function disableClickDefaultBehaviour(element) {
+    angular.element(element).find('a[data-toggle="collapse"]')
+      .on('click', function(e) {
+        e.preventDefault();
+        return true;
+      });
+  }
+
   angular.module('hz')
 
     .directive('editable', function() {
@@ -59,17 +67,46 @@
       }
     })
 
-    .directive('collapsiblePanel', function($parse, idGenerator) {
+    .directive('collapsiblePanel', function($parse, idGenerator, defaultSetter) {
       return {
         restrict: 'E',
         templateUrl: '/static/mistral/js/angular-templates/collapsible-panel.html',
         transclude: true,
         scope: {
           panelTitle: '@',
-          removable: '='
+          removable: '@'
         },
-        link: function(scope) {
-          scope.panelId = idGenerator();
+        compile: function(element, attrs) {
+          defaultSetter(attrs, 'removable', false);
+          return {
+            post: function(scope, element) {
+              scope.panelId = idGenerator();
+              disableClickDefaultBehaviour(element);
+            }
+          }
+        }
+      }
+    })
+
+    .directive('collapsibleGroup', function($parse, idGenerator, defaultSetter) {
+      return {
+        restrict: 'E',
+        templateUrl: '/static/mistral/js/angular-templates/collapsible-group.html',
+        transclude: true,
+        scope: {
+          groupTitle: '@',
+          additive: '@',
+          removable: '@'
+        },
+        compile: function(element, attrs) {
+          defaultSetter(attrs, 'removable', false);
+          defaultSetter(attrs, 'additive', false);
+          return {
+            post: function(scope) {
+              scope.groupId = idGenerator();
+              disableClickDefaultBehaviour(element);
+            }
+          }
         }
       }
     })
