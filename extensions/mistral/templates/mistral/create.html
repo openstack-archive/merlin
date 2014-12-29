@@ -19,20 +19,6 @@
       return true;
     });
 
-    $('span.yaql-condition').on('click', function(e) {
-      var $elt = $(this),
-              $inputColumn = $elt.closest('div.row').children(':first-child'),
-              $input;
-
-      $elt.hide();
-      $input = $inputColumn.show().find('textarea');
-      $input.focus().on('blur', function() {
-        $inputColumn.hide();
-        $elt.toggleClass('fa-lock', $input.val() !== '');
-        $elt.toggleClass('fa-unlock', $input.val() === '');
-        $elt.show();
-      });
-    });
   });
 </script>
 
@@ -380,38 +366,8 @@
                                 </div>
                               </div>
                               <div id="collapse21" class="collapse in">
-                                <div class="row">
-                                  <div class="col-md-5 col-sm-5 col-lg-5" style="display:none">
-                                    <div class="form-group">
-                                      <textarea class="form-control"></textarea>
-                                    </div>
-                                  </div>
-                                  <div class="col-md-5 col-sm-5 col-lg-5">
-                                    <div class="form-group">
-                                      <div class="input-group">
-                                        <span class="input-group-addon yaql-condition fa fa-unlock" role="button"></span>
-                                        <input type="text" class="form-control">
-                                        <span class="input-group-addon fa fa-minus-circle"></span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div class="row">
-                                  <div class="col-md-5 col-sm-5 col-lg-5" style="display:none">
-                                    <div class="form-group">
-                                      <textarea class="form-control"></textarea>
-                                    </div>
-                                  </div>
-                                  <div class="col-md-5 col-sm-5 col-lg-5">
-                                    <div class="form-group">
-                                      <div class="input-group">
-                                        <span class="input-group-addon yaql-condition fa fa-unlock" role="button"></span>
-                                        <input type="text" class="form-control">
-                                        <span class="input-group-addon fa fa-minus-circle"></span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
+                                <yaql-field-combined></yaql-field-combined>
+                                <yaql-field-combined></yaql-field-combined>
                               </div>
                             </div>
                             <div class="section">
@@ -425,22 +381,7 @@
                                 </div>
                               </div>
                               <div id="collapse22" class="collapse in">
-                                <div class="row">
-                                  <div class="col-md-5 col-sm-5 col-lg-5" style="display:none">
-                                    <div class="form-group">
-                                      <textarea class="form-control"></textarea>
-                                    </div>
-                                  </div>
-                                  <div class="col-md-5 col-sm-5 col-lg-5">
-                                    <div class="form-group">
-                                      <div class="input-group">
-                                        <span class="input-group-addon yaql-condition fa fa-unlock" role="button"></span>
-                                        <input type="text" class="form-control">
-                                        <span class="input-group-addon fa fa-minus-circle"></span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
+                                <yaql-field-combined></yaql-field-combined>
                               </div>
                             </div>
                             <div class="section">
@@ -454,22 +395,7 @@
                                 </div>
                               </div>
                               <div id="collapse23" class="collapse in">
-                                <div class="row">
-                                  <div class="col-md-5 col-sm-5 col-lg-5" style="display:none">
-                                    <div class="form-group">
-                                      <textarea class="form-control"></textarea>
-                                    </div>
-                                  </div>
-                                  <div class="col-md-5 col-sm-5 col-lg-5">
-                                    <div class="form-group">
-                                      <div class="input-group">
-                                        <span class="input-group-addon yaql-condition fa fa-unlock" role="button"></span>
-                                        <input type="text" class="form-control">
-                                        <span class="input-group-addon fa fa-minus-circle"></span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
+                                <yaql-field-combined></yaql-field-combined>
                               </div>
                             </div>
                           </div>
@@ -590,22 +516,7 @@
                                     </div>
                                   </div>
                                   <div id="collapse24" class="collapse in">
-                                    <div class="row">
-                                      <div class="col-md-5 col-sm-5 col-lg-5" style="display:none">
-                                        <div class="form-group">
-                                          <textarea class="form-control"></textarea>
-                                        </div>
-                                      </div>
-                                      <div class="col-md-5 col-sm-5 col-lg-5">
-                                        <div class="form-group">
-                                          <div class="input-group">
-                                            <span class="input-group-addon yaql-condition fa fa-unlock" role="button"></span>
-                                            <input type="text" class="form-control">
-                                            <span class="input-group-addon fa fa-minus-circle"></span>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
+                                    <yaql-field-combined></yaql-field-combined>
                                   </div>
                                 </div>
                                 <div class="section">
@@ -619,22 +530,7 @@
                                     </div>
                                   </div>
                                   <div id="collapse25" class="collapse in">
-                                    <div class="row">
-                                      <div class="col-md-5 col-sm-5 col-lg-5" style="display:none">
-                                        <div class="form-group">
-                                          <textarea class="form-control"></textarea>
-                                        </div>
-                                      </div>
-                                      <div class="col-md-5 col-sm-5 col-lg-5">
-                                        <div class="form-group">
-                                          <div class="input-group">
-                                            <span class="input-group-addon yaql-condition fa fa-unlock" role="button"></span>
-                                            <input type="text" class="form-control">
-                                            <span class="input-group-addon fa fa-minus-circle"></span>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
+                                    <yaql-field-combined></yaql-field-combined>
                                   </div>
                                 </div>
                                 <div class="section">
@@ -648,22 +544,7 @@
                                     </div>
                                   </div>
                                   <div id="collapse26" class="collapse in">
-                                    <div class="row">
-                                      <div class="col-md-5 col-sm-5 col-lg-5" style="display:none">
-                                        <div class="form-group">
-                                          <textarea class="form-control"></textarea>
-                                        </div>
-                                      </div>
-                                      <div class="col-md-5 col-sm-5 col-lg-5">
-                                        <div class="form-group">
-                                          <div class="input-group">
-                                            <span class="input-group-addon yaql-condition fa fa-unlock" role="button"></span>
-                                            <input type="text" class="form-control">
-                                            <span class="input-group-addon fa fa-minus-circle"></span>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
+                                    <yaql-field-combined></yaql-field-combined>
                                   </div>
                                 </div>
                                 <div class="section">
