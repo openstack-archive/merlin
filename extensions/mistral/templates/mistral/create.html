@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% load i18n %}
 {% load url from future %}
+{% load static %}
 {% block title %}{% trans "Create Workbook" %}{% endblock %}
 
 {% block page_header %}
@@ -8,6 +9,35 @@
 {% endblock page_header %}
 
   {% include "_stylesheets.html" %}
+
+{% block js %}
+{% include "horizon/_scripts.html" %}
+<script type="text/javascript">
+  $(function() {
+    $('a[data-toggle="collapse"]').on('click', function(e) {
+      e.preventDefault();
+      return true;
+    });
+
+    $('span.yaql-condition').on('click', function(e) {
+      var $elt = $(this),
+              $inputColumn = $elt.closest('div.row').children(':first-child'),
+              $input;
+
+      $elt.hide();
+      $input = $inputColumn.show().find('textarea');
+      $input.focus().on('blur', function() {
+        $inputColumn.hide();
+        $elt.toggleClass('fa-lock', $input.val() !== '');
+        $elt.toggleClass('fa-unlock', $input.val() === '');
+        $elt.show();
+      });
+    });
+  });
+</script>
+
+  <script type="text/javascript" src="{{ STATIC_URL }}mistral/js/directives.js"></script>
+{% endblock %}
 
 {% block css %}
   {% include "_stylesheets.html" %}
@@ -47,25 +77,18 @@
                 <div class="col-md-12 col-sm-12 col-lg-12">
                   <!-- root-level parameters -->
                   <div class="panel panel-default merlin-panel" id="panel0">
-                    <div class="panel-heading">
-                      <h4 class="panel-title">
-                        <a data-toggle="collapse" data-target="#collapseZero" href="#">
-                          Base Parameters</a></h4>
-                    </div>
-                    <div id="collapseZero" class="panel-collapse collapse in">
-                      <div class="panel-body">
-                        <div class="row">
-                          <div class="col-md-6 col-sm-6 col-lg-6">
-                            <div class="form-group">
-                              <label for="workbookName">Name</label>
-                              <input type="text" class="form-control" id="workbookName" placeholder="Workbook1">
-                            </div>
+                    <div class="panel-body">
+                      <div class="row">
+                        <div class="col-md-6 col-sm-6 col-lg-6">
+                          <div class="form-group">
+                            <label for="workbookName">Name</label>
+                            <input type="text" class="form-control" id="workbookName" placeholder="Workbook1">
                           </div>
-                          <div class="col-md-6 col-sm-6 col-lg-6">
-                            <div class="form-group">
-                              <label for="workbookDesc">Description</label>
-                              <textarea class="form-control" id="workbookDesc" placeholder="Type a description here"></textarea>
-                            </div>
+                        </div>
+                        <div class="col-md-6 col-sm-6 col-lg-6">
+                          <div class="form-group">
+                            <label for="workbookDesc">Description</label>
+                            <textarea class="form-control" id="workbookDesc" placeholder="Type a description here"></textarea>
                           </div>
                         </div>
                       </div>
@@ -185,13 +208,10 @@
                                 </div>
                                 <div class="second-column col-md-5 col-sm-5 col-lg-5">
                                   <div class="form-group">
-                                    <label for="collapseFourOuputF3">Key1
-                                      <a href="#" data-toggle="popover" data-trigger="click"
-                                         data-container="body" data-content="<label>New Name</label>
-                                       <input type='text' class='form-control' value='Key1'>
-                                       <button class='btn btn-default btn-sm cancel'>Cancel</button>
-                                       <button class='btn btn-primary btn-sm'>Save</button>">
-                                        <i class="fa fa-pencil"></i></a></label>
+
+                                    <label for="collapseFourOuputF3">
+                                      <editable value="Key1" label="New Name"></editable>
+                                    </label>
                                     <div class="input-group" id="collapseFourOuputF3">
                                       <input type="text" class="form-control">
                                       <i class="fa fa-minus-circle input-group-addon"></i>
@@ -203,13 +223,9 @@
                                 <div class="col-md-5 col-sm-5 col-lg-5"></div>
                                 <div class="second-column col-md-5 col-sm-5 col-lg-5">
                                   <div class="form-group">
-                                    <label for="collapseFourOuputF4">Key2
-                                      <a href="#" data-toggle="popover" data-trigger="click"
-                                         data-container="body" data-content="<label>New Name</label>
-                                       <input type='text' class='form-control' value='Key2'>
-                                       <button class='btn btn-default btn-sm cancel'>Cancel</button>
-                                       <button class='btn btn-primary btn-sm'>Save</button>">
-                                        <i class="fa fa-pencil"></i></a></label>
+                                    <label for="collapseFourOuputF4">
+                                      <editable value="Key2" label="New Name"></editable>
+                                    </label>
                                     <div class="input-group" id="collapseFourOuputF4">
                                       <input type="text" class="form-control">
                                       <i class="fa fa-minus-circle input-group-addon"></i>
@@ -522,13 +538,9 @@
                                       <div class="row">
                                         <div class="second-column col-md-5 col-sm-5 col-lg-5">
                                           <div class="form-group">
-                                            <label for="collapseFourOuputF15">Key1
-                                              <a href="#" data-toggle="popover" data-trigger="click"
-                                                 data-container="body" data-content="<label>New Name</label>
-                                       <input type='text' class='form-control' value='Key1'>
-                                       <button class='btn btn-default btn-sm cancel'>Cancel</button>
-                                       <button class='btn btn-primary btn-sm'>Save</button>">
-                                                <i class="fa fa-pencil"></i></a></label>
+                                            <label for="collapseFourOuputF15">
+                                              <editable value="Key1" label="New Name"></editable>
+                                            </label>
                                             <div class="input-group" id="collapseFourOuputF15">
                                               <input type="text" class="form-control">
                                               <i class="fa fa-minus-circle input-group-addon"></i>
@@ -554,13 +566,9 @@
                                       <div class="row">
                                         <div class="second-column col-md-5 col-sm-5 col-lg-5">
                                           <div class="form-group">
-                                            <label for="collapseFourOuputF16">Key1
-                                              <a href="#" data-toggle="popover" data-trigger="click"
-                                                 data-container="body" data-content="<label>New Name</label>
-                                       <input type='text' class='form-control' value='Key1'>
-                                       <button class='btn btn-default btn-sm cancel'>Cancel</button>
-                                       <button class='btn btn-primary btn-sm'>Save</button>">
-                                                <i class="fa fa-pencil"></i></a></label>
+                                            <label for="collapseFourOuputF16">
+                                              <editable value="Key1" label="New Name"></editable>
+                                            </label>
                                             <div class="input-group" id="collapseFourOuputF16">
                                               <input type="text" class="form-control">
                                               <i class="fa fa-minus-circle input-group-addon"></i>
@@ -748,34 +756,4 @@ description:                  </pre>
       </div>
     </div>
   </div>
-{% endblock %}
-{% block js %}
-{% include "horizon/_scripts.html" %}
-<script type="text/javascript">
-  $(function() {
-    $('a[data-toggle="popover"]').popover({html: true}).on('click', function(e) {
-      e.preventDefault();
-      return true;
-    });
-    $('a[data-toggle="collapse"]').on('click', function(e) {
-      e.preventDefault();
-      return true;
-    });
-
-    $('span.yaql-condition').on('click', function(e) {
-      var $elt = $(this),
-          $inputColumn = $elt.closest('div.row').children(':first-child'),
-          $input;
-
-      $elt.hide();
-      $input = $inputColumn.show().find('textarea');
-      $input.focus().on('blur', function() {
-        $inputColumn.hide();
-        $elt.toggleClass('fa-lock', $input.val() !== '');
-        $elt.toggleClass('fa-unlock', $input.val() === '');
-        $elt.show();
-      });
-    });
-  });
-</script>
 {% endblock %}
