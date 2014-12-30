@@ -44,7 +44,7 @@
           angular.element(element).find('span.yaql-condition')
             .on('click', function() {
               var $elt = $(this),
-                $inputColumn = $elt.closest('div.row').children(':first-child'),
+                $inputColumn = $elt.closest('.three-columns').children(':first-child'),
                 $input;
 
               $elt.hide();
@@ -102,7 +102,7 @@
           defaultSetter(attrs, 'removable', false);
           defaultSetter(attrs, 'additive', false);
           return {
-            post: function(scope) {
+            post: function(scope, element) {
               scope.groupId = idGenerator();
               disableClickDefaultBehaviour(element);
             }
