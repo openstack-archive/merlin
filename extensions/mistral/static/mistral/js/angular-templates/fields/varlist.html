@@ -1,0 +1,96 @@
+<collapsible-group title="{$ title || makeTitle(name) $}" additive="true">
+  <div class="three-columns" ng-repeat="item in item[name]" ng-class="{dictionary: item.type == 'dictionary', list: item.type == 'list'}">
+    <div class="left-column">
+      <div class="form-group">
+        <label for="elem-{$ $id $}.$index">Key Type</label>
+        <select id="elem-{$ $id $}.$index" class="form-control" ng-model="item.type">
+          <option ng-repeat="value in ['string', 'list', 'dictionary']"
+                  value="{$ value $}" ng-selected="item.type == value">{$ makeTitle(value) $}</option>
+        </select>
+      </div>
+    </div>
+    <div ng-switch="item.type">
+      <!-- draw string input -->
+      <div class="right-column" ng-switch-when="string">
+        <div class="form-group">
+          <label>&nbsp;</label>
+          <input type="text" class="form-control" ng-model="item.value">
+        </div>
+      </div>
+      <!-- END: draw string input -->
+      <!-- draw dictionary inputs -->
+      <div ng-switch-when="dictionary">
+        <div ng-repeat="(key, value) in item.value">
+          <div ng-hide="$first" class="left-column"></div>
+          <div class="right-column">
+            <div class="form-group">
+              <label for="elem-{$ $id $}.{$ key $}">
+                <editable value="key" label="New Name"></editable>
+              </label>
+              <div class="input-group">
+                <input type="text" id="elem-{$ $id $}.{$ key $}" class="form-control" ng-model="value">
+                <i class="fa fa-minus-circle input-group-addon"></i>
+              </div>
+            </div>
+          </div>
+          <div ng-hide="$last" class="clearfix"></div>
+          <div ng-show="$last" class="add-btn button-column">
+            <button class="btn btn-default btn-sm pull-right"><i class="fa fa-plus"></i></button>
+          </div>
+        </div>
+        <!-- if no element yet exist in dictionary -->
+        <div ng-show="item.value | isEmpty" ng-controller="dictionaryCtrl">
+          <div class="right-column">
+            <div class="form-group">
+              <label for="elem-{$ $id $}.key1">
+                <editable value="key" label="New Name"></editable>
+              </label>
+              <div class="input-group">
+                <input type="text" id="elem-{$ $id $}.key1" class="form-control" ng-model="value">
+                <i class="fa fa-minus-circle input-group-addon"></i>
+              </div>
+            </div>
+          </div>
+          <div class="add-btn button-column">
+            <button class="btn btn-default btn-sm pull-right"><i class="fa fa-plus"></i></button>
+          </div>
+        </div>
+        <!-- END: if no element yet exist in dictionary -->
+      </div>
+      <!-- END: draw dictionary inputs -->
+      <!-- draw list inputs -->
+      <div ng-switch-when="list">
+        <div ng-repeat="value in item.value track by $index">
+          <div ng-hide="$first" class="left-column"></div>
+          <div class="right-column">
+            <label ng-show="$first">&nbsp;</label>
+            <div class="input-group">
+              <input type="text" class="form-control" ng-model="value">
+              <i class="fa fa-minus-circle input-group-addon"></i>
+            </div>
+          </div>
+          <div ng-hide="$last" class="clearfix"></div>
+          <div ng-show="$last" class="add-btn button-column">
+            <button class="btn btn-default btn-sm pull-right"><i class="fa fa-plus"></i></button>
+          </div>
+        </div>
+        <!-- if no element yet exist in list -->
+        <div ng-show="item.value | isEmpty" ng-controller="listCtrl">
+          <div class="left-column"></div>
+          <div class="right-column">
+            <label>&nbsp;</label>
+            <div class="input-group">
+              <input type="text" class="form-control" ng-model="item.value[0]">
+              <i class="fa fa-minus-circle input-group-addon"></i>
+            </div>
+          </div>
+          <div class="add-btn button-column">
+            <button class="btn btn-default btn-sm pull-right"><i class="fa fa-plus"></i></button>
+          </div>
+        </div>
+        <!-- END: if no element yet exist in list -->
+      </div>
+      <!-- END: draw list inputs -->
+    </div>
+  </div>
+</collapsible-group>

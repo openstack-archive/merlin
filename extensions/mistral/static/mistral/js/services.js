@@ -4,13 +4,6 @@
 
 (function() {
   angular.module('hz')
-    .factory('idGenerator', function() {
-      var id = 0;
-      return function() {
-        id++;
-        return 'elem-id-'+id;
-      };
-    })
 
     .factory('defaultSetter', function($parse) {
       return function(attrs, attrName, defaultValue) {
@@ -20,6 +13,36 @@
           attrs[attrName] = $parse(attrs[attrName])();
         }
       }
-    });
+    })
+
+    .value('isAtomic', function(type) {
+      return ['string'].indexOf(type) > -1;
+    })
+
+    .value('schema', {
+        action: [{
+          name: 'name',
+          type: 'string',
+          group: 'one'
+        }, {
+          name: 'base',
+          type: 'string',
+          group: 'one'
+        }, {
+          name: 'baseInput',
+          title: 'Base Input',
+          type: 'frozendict',
+          group: ''
+        }, {
+          name: 'input',
+          type: 'list',
+          group: ''
+        }, {
+          name: 'output',
+          type: 'varlist',
+          group: ''
+        }
+        ]
+      })
 
 })();
