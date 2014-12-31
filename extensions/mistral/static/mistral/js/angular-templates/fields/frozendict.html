@@ -1,0 +1,10 @@
+<collapsible-group title="{$ spec.title || makeTitle(spec.name) $}" additive="false">
+  <div class="three-columns">
+    <div class="left-column">
+      <div class="form-group" ng-repeat="(key, item) in item[spec.name]">
+        <label for="{$ id $}.{$ key $}">{$ item.title || makeTitle(item.name) $}</label>
+        <input type="text" class="form-control" id="{$ id $}.{$ key $}" ng-model="item.value">
+      </div>
+    </div>
+  </div>
+</collapsible-group>

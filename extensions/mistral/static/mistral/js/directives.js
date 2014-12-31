@@ -19,7 +19,7 @@
         templateUrl: '/static/mistral/js/angular-templates/editable-popup.html',
         scope: {
           label: '@',
-          value: '@'
+          value: '='
         },
         link: function(scope, element) {
           angular.element(element).find('a[data-toggle="popover"]')
@@ -73,14 +73,14 @@
         templateUrl: '/static/mistral/js/angular-templates/collapsible-panel.html',
         transclude: true,
         scope: {
-          panelTitle: '@',
+          title: '@',
           removable: '@'
         },
         compile: function(element, attrs) {
           defaultSetter(attrs, 'removable', false);
           return {
-            post: function(scope, element) {
-              scope.panelId = idGenerator();
+            post: function(scope, element, attrs) {
+              scope.id = idGenerator();
               disableClickDefaultBehaviour(element);
             }
           }
@@ -94,7 +94,7 @@
         templateUrl: '/static/mistral/js/angular-templates/collapsible-group.html',
         transclude: true,
         scope: {
-          groupTitle: '@',
+          title: '@',
           additive: '@',
           removable: '@'
         },
@@ -103,12 +103,28 @@
           defaultSetter(attrs, 'additive', false);
           return {
             post: function(scope, element) {
-              scope.groupId = idGenerator();
+              scope.id = idGenerator();
               disableClickDefaultBehaviour(element);
             }
           }
         }
       }
     })
+
+    .directive('typedField', function($http, $templateCache, $compile, idGenerator) {
+      return {
+        restrict: 'E',
+        scope: true,
+        link: function(scope, element, attrs) {
+          scope.id = idGenerator();
+          $http.get(
+            '/static/mistral/js/angular-templates/fields/' + scope.spec.type + '.html',
+            {cache: $templateCache}).success(function(templateContent) {
+              element.replaceWith($compile(templateContent)(scope));
+            });
+        }
+      }
+    })
+
 
 })();
