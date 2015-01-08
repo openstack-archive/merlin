@@ -1,10 +1,10 @@
-<collapsible-group title="{$ spec.title || makeTitle(spec.name) $}" additive="true">
+<collapsible-group title="{$ spec.title || makeTitle(spec.name) $}" on-add="add(item[spec.name], {type: 'string', value: '', id: 'varlist'+item[spec.name].length})">
   <div class="three-columns" ng-repeat="subItem in item[spec.name] track by subItem.id"
        ng-class="{dictionary: subItem.type == 'dictionary', list: subItem.type == 'list'}">
     <div class="left-column">
       <div class="form-group">
         <label for="elem-{$ $id $}.$index">Key Type</label>
-        <select id="elem-{$ $id $}.$index" class="form-control">
+        <select id="elem-{$ $id $}.$index" class="form-control" ng-model="subItem.type">
           <option ng-repeat="value in ['string', 'list', 'dictionary']"
                   value="{$ value $}" ng-selected="subItem.type == value">{$ makeTitle(value) $}</option>
         </select>
@@ -15,12 +15,19 @@
       <div class="right-column" ng-switch-when="string">
         <div class="form-group">
           <label>&nbsp;</label>
-          <input type="text" class="form-control" ng-model="subItem.value">
+          <div class="input-group">
+            <input type="text" class="form-control" ng-model="subItem.value">
+            <span class="input-group-btn">
+              <button class="btn btn-default" ng-click="remove(item[spec.name], subItem)">
+                <i class="fa fa-minus-circle"></i>
+              </button>
+            </span>
+          </div>
         </div>
       </div>
       <!-- END: draw string input -->
       <!-- draw dictionary inputs -->
-      <div ng-switch-when="dictionary">
+      <div ng-switch-when="dictionary" ng-controller="dictionaryCtrl">
         <div ng-repeat="(key, value) in subItem.value track by key">
           <div ng-hide="$first" class="left-column"></div>
           <div class="right-column">
@@ -29,32 +36,46 @@
                 <editable value="key" label="New Name"></editable>
               </label>
               <div class="input-group">
-                <input id="elem-{$ $id $}.{$ key $}" type="text" class="form-control" ng-model="value">
-                <i class="fa fa-minus-circle input-group-addon"></i>
+                <input type="text" id="elem-{$ $id $}.{$ key $}" class="form-control" ng-model="value">
+                <span class="input-group-btn">
+                  <button class="btn btn-default" ng-click="removeKey(subItem.value, key) || remove(item[spec.name], subItem)">
+                    <i class="fa fa-minus-circle"></i>
+                  </button>
+                </span>
               </div>
             </div>
           </div>
           <div ng-hide="$last" class="clearfix"></div>
           <div ng-show="$last" class="add-btn button-column">
-            <button class="btn btn-default btn-sm pull-right"><i class="fa fa-plus"></i></button>
+            <button class="btn btn-default btn-sm pull-right" ng-click="addAutoKey(subItem.value)">
+              <i class="fa fa-plus"></i>
+            </button>
           </div>
         </div>
       </div>
       <!-- END: draw dictionary inputs -->
       <!-- draw list inputs -->
-      <div ng-switch-when="list">
+      <div ng-switch-when="list" ng-controller="listCtrl">
         <div ng-repeat="value in subItem.value track by $index">
           <div ng-hide="$first" class="left-column"></div>
           <div class="right-column">
-            <label ng-show="$first">&nbsp;</label>
-            <div class="input-group">
-              <input type="text" class="form-control" ng-model="value">
-              <i class="fa fa-minus-circle input-group-addon"></i>
+            <div class="form-group">
+              <label ng-show="$first">&nbsp;</label>
+              <div class="input-group">
+                <input type="text" class="form-control" ng-model="value">
+                <span class="input-group-btn">
+                  <button class="btn btn-default" ng-click="remove(subItem.value, value) || remove(item[spec.name], subItem)">
+                    <i class="fa fa-minus-circle"></i>
+                  </button>
+                </span>
+              </div>
             </div>
           </div>
           <div ng-hide="$last" class="clearfix"></div>
-          <div ng-show="$last" class="add-btn button-column">
-            <button class="btn btn-default btn-sm pull-right"><i class="fa fa-plus"></i></button>
+          <div ng-show="$last" class="add-btn button-column" ng-class="{'varlist-1st-row': !$index}">
+            <button class="btn btn-default btn-sm pull-right" ng-click="add(subItem.value, '')">
+              <i class="fa fa-plus"></i>
+            </button>
           </div>
         </div>
       </div>

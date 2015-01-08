@@ -91,7 +91,7 @@
   }
 }
 
-.fa-minus-circle.input-group-addon {
+.fa-minus-circle {
   color: red;
 }
 
@@ -119,6 +119,9 @@
 
 .list .add-btn {
   margin-top: 2px;
+  &.varlist-1st-row {
+    margin-top: 26px;
+  }
 }
 
 .right-column .form-group {
