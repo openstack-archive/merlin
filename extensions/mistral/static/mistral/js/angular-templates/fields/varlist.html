@@ -3,8 +3,8 @@
        ng-class="{dictionary: subItem.type == 'dictionary', list: subItem.type == 'list'}">
     <div class="left-column">
       <div class="form-group">
-        <label for="{$ id $}.$index">Key Type</label>
-        <select id="{$ id $}.$index" class="form-control" ng-model="subItem.type">
+        <label for="elem-{$ $id $}.$index">Key Type</label>
+        <select id="elem-{$ $id $}.$index" class="form-control">
           <option ng-repeat="value in ['string', 'list', 'dictionary']"
                   value="{$ value $}" ng-selected="subItem.type == value">{$ makeTitle(value) $}</option>
         </select>
@@ -25,11 +25,11 @@
           <div ng-hide="$first" class="left-column"></div>
           <div class="right-column">
             <div class="form-group">
-              <label for="{$ id $}.{$ key $}">
+              <label for="elem-{$ $id $}.{$ key $}">
                 <editable value="key" label="New Name"></editable>
               </label>
               <div class="input-group">
-                <input type="text" class="form-control" ng-model="value">
+                <input id="elem-{$ $id $}.{$ key $}" type="text" class="form-control" ng-model="value">
                 <i class="fa fa-minus-circle input-group-addon"></i>
               </div>
             </div>

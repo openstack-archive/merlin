@@ -1,11 +1,11 @@
 <div class="three-columns" ng-repeat="(key, value) in item[spec.name] track by key">
   <div class="left-column">
     <div class="form-group">
-      <label for="{$ id $}.{$ key $}">
+      <label for="elem-{$ $id $}.{$ key $}">
         <editable value="key" label="New Name"></editable>
       </label>
       <div class="input-group">
-        <input type="text" class="form-control" ng-model="value">
+        <input id="elem-{$ $id $}.{$ key $}" type="text" class="form-control" ng-model="value">
         <i class="fa fa-minus-circle input-group-addon"></i>
       </div>
     </div>

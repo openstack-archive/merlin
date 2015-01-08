@@ -4,13 +4,6 @@
 
 (function() {
   angular.module('hz')
-    .factory('idGenerator', function() {
-      var id = 0;
-      return function() {
-        id++;
-        return 'elem-id-'+id;
-      };
-    })
 
     .factory('defaultSetter', function($parse) {
       return function(attrs, attrName, defaultValue) {

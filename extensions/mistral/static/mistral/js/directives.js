@@ -60,14 +60,7 @@
       }
     })
 
-    .directive('action', function() {
-      return {
-        restrict: 'E',
-        scope: {}
-      }
-    })
-
-    .directive('collapsiblePanel', function($parse, idGenerator, defaultSetter) {
+    .directive('collapsiblePanel', function($parse, defaultSetter) {
       return {
         restrict: 'E',
         templateUrl: '/static/mistral/js/angular-templates/collapsible-panel.html',
@@ -80,7 +73,6 @@
           defaultSetter(attrs, 'removable', false);
           return {
             post: function(scope, element, attrs) {
-              scope.id = idGenerator();
               disableClickDefaultBehaviour(element);
             }
           }
@@ -88,7 +80,7 @@
       }
     })
 
-    .directive('collapsibleGroup', function($parse, idGenerator, defaultSetter) {
+    .directive('collapsibleGroup', function($parse, defaultSetter) {
       return {
         restrict: 'E',
         templateUrl: '/static/mistral/js/angular-templates/collapsible-group.html',
@@ -103,7 +95,6 @@
           defaultSetter(attrs, 'additive', false);
           return {
             post: function(scope, element) {
-              scope.id = idGenerator();
               disableClickDefaultBehaviour(element);
             }
           }
@@ -111,12 +102,11 @@
       }
     })
 
-    .directive('typedField', function($http, $templateCache, $compile, idGenerator) {
+    .directive('typedField', function($http, $templateCache, $compile) {
       return {
         restrict: 'E',
         scope: true,
         link: function(scope, element, attrs) {
-          scope.id = idGenerator();
           $http.get(
             '/static/mistral/js/angular-templates/fields/' + scope.spec.type + '.html',
             {cache: $templateCache}).success(function(templateContent) {
@@ -125,6 +115,5 @@
         }
       }
     })
-
 
 })();

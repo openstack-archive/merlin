@@ -5,9 +5,7 @@
 (function() {
   angular.module('hz')
 
-    .controller('workbookCtrl', function($scope, idGenerator) {
-      $scope.idGenerator = idGenerator;
-
+    .controller('workbookCtrl', function($scope) {
       $scope.data = {
         actions: [{
           id: 'action1',
