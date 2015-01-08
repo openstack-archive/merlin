@@ -36,7 +36,7 @@
           </div>
           <div class="pull-right">
             <div class="table-actions clearfix">
-              <button class="btn btn-default btn-sm"><span class="fa fa-plus">Add Action</span></button>
+              <button ng-click="add('actions')" class="btn btn-default btn-sm"><span class="fa fa-plus">Add Action</span></button>
               <button class="btn btn-default btn-sm"><span class="fa fa-plus">Add Workflow</span></button>
             </div>
           </div>
@@ -71,17 +71,8 @@
             </div>
           </div>
           <!-- Action added -->
-          <collapsible-panel ng-controller="actionCtrl" ng-repeat="item in data.actions" title="{$ item.name $}" removable="true">
+          <collapsible-panel ng-controller="actionCtrl" ng-repeat="item in data.actions" title="{$ item.name $}" removable="remove('actions', item)">
             <action></action>
-{#            <div ng-repeat="specs in schema.action | groupBy: 'group' | toArray | orderBy: 'group'">#}
-{#              <div ng-class="{'three-columns': specs[0].group}">#}
-{#                <div ng-repeat="spec in specs"#}
-{#                     ng-class="{'right-column': $even && isAtomic(spec.type), 'left-column': $odd && isAtomic(spec.type)}">#}
-{#                  <typed-field></typed-field>#}
-{#                  <div class="clearfix" ng-show="$even"></div>#}
-{#                </div>#}
-{#              </div>#}
-{#            </div>#}
           </collapsible-panel>
           <!-- panel with workflow -->
           <div ng-controller="workflowsCtrl">

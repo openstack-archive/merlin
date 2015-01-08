@@ -2,7 +2,7 @@
   <div class="panel-heading">
     <h4 class="panel-title">
       <a data-toggle="collapse" data-target="#elem-{$ $id $}" href="#">{$ title $}</a>
-      <i ng-show="removable" class="fa fa-times-circle pull-right"></i></h4>
+      <a href="#" ng-click="removable()"><i ng-show="removable" class="fa fa-times-circle pull-right"></i></a></h4>
   </div>
   <div id="elem-{$ $id $}" class="panel-collapse collapse in">
     <div class="panel-body" ng-transclude>

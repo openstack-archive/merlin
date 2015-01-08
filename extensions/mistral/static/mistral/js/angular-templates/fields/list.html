@@ -1,10 +1,14 @@
-<collapsible-group title="{$ title || makeTitle(name) $}" additive="true">
+<collapsible-group title="{$ title || makeTitle(name) $}" on-add="add(item[name], '')">
   <div class="three-columns">
     <div class="left-column">
-      <div class="form-group" ng-repeat="item in item[name]">
+      <div class="form-group" ng-repeat="subItem in item[name] track by $index">
         <div class="input-group">
-          <input type="text" class="form-control" ng-model="item">
-          <i class="fa fa-minus-circle input-group-addon"></i>
+          <input type="text" class="form-control" ng-model="subItem">
+          <span class="input-group-btn">
+            <button class="btn btn-default" ng-click="remove(item[name], subItem)">
+              <i class="fa fa-minus-circle"></i>
+            </button>
+          </span>
         </div>
       </div>
     </div>

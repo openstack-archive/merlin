@@ -11,7 +11,7 @@
       });
   }
 
-  function makeFieldDirective(type) {
+  function makeFieldDirective(type, func) {
     return function() {
       return {
         restrict: 'A',
@@ -20,6 +20,9 @@
         link: function (scope, element, attrs) {
           scope.name = attrs.name;
           scope.title = attrs.title;
+          if (func) {
+            func(scope, element, attrs);
+          }
         }
       };
     };
@@ -74,13 +77,6 @@
       }
     })
 
-    .directive('action', function() {
-      return {
-        restrict: 'E',
-        scope: {}
-      }
-    })
-
     .directive('collapsiblePanel', function($parse, defaultSetter) {
       return {
         restrict: 'E',
@@ -88,15 +84,10 @@
         transclude: true,
         scope: {
           title: '@',
-          removable: '@'
+          removable: '&'
         },
-        compile: function(element, attrs) {
-          defaultSetter(attrs, 'removable', false);
-          return {
-            post: function(scope, element, attrs) {
-              disableClickDefaultBehaviour(element);
-            }
-          }
+        link: function(scope, element, attrs) {
+          disableClickDefaultBehaviour(element);
         }
       }
     })
@@ -108,16 +99,16 @@
         transclude: true,
         scope: {
           title: '@',
-          additive: '@',
-          removable: '@'
+          onAdd: '&',
+          onRemove: '&'
         },
-        compile: function(element, attrs) {
-          defaultSetter(attrs, 'removable', false);
-          defaultSetter(attrs, 'additive', false);
-          return {
-            post: function(scope, element) {
-              disableClickDefaultBehaviour(element);
-            }
+        link: function(scope, element, attrs) {
+          disableClickDefaultBehaviour(element);
+          if ( attrs.onAdd ) {
+            scope.additive = true;
+          }
+          if ( attrs.onRemove ) {
+            scope.removable = true;
           }
         }
       }
@@ -152,7 +143,7 @@
                 }
                 elt = $interpolate(
                   '<div class="{$ cls $}">' +
-                  '<div {$ type $}-field="{$ type $}" title="{$ title $}" name="{$ name $}">' +
+                  '<div {$ type $}-field="{$ type $}" title="{$ title $}" name="{$ name $}" item="item">' +
                   '{$ columnsSeparator $}</div></div>'
                 )({
                   cls: cls, type: spec.type, name: spec.name, title: spec.title,
