@@ -67,15 +67,10 @@
         transclude: true,
         scope: {
           title: '@',
-          removable: '@'
+          removable: '&'
         },
-        compile: function(element, attrs) {
-          defaultSetter(attrs, 'removable', false);
-          return {
-            post: function(scope, element, attrs) {
-              disableClickDefaultBehaviour(element);
-            }
-          }
+        link: function(scope, element, attrs) {
+          disableClickDefaultBehaviour(element);
         }
       }
     })
@@ -87,16 +82,16 @@
         transclude: true,
         scope: {
           title: '@',
-          additive: '@',
-          removable: '@'
+          onAdd: '&',
+          onRemove: '&'
         },
-        compile: function(element, attrs) {
-          defaultSetter(attrs, 'removable', false);
-          defaultSetter(attrs, 'additive', false);
-          return {
-            post: function(scope, element) {
-              disableClickDefaultBehaviour(element);
-            }
+        link: function(scope, element, attrs) {
+          disableClickDefaultBehaviour(element);
+          if ( attrs.onAdd ) {
+            scope.additive = true;
+          }
+          if ( attrs.onRemove ) {
+            scope.removable = true;
           }
         }
       }
