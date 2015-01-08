@@ -36,7 +36,7 @@
           </div>
           <div class="pull-right">
             <div class="table-actions clearfix">
-              <button class="btn btn-default btn-sm"><span class="fa fa-plus">Add Action</span></button>
+              <button ng-click="add('actions')" class="btn btn-default btn-sm"><span class="fa fa-plus">Add Action</span></button>
               <button class="btn btn-default btn-sm"><span class="fa fa-plus">Add Workflow</span></button>
             </div>
           </div>
@@ -71,7 +71,7 @@
             </div>
           </div>
           <!-- Action added -->
-          <collapsible-panel ng-controller="actionCtrl" ng-repeat="item in data.actions track by item.id" title="{$ item.name $}" removable="true">
+          <collapsible-panel ng-controller="actionCtrl" ng-repeat="item in data.actions track by item.id" title="{$ item.name $}" removable="remove('actions', item)">
             <div ng-repeat="specs in schema.action | groupBy: 'group' | toArray:true | orderBy: '-$key' track by specs.$key">
               <div ng-class="{'three-columns': specs[0].group}">
                 <div ng-repeat="spec in specs track by spec.name"
