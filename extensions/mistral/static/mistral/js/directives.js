@@ -101,12 +101,9 @@
       return {
         restrict: 'E',
         scope: true,
-        link: function(scope, element, attrs) {
-          $http.get(
-            '/static/mistral/js/angular-templates/fields/' + scope.spec.type + '.html',
-            {cache: $templateCache}).success(function(templateContent) {
-              element.replaceWith($compile(templateContent)(scope));
-            });
+        link: function(scope, element) {
+          var template = $templateCache.get(scope.spec.type);
+          element.replaceWith($compile(template)(scope));
         }
       }
     })
