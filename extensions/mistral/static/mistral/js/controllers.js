@@ -91,6 +91,32 @@
           type: 'varlist',
           group: ''
         }
+        ],
+        workflow: [{
+          name: 'name',
+          type: 'string',
+          group: ''
+        }, {
+          name: 'base',
+          type: 'string',  // FIXME
+          group: ''
+        }, {
+          name: 'input',
+          type: 'list',
+          group: ''
+        }, {
+          name: 'output',
+          type: 'varlist',
+          group: ''
+        }, {
+          name: 'taskDefaults',  // need dict in dict ?
+          type: 'varlist',
+          group: ''
+        }, {
+          name: 'tasks',  // ditto ?
+          type: 'varlist',
+          group: ''
+        }
         ]
       };
 
