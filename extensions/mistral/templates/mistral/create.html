@@ -37,7 +37,7 @@
           <div class="pull-right">
             <div class="table-actions clearfix">
               <button ng-click="add('actions')" class="btn btn-default btn-sm"><span class="fa fa-plus">Add Action</span></button>
-              <button class="btn btn-default btn-sm"><span class="fa fa-plus">Add Workflow</span></button>
+              <button ng-click="add('workflows')" class="btn btn-default btn-sm"><span class="fa fa-plus">Add Workflow</span></button>
             </div>
           </div>
         </div>
@@ -82,193 +82,211 @@
               </div>
             </div>
           </collapsible-panel>
+
+
+
+
           <!-- panel with workflow -->
-          <div ng-controller="workflowsCtrl">
-            <collapsible-panel title="Workflow1" removable="true">
-              <!-- 2 simple inputs in a single row -->
-              <div class="three-columns">
-                <div class="left-column">
-                  <div class="form-group">
-                    <label for="workflow1Name">Name</label>
-                    <input type="text" class="form-control" id="workflow1Name" placeholder="Workflow1">
-                  </div>
-                </div>
-                <div class="right-column">
-                  <div class="form-group">
-                    <label for="workflow1Type">Base</label>
-                    <select class="form-control" id="workflow1Type">
-                      <option selected>Direct</option>
-                      <option>Reverse</option>
-                    </select>
-                  </div>
+
+          <collapsible-panel ng-controller="workflowsCtrl" ng-repeat="item in data.workflows track by item.id" title="{$ item.name $}" removable="remove('workflows', item)">
+            <div ng-repeat="specs in schema.workflow | groupBy: 'group' | toArray:true | orderBy: '-$key' track by specs.$key">
+              <div ng-class="{'three-columns': specs[0].group}">
+                <div ng-repeat="spec in specs track by spec.name"
+                     ng-class="{'right-column': $even && isAtomic(spec.type), 'left-column': $odd && isAtomic(spec.type)}">
+                  <typed-field></typed-field>
+                  <div class="clearfix" ng-show="$even"></div>
                 </div>
               </div>
-              <!-- collapsible keys list section -->
-              <collapsible-group title="Input" additive="true">
-                <div class="three-columns">
-                  <div class="left-column">
-                    <div class="form-group">
-                      <div class="input-group">
-                        <input type="text" class="form-control">
-                        <i class="fa fa-minus-circle input-group-addon"></i>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </collapsible-group>
-              <!-- collapsible section with variable type = string|list|dictionary -->
-              <collapsible-group title="Output" additive="true">
-                <!-- string input type -->
-                <div class="three-columns">
-                  <div class="left-column">
-                    <div class="form-group">
-                      <label for="collapseFourOuputF11">Key Type</label>
-                      <select id="collapseFourOuputF11" class="form-control">
-                        <option selected disabled>String</option>
-                        <option disabled>List</option>
-                        <option disabled>Dictionary</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div class="right-column">
-                    <div class="form-group">
-                      <label>&nbsp;</label>
-                      <input type="text" class="form-control">
-                    </div>
-                  </div>
-                </div>
-              </collapsible-group>
-              <collapsible-group title="Task Defaults" additive="false">
-                <collapsible-group title="On error" additive="true">
-                  <yaql-field-combined></yaql-field-combined>
-                  <yaql-field-combined></yaql-field-combined>
-                </collapsible-group>
-                <collapsible-group title="On success" additive="true">
-                  <yaql-field-combined></yaql-field-combined>
-                </collapsible-group>
-                <collapsible-group title="On complete" additive="true">
-                  <yaql-field-combined></yaql-field-combined>
-                  <yaql-field-combined></yaql-field-combined>
-                </collapsible-group>
-              </collapsible-group>
-              <collapsible-group title="Tasks" additive="true">
-                <collapsible-group title="TaskAutoName1" removable="true">
-                  <div class="three-columns">
-                    <div class="left-column">
-                      <div class="form-group">
-                        <label for="collapseFourOuputF12">Name</label>
-                        <input type="text" id="collapseFourOuputF12" class="form-control" value="TaskAutoName1">
-                      </div>
-                    </div>
-                    <div class="right-column">
-                      <div class="form-group">
-                        <label for="collapseFourOuputF13">Type</label>
-                        <select id="collapseFourOuputF13" class="form-control">
-                          <option selected disabled>Action-based</option>
-                          <option disabled>Workflow-based</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="three-columns">
-                    <div class="left-column">
-                      <div class="form-group">
-                        <label for="collapseFourOuputF14">Action</label>
-                        <select id="collapseFourOuputF14" class="form-control">
-                          <option selected disabled>Action1</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                  <collapsible-group title="Input" additive="true">
-                    <div class="three-columns">
-                      <div class="left-column">
-                        <div class="form-group">
-                          <label for="collapseFourOuputF15">
-                            <editable value="Key1" label="New Name"></editable>
-                          </label>
-                          <div class="input-group" id="collapseFourOuputF15">
-                            <input type="text" class="form-control">
-                            <i class="fa fa-minus-circle input-group-addon"></i>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </collapsible-group>
-                  <collapsible-group title="Publish" additive="true">
-                    <div class="three-columns">
-                      <div class="left-column">
-                        <div class="form-group">
-                          <label for="collapseFourOuputF16">
-                            <editable value="Key1" label="New Name"></editable>
-                          </label>
-                          <div class="input-group" id="collapseFourOuputF16">
-                            <input type="text" class="form-control">
-                            <i class="fa fa-minus-circle input-group-addon"></i>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </collapsible-group>
-                  <collapsible-group title="On error" additive="true">
-                    <yaql-field-combined></yaql-field-combined>
-                  </collapsible-group>
-                  <collapsible-group title="On success" additive="true">
-                    <yaql-field-combined></yaql-field-combined>
-                  </collapsible-group>
-                  <collapsible-group title="On complete" additive="true">
-                    <yaql-field-combined></yaql-field-combined>
-                  </collapsible-group>
-                  <collapsible-group title="Policies">
-                    <div class="two-columns">
-                      <div class="left-column">
-                        <div class="form-group">
-                          <label for="waitBefore">Wait before</label>
-                          <input type="number" class="form-control" id="waitBefore">
-                        </div>
-                      </div>
-                      <div class="right-column">
-                        <div class="form-group">
-                          <label for="waitAfter">Wait after</label>
-                          <input type="number" class="form-control" id="waitAfter">
-                        </div>
-                      </div>
-                    </div>
-                    <div class="two-columns">
-                      <div class="left-column">
-                        <div class="form-group">
-                          <label for="timeout">Timeout</label>
-                          <input type="number" class="form-control" id="timeout">
-                        </div>
-                      </div>
-                    </div>
-                    <div class="two-columns">
-                      <div class="left-column">
-                        <div class="form-group">
-                          <label for="retryCount">Retry count</label>
-                          <input type="number" class="form-control" id="retryCount">
-                        </div>
-                      </div>
-                      <div class="right-column">
-                        <div class="form-group">
-                          <label for="retryDelay">Retry delay</label>
-                          <input type="number" class="form-control" id="retryDelay">
-                        </div>
-                      </div>
-                    </div>
-                    <div class="two-columns">
-                      <div class="left-column">
-                        <div class="form-group">
-                          <label for="retryBreakOn">Retry break on</label>
-                          <input type="text" class="form-control" id="retryBreakOn">
-                        </div>
-                      </div>
-                    </div>
-                  </collapsible-group>
-                </collapsible-group>
-              </collapsible-group>
-            </collapsible-panel>
-          </div>
+            </div>
+          </collapsible-panel>
+
+
+          <!--<div ng-controller="workflowsCtrl">-->
+            <!--<collapsible-panel title="Workflow1" removable="true">-->
+              <!--&lt;!&ndash; 2 simple inputs in a single row &ndash;&gt;-->
+              <!--<div class="three-columns">-->
+                <!--<div class="left-column">-->
+                  <!--<div class="form-group">-->
+                    <!--<label for="workflow1Name">Name</label>-->
+                    <!--<input type="text" class="form-control" id="workflow1Name" placeholder="Workflow1">-->
+                  <!--</div>-->
+                <!--</div>-->
+                <!--<div class="right-column">-->
+                  <!--<div class="form-group">-->
+                    <!--<label for="workflow1Type">Base</label>-->
+                    <!--<select class="form-control" id="workflow1Type">-->
+                      <!--<option selected>Direct</option>-->
+                      <!--<option>Reverse</option>-->
+                    <!--</select>-->
+                  <!--</div>-->
+                <!--</div>-->
+              <!--</div>-->
+              <!--&lt;!&ndash; collapsible keys list section &ndash;&gt;-->
+              <!--<collapsible-group title="Input" additive="true">-->
+                <!--<div class="three-columns">-->
+                  <!--<div class="left-column">-->
+                    <!--<div class="form-group">-->
+                      <!--<div class="input-group">-->
+                        <!--<input type="text" class="form-control">-->
+                        <!--<i class="fa fa-minus-circle input-group-addon"></i>-->
+                      <!--</div>-->
+                    <!--</div>-->
+                  <!--</div>-->
+                <!--</div>-->
+              <!--</collapsible-group>-->
+              <!--&lt;!&ndash; collapsible section with variable type = string|list|dictionary &ndash;&gt;-->
+              <!--<collapsible-group title="Output" additive="true">-->
+                <!--&lt;!&ndash; string input type &ndash;&gt;-->
+                <!--<div class="three-columns">-->
+                  <!--<div class="left-column">-->
+                    <!--<div class="form-group">-->
+                      <!--<label for="collapseFourOuputF11">Key Type</label>-->
+                      <!--<select id="collapseFourOuputF11" class="form-control">-->
+                        <!--<option selected disabled>String</option>-->
+                        <!--<option disabled>List</option>-->
+                        <!--<option disabled>Dictionary</option>-->
+                      <!--</select>-->
+                    <!--</div>-->
+                  <!--</div>-->
+                  <!--<div class="right-column">-->
+                    <!--<div class="form-group">-->
+                      <!--<label>&nbsp;</label>-->
+                      <!--<input type="text" class="form-control">-->
+                    <!--</div>-->
+                  <!--</div>-->
+                <!--</div>-->
+              <!--</collapsible-group>-->
+              <!--<collapsible-group title="Task Defaults" additive="false">-->
+                <!--<collapsible-group title="On error" additive="true">-->
+                  <!--<yaql-field-combined></yaql-field-combined>-->
+                  <!--<yaql-field-combined></yaql-field-combined>-->
+                <!--</collapsible-group>-->
+                <!--<collapsible-group title="On success" additive="true">-->
+                  <!--<yaql-field-combined></yaql-field-combined>-->
+                <!--</collapsible-group>-->
+                <!--<collapsible-group title="On complete" additive="true">-->
+                  <!--<yaql-field-combined></yaql-field-combined>-->
+                  <!--<yaql-field-combined></yaql-field-combined>-->
+                <!--</collapsible-group>-->
+              <!--</collapsible-group>-->
+              <!--<collapsible-group title="Tasks" additive="true">-->
+                <!--<collapsible-group title="TaskAutoName1" removable="true">-->
+                  <!--<div class="three-columns">-->
+                    <!--<div class="left-column">-->
+                      <!--<div class="form-group">-->
+                        <!--<label for="collapseFourOuputF12">Name</label>-->
+                        <!--<input type="text" id="collapseFourOuputF12" class="form-control" value="TaskAutoName1">-->
+                      <!--</div>-->
+                    <!--</div>-->
+                    <!--<div class="right-column">-->
+                      <!--<div class="form-group">-->
+                        <!--<label for="collapseFourOuputF13">Type</label>-->
+                        <!--<select id="collapseFourOuputF13" class="form-control">-->
+                          <!--<option selected disabled>Action-based</option>-->
+                          <!--<option disabled>Workflow-based</option>-->
+                        <!--</select>-->
+                      <!--</div>-->
+                    <!--</div>-->
+                  <!--</div>-->
+                  <!--<div class="three-columns">-->
+                    <!--<div class="left-column">-->
+                      <!--<div class="form-group">-->
+                        <!--<label for="collapseFourOuputF14">Action</label>-->
+                        <!--<select id="collapseFourOuputF14" class="form-control">-->
+                          <!--<option selected disabled>Action1</option>-->
+                        <!--</select>-->
+                      <!--</div>-->
+                    <!--</div>-->
+                  <!--</div>-->
+                  <!--<collapsible-group title="Input" additive="true">-->
+                    <!--<div class="three-columns">-->
+                      <!--<div class="left-column">-->
+                        <!--<div class="form-group">-->
+                          <!--<label for="collapseFourOuputF15">-->
+                            <!--<editable value="Key1" label="New Name"></editable>-->
+                          <!--</label>-->
+                          <!--<div class="input-group" id="collapseFourOuputF15">-->
+                            <!--<input type="text" class="form-control">-->
+                            <!--<i class="fa fa-minus-circle input-group-addon"></i>-->
+                          <!--</div>-->
+                        <!--</div>-->
+                      <!--</div>-->
+                    <!--</div>-->
+                  <!--</collapsible-group>-->
+                  <!--<collapsible-group title="Publish" additive="true">-->
+                    <!--<div class="three-columns">-->
+                      <!--<div class="left-column">-->
+                        <!--<div class="form-group">-->
+                          <!--<label for="collapseFourOuputF16">-->
+                            <!--<editable value="Key1" label="New Name"></editable>-->
+                          <!--</label>-->
+                          <!--<div class="input-group" id="collapseFourOuputF16">-->
+                            <!--<input type="text" class="form-control">-->
+                            <!--<i class="fa fa-minus-circle input-group-addon"></i>-->
+                          <!--</div>-->
+                        <!--</div>-->
+                      <!--</div>-->
+                    <!--</div>-->
+                  <!--</collapsible-group>-->
+                  <!--<collapsible-group title="On error" additive="true">-->
+                    <!--<yaql-field-combined></yaql-field-combined>-->
+                  <!--</collapsible-group>-->
+                  <!--<collapsible-group title="On success" additive="true">-->
+                    <!--<yaql-field-combined></yaql-field-combined>-->
+                  <!--</collapsible-group>-->
+                  <!--<collapsible-group title="On complete" additive="true">-->
+                    <!--<yaql-field-combined></yaql-field-combined>-->
+                  <!--</collapsible-group>-->
+                  <!--<collapsible-group title="Policies">-->
+                    <!--<div class="two-columns">-->
+                      <!--<div class="left-column">-->
+                        <!--<div class="form-group">-->
+                          <!--<label for="waitBefore">Wait before</label>-->
+                          <!--<input type="number" class="form-control" id="waitBefore">-->
+                        <!--</div>-->
+                      <!--</div>-->
+                      <!--<div class="right-column">-->
+                        <!--<div class="form-group">-->
+                          <!--<label for="waitAfter">Wait after</label>-->
+                          <!--<input type="number" class="form-control" id="waitAfter">-->
+                        <!--</div>-->
+                      <!--</div>-->
+                    <!--</div>-->
+                    <!--<div class="two-columns">-->
+                      <!--<div class="left-column">-->
+                        <!--<div class="form-group">-->
+                          <!--<label for="timeout">Timeout</label>-->
+                          <!--<input type="number" class="form-control" id="timeout">-->
+                        <!--</div>-->
+                      <!--</div>-->
+                    <!--</div>-->
+                    <!--<div class="two-columns">-->
+                      <!--<div class="left-column">-->
+                        <!--<div class="form-group">-->
+                          <!--<label for="retryCount">Retry count</label>-->
+                          <!--<input type="number" class="form-control" id="retryCount">-->
+                        <!--</div>-->
+                      <!--</div>-->
+                      <!--<div class="right-column">-->
+                        <!--<div class="form-group">-->
+                          <!--<label for="retryDelay">Retry delay</label>-->
+                          <!--<input type="number" class="form-control" id="retryDelay">-->
+                        <!--</div>-->
+                      <!--</div>-->
+                    <!--</div>-->
+                    <!--<div class="two-columns">-->
+                      <!--<div class="left-column">-->
+                        <!--<div class="form-group">-->
+                          <!--<label for="retryBreakOn">Retry break on</label>-->
+                          <!--<input type="text" class="form-control" id="retryBreakOn">-->
+                        <!--</div>-->
+                      <!--</div>-->
+                    <!--</div>-->
+                  <!--</collapsible-group>-->
+                <!--</collapsible-group>-->
+              <!--</collapsible-group>-->
+            <!--</collapsible-panel>-->
+          <!--</div>-->
         </div>
         <!-- YAML Panel -->
         <div class="right-panel">
