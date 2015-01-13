@@ -66,6 +66,32 @@
             value: ['', '']
           }]
         }
+        ],
+        workflows: [{
+          id: 'workflow1',
+          name: 'Workflow1',
+          base: '',  // FIXME
+          input: [''],
+          output: [{
+            id: 'varlist1',
+            type: 'string',
+            value: ''
+          }],
+          taskDefaults: {
+            onError: {
+              type: 'list',
+              value: ['', '']
+            },
+            onSuccess: {
+              type: 'list',
+              value: ['']
+            },
+            onComplete: {
+              type: 'list',
+              value: ['', '']
+            }
+          }
+        }
         ]
       };
 
@@ -88,6 +114,32 @@
           group: ''
         }, {
           name: 'output',
+          type: 'varlist',
+          group: ''
+        }
+        ],
+        workflow: [{
+          name: 'name',
+          type: 'string',
+          group: 'one'
+        }, {
+          name: 'base',
+          type: 'string',  // FIXME
+          group: 'one'
+        }, {
+          name: 'input',
+          type: 'list',
+          group: ''
+        }, {
+          name: 'output',
+          type: 'varlist',
+          group: ''
+        }, {
+          name: 'taskDefaults',  // need dict in dict ?
+          type: 'frozendict',
+          group: ''
+        }, {
+          name: 'tasks',  // ditto ?
           type: 'varlist',
           group: ''
         }
@@ -209,7 +261,7 @@
       }
     })
 
-    .controller('workflowsCtrl', function() {
+    .controller('workflowsCtrl', function($scope) {
 
     });
 })();
