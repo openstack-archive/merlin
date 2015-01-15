@@ -65,33 +65,219 @@
             type: 'list',
             value: ['', '']
           }]
-        }
-        ]
+        }],
+        workflows: [{
+          id: 'workflow1',
+          name: 'Workflow1',
+          base: '',  // FIXME
+          input: [''],
+          output: [{
+            id: 'varlist1',
+            type: 'string',
+            value: ''
+          }],
+          taskDefaults: {
+            onError: {
+              type: 'list',
+              value: ['', '']
+            },
+            onSuccess: {
+              type: 'list',
+              value: ['']
+            },
+            onComplete: {
+              type: 'list',
+              value: ['', '']
+            }
+          }
+        }]
       };
 
       $scope.schema = {
-        action: [{
-          name: 'name',
+        name: {
           type: 'string',
-          group: 'one'
-        }, {
-          name: 'base',
-          type: 'string',
-          group: 'one'
-        }, {
-          name: 'baseInput',
-          type: 'frozendict',
-          group: ''
-        }, {
-          name: 'input',
-          type: 'list',
-          group: ''
-        }, {
-          name: 'output',
-          type: 'varlist',
-          group: ''
+          index: 0,
+          panelIndex: 0,
+          row: 0
+        },
+        description: {
+          type: 'text',
+          index: 1,
+          panelIndex: 0,
+          row: 0
+        },
+        actions: {
+          index: 2,
+          type: 'panel',
+          multiple: true,
+          value: {
+            name: {
+              type: 'string',
+              row: 0,
+              index: 0
+            },
+            base: {
+              type: 'string',
+              row: 0,
+              index: 1
+            },
+            baseInput: {
+              type: 'frozendict',
+              title: 'Base Input',
+              index: 2
+            },
+            input: {
+              type: 'list',
+              index: 3
+            },
+            output: {
+              type: 'varlist',
+              index: 4
+            }
+          }
+        },
+        workflows: {
+          index: 3,
+          type: 'panel',
+          multiple: true,
+          value: {
+            name: {
+              type: 'string',
+              index: 0,
+              row: 0
+            },
+            base: {
+              type: 'string',
+              index: 1,
+              row: 0
+            },
+            input: {
+              type: 'list',
+              index: 2
+            },
+            output: {
+              type: 'varlist',
+              index: 3
+            },
+            taskDefaults: {
+              type: 'group',
+              title: 'Task defaults',
+              additive: false,
+              index: 4,
+              value: {
+                onError: {
+                  type: 'yaqllist',
+                  title: 'On error',
+                  index: 0
+                },
+                onSuccess: {
+                  type: 'yaqllist',
+                  title: 'On success',
+                  index: 1
+                },
+                onComplete: {
+                  type: 'yaqllist',
+                  title: 'On complete',
+                  index: 2
+                }
+              }
+            },
+            tasks: {
+              type: 'group',
+              index: 5,
+              value: {
+                task: {
+                  type: 'group',
+                  additive: false,
+                  multiple: true,
+                  index: 0,
+                  value: {
+                    name: {
+                      type: 'string',
+                      index: 0,
+                      row: 0
+                    },
+                    type: {
+                      type: 'string',
+                      index: 1,
+                      row: 0
+                    },
+                    action: {
+                      type: 'string',
+                      index: 2,
+                      row: 1
+                    },
+                    input: {
+                      type: 'dictionary',
+                      index: 3
+                    },
+                    publish: {
+                      type: 'dictionary',
+                      index: 4
+                    },
+                    onError: {
+                      type: 'yaqllist',
+                      title: 'On error',
+                      index: 5
+                    },
+                    onSuccess: {
+                      type: 'yaqllist',
+                      title: 'On success',
+                      index: 6
+                    },
+                    onComplete: {
+                      type: 'yaqllist',
+                      title: 'On complete',
+                      index: 7
+                    },
+                    policies: {
+                      type: 'group',
+                      additive: false,
+                      index: 8,
+                      value: {
+                        waitBefore: {
+                          type: 'string',
+                          title: 'Wait before',
+                          index: 0,
+                          row: 0
+                        },
+                        waitAfter: {
+                          type: 'string',
+                          title: 'Wait after',
+                          index: 1,
+                          row: 0
+                        },
+                        timeout: {
+                          type: 'string',
+                          index: 2,
+                          row: 1
+                        },
+                        retryCount: {
+                          type: 'string',
+                          title: 'Retry count',
+                          index: 3,
+                          row: 2
+                        },
+                        retryDelay: {
+                          type: 'string',
+                          title: 'Retry delay',
+                          index: 4,
+                          row: 2
+                        },
+                        retryBreakOn: {
+                          type: 'string',
+                          title: 'Retry break on',
+                          index: 5,
+                          row: 3
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
-        ]
       };
 
       $scope.makeTitle = function(str) {
@@ -107,7 +293,7 @@
       };
 
       $scope.isAtomic = function(type) {
-        return ['string'].indexOf(type) > -1;
+        return ['string', 'text'].indexOf(type) > -1;
       };
 
       $scope.remove = function(parent, item) {

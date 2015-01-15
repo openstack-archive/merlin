@@ -1,4 +1,5 @@
-<collapsible-group title="{$ spec.title || makeTitle(spec.name) $}" on-add="add(item[spec.name], {type: 'string', value: '', id: 'varlist'+item[spec.name].length})">
+<collapsible-group title="{$ spec.title || makeTitle(spec.name) $}"
+                   on-add="add(item[spec.name], {type: 'string', value: '', id: 'varlist'+item[spec.name].length})">
   <div class="three-columns" ng-repeat="subItem in item[spec.name] track by subItem.id"
        ng-class="{dictionary: subItem.type == 'dictionary', list: subItem.type == 'list'}">
     <div class="left-column">

@@ -1,0 +1,11 @@
+<collapsible-group title="{$ spec.title || makeTitle(spec.name) $}" on-add="add(item[spec.name])">
+  <div ng-repeat="specs in spec.value | groupBy: 'row' | toArray: true | orderBy: '$key' track by specs.$key">
+    <div ng-class="{'three-columns': specs[0].row !== undefined }">
+      <div ng-repeat="spec in specs track by spec.name"
+           ng-class="{'right-column': $odd && isAtomic(spec.type), 'left-column': $even && isAtomic(spec.type)}">
+        <typed-field></typed-field>
+        <div class="clearfix" ng-show="$odd"></div>
+        </div>
+    </div>
+  </div>
+</collapsible-group>
