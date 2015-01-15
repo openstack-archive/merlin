@@ -9,3 +9,6 @@ ADD_INSTALLED_APPS = ['merlin', 'mistral']
 
 # Python panel class of the PANEL to be added.
 ADD_PANEL = 'mistral.panel.MistralPanel'
+
+ADD_ANGULAR_MODULES = ['angular.filter']
+ADD_JS_FILES = ['merlin/lib/angular-filter.js']

@@ -60,22 +60,25 @@
       }
     })
 
-    .directive('collapsiblePanel', function($parse, defaultSetter) {
+    .directive('panel', function() {
       return {
         restrict: 'E',
         templateUrl: '/static/mistral/js/angular-templates/collapsible-panel.html',
         transclude: true,
         scope: {
           title: '@',
-          removable: '&'
+          onRemove: '&'
         },
         link: function(scope, element, attrs) {
           disableClickDefaultBehaviour(element);
+          if ( attrs.onRemove ) {
+            scope.removable = true;
+          }
         }
       }
     })
 
-    .directive('collapsibleGroup', function($parse, defaultSetter) {
+    .directive('collapsibleGroup', function() {
       return {
         restrict: 'E',
         templateUrl: '/static/mistral/js/angular-templates/collapsible-group.html',
