@@ -14,6 +14,7 @@
   <script type="text/javascript" src="{{ STATIC_URL }}mistral/js/services.js"></script>
   <script type="text/javascript" src="{{ STATIC_URL }}mistral/js/directives.js"></script>
   <script type="text/javascript" src="{{ STATIC_URL }}mistral/js/controllers.js"></script>
+{#  <script type="text/javascript" src="{{ STATIC_URL }}mistral/js/schema.js"></script>#}
 {% endblock %}
 
 {% block css %}
@@ -51,40 +52,34 @@
       <!-- Data panel start -->
       <div class="two-panels">
         <div class="left-panel">
-          <!-- root-level parameters -->
-          <div class="panel panel-default merlin-panel" id="panel0">
-            <div class="panel-body">
-              <div class="two-columns">
-                <div class="left-column">
-                  <div class="form-group">
-                    <label for="workbookName">Name</label>
-                    <input type="text" class="form-control" id="workbookName" placeholder="Workbook1">
-                  </div>
-                </div>
-                <div class="right-column">
-                  <div class="form-group">
-                    <label for="workbookDesc">Description</label>
-                    <textarea class="form-control" id="workbookDesc" placeholder="Type a description here"></textarea>
+          <div ng-repeat="panelSpec in schema | prepareSchema | groupBy: 'panelIndex' | toArray:true | orderBy: '$key' | normalizePanels track by panelSpec.$key">
+            <panel ng-if="panelSpec.multiple" ng-repeat="item in data[panelSpec.name] track by item.id" title="{$ item.name $}" on-remove="remove('{$ panelSpec.name $}', item)">
+              <div ng-repeat="specs in panelSpec | groupBy: 'row' | toArray: true | orderBy: '$key' track by specs.$key">
+                <div ng-class="{'three-columns': specs[0].row !== undefined }">
+                  <div ng-repeat="spec in specs track by spec.name"
+                       ng-class="{'right-column': $even && isAtomic(spec.type), 'left-column': $odd && isAtomic(spec.type)}">
+                    <typed-field></typed-field>
+                    <div class="clearfix" ng-show="$even"></div>
                   </div>
                 </div>
               </div>
-            </div>
+            </panel>
+            <panel ng-if="!panelSpec.multiple">
+              <!-- ugly duplication here -->
+              <div ng-repeat="specs in panelSpec | groupBy: 'row' | toArray: true | orderBy: '$key' track by specs.$key">
+                <div ng-class="{'two-columns': specs[0].row !== undefined }">
+                  <div ng-repeat="spec in specs track by spec.name"
+                       ng-class="{'right-column': $even && isAtomic(spec.type), 'left-column': $odd && isAtomic(spec.type)}">
+                    <typed-field></typed-field>
+                    <div class="clearfix" ng-show="$even"></div>
+                  </div>
+                </div>
+              </div>
+            </panel>
           </div>
-          <!-- Action added -->
-          <collapsible-panel ng-controller="actionCtrl" ng-repeat="item in data.actions track by item.id" title="{$ item.name $}" removable="remove('actions', item)">
-            <div ng-repeat="specs in schema.action | groupBy: 'group' | toArray:true | orderBy: '-$key' track by specs.$key">
-              <div ng-class="{'three-columns': specs[0].group}">
-                <div ng-repeat="spec in specs track by spec.name"
-                     ng-class="{'right-column': $even && isAtomic(spec.type), 'left-column': $odd && isAtomic(spec.type)}">
-                  <typed-field></typed-field>
-                  <div class="clearfix" ng-show="$even"></div>
-                </div>
-              </div>
-            </div>
-          </collapsible-panel>
           <!-- panel with workflow -->
           <div ng-controller="workflowsCtrl">
-            <collapsible-panel title="Workflow1" removable="true">
+            <panel title="Workflow1" removable="true">
               <!-- 2 simple inputs in a single row -->
               <div class="three-columns">
                 <div class="left-column">
@@ -267,7 +262,7 @@
                   </collapsible-group>
                 </collapsible-group>
               </collapsible-group>
-            </collapsible-panel>
+            </panel>
           </div>
         </div>
         <!-- YAML Panel -->
