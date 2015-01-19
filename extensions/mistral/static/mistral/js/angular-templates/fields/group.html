@@ -1,4 +1,4 @@
-<collapsible-group title="{$ spec.title || makeTitle(spec.name) $}" on-add="add(item[spec.name])">
+<collapsible-group title="{$ spec.title || makeTitle(spec.name) $}" on-add="add(item[spec.name])" additive="{$ spec.additive $}">
   <div ng-repeat="specs in spec.value | groupBy: 'row' | toArray: true | orderBy: '$key' track by specs.$key">
     <div ng-class="{'three-columns': specs[0].row !== undefined }">
       <div ng-repeat="spec in specs track by spec.name"

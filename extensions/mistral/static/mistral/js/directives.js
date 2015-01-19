@@ -90,7 +90,7 @@
         },
         link: function(scope, element, attrs) {
           disableClickDefaultBehaviour(element);
-          if ( attrs.onAdd ) {
+          if ( attrs.onAdd && attrs.additive !== 'false' ) {
             scope.additive = true;
           }
           if ( attrs.onRemove ) {
