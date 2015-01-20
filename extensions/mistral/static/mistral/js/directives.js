@@ -97,15 +97,15 @@
       }
     })
 
-    .directive('typedField', function($http, $templateCache, $compile) {
+    .directive('typedField', function($http, $templateCache, $compile, suggestionService) {
       return {
         restrict: 'E',
         scope: true,
-        link: function(scope, element) {
+        link: function(scope, element, attrs) {
+          scope.suggestions = suggestionService.getSuggestions(); // TODO param:field
           var template = $templateCache.get(scope.spec.type);
           element.replaceWith($compile(template)(scope));
         }
       }
     })
-
 })();

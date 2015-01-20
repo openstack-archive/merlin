@@ -72,11 +72,12 @@
           </div>
           <!-- Action added -->
           <collapsible-panel ng-controller="actionCtrl" ng-repeat="item in data.actions track by item.id" title="{$ item.name $}" removable="remove('actions', item)">
-            <div ng-repeat="specs in schema.action | groupBy: 'group' | toArray:true | orderBy: '-$key' track by specs.$key">
+              <div ng-repeat="specs in schema.action | groupBy: 'group' | toArray:true | orderBy: '-$key' track by specs.$key">
+
               <div ng-class="{'three-columns': specs[0].group}">
                 <div ng-repeat="spec in specs track by spec.name"
                      ng-class="{'right-column': $even && isAtomic(spec.type), 'left-column': $odd && isAtomic(spec.type)}">
-                  <typed-field></typed-field>
+                  <typed-field dependencies='{$ spec $}'></typed-field>
                   <div class="clearfix" ng-show="$even"></div>
                 </div>
               </div>
