@@ -97,13 +97,46 @@
       }
     })
 
-    .directive('typedField', function($http, $templateCache, $compile) {
+    .directive('typedField', function($http, $templateCache, $compile, suggestionService) {
       return {
         restrict: 'E',
         scope: true,
-        link: function(scope, element) {
+        link: function(scope, element, attrs) {
+
+          console.log(scope.item);
+
+          scope.suggestions = suggestionService.getSuggestions(); // TODO param:field
           var template = $templateCache.get(scope.spec.type);
           element.replaceWith($compile(template)(scope));
+        }
+      }
+    })
+    .directive('changeProxy', function(proxyService){
+        return {
+        restrict: 'A',
+        scope: true,
+        link: function(scope, element, attrs) {
+          scope.$watch(attrs.ngModel, function (value) {
+            proxyService.update('base', value);
+          });
+        }
+      }
+    })
+    .directive('trackProxy', function(proxyService, $rootScope){
+      return {
+        restrict: 'A',
+        scope: true,
+        link: function(scope, element, attrs) {
+          var updateValue = function(field, value){
+              scope.item[scope.spec.name] = proxyService.getSchema(field, value);
+          };
+
+          var depends = JSON.parse(attrs.trackProxy);
+          angular.forEach(depends, function(value){
+            $rootScope.$on(value+'Changed', function(event, new_data) {
+              updateValue(new_data.field, new_data.value);
+            });
+          });
         }
       }
     })
