@@ -41,11 +41,14 @@
           baseInput: {
             flavorId: {
               title: 'Flavor Id',
-              type: 'string'
+              type: 'string',
+              depends: ['base']
             },
             imageId: {
               title: 'Image Id',
-              type: 'string'
+              type: 'string',
+              depends: ['base']
+
             }
           },
           input: [''],
@@ -67,6 +70,13 @@
           }]
         }
         ]
+      };
+
+      $scope.suggestions = {'one': {},
+          'two': {},
+          'three': {},
+          'four': {},
+          'five': {}
       };
 
       $scope.schema = {
@@ -180,7 +190,6 @@
             }
           }
         };
-
 
 
       //$scope.getBaseInput = function() {

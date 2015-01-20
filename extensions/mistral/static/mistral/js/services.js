@@ -14,7 +14,49 @@
         }
       }
     })
-
+    .factory('suggestionService', function() {
+       var suggestions = ['one', 'two', 'three', 'four', 'five', 'nova.create_network', 'nova.create_network_1'];
+       return {
+        getSuggestions: function(){
+            return suggestions;
+        }
+    }
+    })
+    //used for trackProxy and changeProxy
+    .factory('proxyService', function($rootScope) {
+       var suggestions = {
+           'base': {'one': '',
+                    'nova.create_network': {
+                        NetworkId: {
+                          title: 'Network Id',
+                          type: 'string',
+                          depends: ['base']
+                        }},
+                    'nova.create_network_1': {
+                            NetworkId: {
+                              title: 'Network Id',
+                              type: 'string',
+                              depends: ['base']
+                            },
+                            FlavorId: {
+                              title: 'Flavor Id',
+                              type: 'string',
+                              depends: ['base']
+                            }}
+                    }
+       };
+       return {
+        getSchema: function(field, value){
+            return suggestions[field][value];
+        },
+        update: function(field, value){
+            $rootScope.$broadcast(field+"Changed", {// TODO: send schema directly here
+               field: field,
+               value: value
+           });
+        }
+    }
+    })
     .run(function($http, $templateCache) {
       var fields = ['dictionary', 'frozendict', 'list', 'string', 'varlist'];
       fields.forEach(function(field) {
