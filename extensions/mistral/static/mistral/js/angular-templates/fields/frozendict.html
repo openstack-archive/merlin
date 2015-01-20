@@ -1,9 +1,9 @@
 <collapsible-group title="{$ spec.title || makeTitle(spec.name) $}" additive="false">
   <div class="three-columns">
     <div class="left-column">
-      <div class="form-group" ng-repeat="(key, item) in item[spec.name] track by key">
-        <label for="elem-{$ $id $}.{$ key $}">{$ item.title || makeTitle(item.name) $}</label>
-        <input type="text" class="form-control" id="elem-{$ $id $}.{$ key $}" ng-model="item.value">
+      <div class="form-group" ng-repeat="(key, _item) in item[spec.name] track by key">
+        <label for="elem-{$ $id $}.{$ key $}">{$ _item.title || makeTitle(_item.name) $} </label>
+        <input type="text" class="form-control" id="elem-{$ $id $}.{$ key $}" ng-model="_item.value" track-proxy="{$ _item.depends $}">
       </div>
     </div>
   </div>
