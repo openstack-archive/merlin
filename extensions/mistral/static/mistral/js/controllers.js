@@ -162,6 +162,12 @@
           defaultValue.id = key + parent.length;
         }
         parent.push(value || defaultValue);
+      };
+
+      $scope.closePopover = function(event){
+          console.log(event);
+          var el = $event.currentTarget;
+          el.parents('a[data-toggle="popover"]').popover('hide');
       }
 
     })
