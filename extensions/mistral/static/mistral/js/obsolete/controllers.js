@@ -14,7 +14,9 @@
 
   angular.module('hz')
 
-    .controller('workbookCtrl', function($scope) {
+    .controller('workbookCtrl', function($scope, workbook, $filter) {
+      $scope.workbook = workbook;
+
       $scope.defaults = {
         'actions': {
           name: 'Action1',
@@ -280,6 +282,8 @@
         }
       };
 
+
+
       $scope.makeTitle = function(str) {
         if ( !str ) {
           return '';
@@ -293,7 +297,7 @@
       };
 
       $scope.isAtomic = function(type) {
-        return ['string', 'text'].indexOf(type) > -1;
+        return ['string', 'text', 'number'].indexOf(type) > -1;
       };
 
       $scope.remove = function(parent, item) {
@@ -367,20 +371,6 @@
           }
         };
 
-
-
-      //$scope.getBaseInput = function() {
-      //  return baseTypes[actionBase] || [];
-      //};
-      //
-      //$scope.updateBase = function(newBase) {
-      //  actionBase = newBase;
-      //  var values = [];
-      //  angular.forEach($scope.getBaseInput(), function(item) {
-      //    values.push(item.value || '');
-      //  });
-      //  $scope.item.baseInput.value = values;
-      //}
     })
 
     .controller('dictionaryCtrl', function($scope) {

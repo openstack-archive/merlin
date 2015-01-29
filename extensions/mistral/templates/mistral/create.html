@@ -11,9 +11,18 @@
 
 {% block js %}
 {% include "horizon/_scripts.html" %}
-  <script type="text/javascript" src="{{ STATIC_URL }}mistral/js/services.js"></script>
-  <script type="text/javascript" src="{{ STATIC_URL }}mistral/js/directives.js"></script>
-  <script type="text/javascript" src="{{ STATIC_URL }}mistral/js/controllers.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}merlin/js/lib/barricade.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}merlin/js/merlin.directives.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}merlin/js/merlin.field.models.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}merlin/js/merlin.init.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}merlin/js/merlin.panel.models.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}merlin/js/merlin.utils.js"></script>
+
+<script type="text/javascript" src="{{ STATIC_URL }}mistral/js/mistral.directives.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}mistral/js/mistral.init.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}mistral/js/mistral.workbook.controllers.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}mistral/js/mistral.workbook.models.js"></script>
+
 {% endblock %}
 
 {% block css %}
@@ -32,12 +41,12 @@
       <div class="two-panels">
         <div class="left-panel">
           <div class="pull-left">
-            <h4><strong>Workbook1</strong></h4>
+            <h4><strong>{$ workbook.get('name') $}</strong></h4>
           </div>
           <div class="pull-right">
             <div class="table-actions clearfix">
-              <button ng-click="add('actions')" class="btn btn-default btn-sm"><span class="fa fa-plus">Add Action</span></button>
-              <button class="btn btn-default btn-sm"><span class="fa fa-plus">Add Workflow</span></button>
+              <button ng-click="addAction()" class="btn btn-default btn-sm"><span class="fa fa-plus">Add Action</span></button>
+              <button ng-click="addWorkflow()" class="btn btn-default btn-sm"><span class="fa fa-plus">Add Workflow</span></button>
             </div>
           </div>
         </div>
@@ -51,33 +60,8 @@
       <!-- Data panel start -->
       <div class="two-panels">
         <div class="left-panel">
-          <div ng-repeat="panelSpec in schema | prepareSchema | groupBy: 'panelIndex' | toArray:true | orderBy: '$key' | normalizePanels track by panelSpec.$key">
-            <panel ng-if="panelSpec.multiple" ng-repeat="item in data[panelSpec.name] track by item.id" title="{$ item.name $}" on-remove="remove('{$ panelSpec.name $}', item)">
-              <div ng-repeat="specs in panelSpec | groupBy: 'row' | toArray: true | orderBy: '$key' track by specs.$key">
-                <div ng-class="{'three-columns': specs[0].row !== undefined }">
-                  <div ng-repeat="spec in specs track by spec.name"
-                       ng-class="{'right-column': $even && isAtomic(spec.type), 'left-column': $odd && isAtomic(spec.type)}">
-                    <typed-field></typed-field>
-                    <div class="clearfix" ng-show="$even"></div>
-                  </div>
-                </div>
-              </div>
-            </panel>
-            <panel ng-if="!panelSpec.multiple">
-              <!-- ugly duplication here -->
-              <div ng-repeat="specs in panelSpec | groupBy: 'row' | toArray: true | orderBy: '$key' track by specs.$key">
-                <div ng-class="{'two-columns': specs[0].row !== undefined }">
-                  <div ng-repeat="spec in specs track by spec.name"
-                       ng-class="{'right-column': $even && isAtomic(spec.type), 'left-column': $odd && isAtomic(spec.type)}">
-                    <typed-field></typed-field>
-                    <div class="clearfix" ng-show="$even"></div>
-                  </div>
-                </div>
-              </div>
-            </panel>
-          </div>
           <!-- panel with workflow -->
-          <div ng-controller="workflowsCtrl">
+          <div>
             <panel title="Workflow1" removable="true">
               <!-- 2 simple inputs in a single row -->
               <div class="three-columns">
@@ -274,6 +258,19 @@ name: Workbook1
 description:                  </pre>
             </div>
           </div>
+          <panel ng-repeat="panel in workbook.getPanels() track by panel.id"
+                 title="{$ panel.getTitle() $}" removable="{$ panel.removable $}"
+                 on-remove="panel.remove(panel.id)">
+            <div ng-repeat="row in panel.getRows() track by row.id">
+              <div ng-class="{'two-columns': row.index !== undefined }">
+                <div ng-repeat="item in row.getItems() track by item.id"
+                     ng-class="{'right-column': item.isAtomic() && $odd, 'left-column': item.isAtomic() && $even}">
+                  <typed-field title="{$ item.getTitle() $}" value="item" type="{$ item.getType() $}"></typed-field>
+                  <div class="clearfix" ng-if="$odd"></div>
+                </div>
+              </div>
+            </div>
+          </panel>
         </div>
       </div>
       <!-- page footer -->

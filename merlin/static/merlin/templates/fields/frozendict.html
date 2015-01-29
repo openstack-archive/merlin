@@ -1,0 +1,11 @@
+<collapsible-group title="{$ title $}">
+  <div class="three-columns">
+    <div class="left-column">
+      <div class="form-group" ng-repeat="(key, item) in value.getValues() track by key">
+        <label for="elem-{$ $id $}.{$ key $}">{$ item.title || makeTitle(item.name) $}</label>
+        <input type="text" class="form-control" id="elem-{$ $id $}.{$ key $}" ng-model="item.value"
+            ng-model-options="{getterSetter: true}">
+      </div>
+    </div>
+  </div>
+</collapsible-group>

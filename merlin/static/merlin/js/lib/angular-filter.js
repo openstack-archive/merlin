@@ -155,11 +155,11 @@ function isScope(obj) {
 }
 /**
  * @ngdoc filter
- * @name a8m.angular
+ * @name a8m.templates
  * @kind function
  *
  * @description
- * reference to angular function
+ * reference to templates function
  */
 
 angular.module('a8m.angular', [])
@@ -2022,7 +2022,7 @@ angular.module('a8m.filter-watcher', [])
 
       /**
        * @description
-       * for angular version that greater than v.1.3.0
+       * for templates version that greater than v.1.3.0
        * if clear cache when the digest cycle end.
        */
       function cleanStateless() {
@@ -2075,7 +2075,7 @@ angular.module('a8m.filter-watcher', [])
         var hashKey = getHashKey(filterName, args);
         //store result in `$$cache` container
         $$cache[hashKey] = result;
-        // for angular versions that less than 1.3
+        // for templates versions that less than 1.3
         // add to `$destroy` listener, a cleaner callback
         if(isScope(scope)) {
           addListener(scope, hashKey);
@@ -2114,7 +2114,7 @@ angular.module('a8m.filter-watcher', [])
 
 /**
  * @ngdoc module
- * @name angular.filters
+ * @name templates.filters
  * @description
  * Bunch of useful filters for angularJS
  */
