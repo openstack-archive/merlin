@@ -1,11 +1,11 @@
-<collapsible-group title="{$ spec.title || makeTitle(spec.name) $}" on-add="add(item[spec.name], '')">
+<collapsible-group title="{$ title $}" on-add="value.add()">
   <div class="three-columns">
     <div class="left-column">
-      <div class="form-group" ng-repeat="subItem in item[spec.name] track by $index">
+      <div class="form-group" ng-repeat="subItem in value.get() track by $index">
         <div class="input-group">
-          <input type="text" class="form-control" ng-model="subItem">
+          <input type="text" class="form-control" ng-model="subItem.value" ng-model-options="{ getterSetter: true }">
           <span class="input-group-btn">
-            <button class="btn btn-default" ng-click="remove(item[spec.name], subItem)">
+            <button class="btn btn-default" ng-click="value.remove($index)">
               <i class="fa fa-minus-circle"></i>
             </button>
           </span>

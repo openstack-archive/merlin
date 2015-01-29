@@ -1,13 +1,18 @@
-<collapsible-group title="{$ spec.title || makeTitle(spec.name) $}" on-add="add(item[spec.name], '')">
-  <div class="three-columns" ng-repeat="(key, value) in item[spec.name] track by key">
+<pre>{$ value $}</pre>
+<collapsible-group title="{$ title $}" on-add="value.add()">
+  <div class="three-columns" ng-repeat="(key, subvalue) in value.get() track by key">
     <div class="left-column">
       <div class="form-group">
         <label for="elem-{$ $id $}.{$ key $}">
           <editable value="key" label="New Name"></editable>
         </label>
         <div class="input-group">
-          <input id="elem-{$ $id $}.{$ key $}" type="text" class="form-control" ng-model="value">
-          <i class="fa fa-minus-circle input-group-addon"></i>
+          <input id="elem-{$ $id $}.{$ key $}" type="text" class="form-control" ng-model="subvalue.value"
+              ng-model-options="{ getterSetter: true }">
+          <span class="input-group-btn">
+            <button class="btn btn-default fa fa-minus-circle" type="button"
+                ng-click="value.remove(key)"></button>
+          </span>
         </div>
       </div>
     </div>
