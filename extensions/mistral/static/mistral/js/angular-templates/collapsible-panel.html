@@ -1,5 +1,5 @@
 <div class="panel panel-default merlin-panel">
-  <div ng-if="title">
+  <div ng-show="title">
     <div class="panel-heading">
       <h4 class="panel-title">
         <a data-toggle="collapse" data-target="#elem-{$ $id $}" href="#">{$ title $}</a>
@@ -10,7 +10,7 @@
       </div>
     </div>
   </div>
-  <div ng-if="!title">
+  <div ng-show="!title">
     <div class="panel-body" ng-transclude>
     </div>
   </div>

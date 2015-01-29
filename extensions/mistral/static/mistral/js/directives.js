@@ -4,7 +4,7 @@
 
 (function() {
   function disableClickDefaultBehaviour(element) {
-    angular.element(element).find('a[data-toggle="collapse"]')
+    element.find('h4.panel-title a')
       .on('click', function(e) {
         e.preventDefault();
         return true;
@@ -60,7 +60,7 @@
       }
     })
 
-    .directive('panel', function() {
+    .directive('panel', function($parse) {
       return {
         restrict: 'E',
         templateUrl: '/static/mistral/js/angular-templates/collapsible-panel.html',
@@ -70,10 +70,8 @@
           onRemove: '&'
         },
         link: function(scope, element, attrs) {
+          scope.removable = $parse(attrs.removable)();
           disableClickDefaultBehaviour(element);
-          if ( attrs.onRemove ) {
-            scope.removable = true;
-          }
         }
       }
     })
@@ -103,9 +101,13 @@
     .directive('typedField', function($http, $templateCache, $compile) {
       return {
         restrict: 'E',
-        scope: true,
+        scope: {
+          title: '@',
+          value: '=',
+          type: '@'
+        },
         link: function(scope, element) {
-          var template = $templateCache.get(scope.spec.type);
+          var template = $templateCache.get(scope.type);
           element.replaceWith($compile(template)(scope));
         }
       }
