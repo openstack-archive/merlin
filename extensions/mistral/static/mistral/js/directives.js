@@ -103,9 +103,13 @@
     .directive('typedField', function($http, $templateCache, $compile) {
       return {
         restrict: 'E',
-        scope: true,
+        scope: {
+          title: '@',
+          value: '=',
+          type: '@'
+        },
         link: function(scope, element) {
-          var template = $templateCache.get(scope.spec.type);
+          var template = $templateCache.get(scope.type);
           element.replaceWith($compile(template)(scope));
         }
       }

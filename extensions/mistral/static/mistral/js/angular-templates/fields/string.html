@@ -1,4 +1,5 @@
 <div class="form-group">
-  <label for="elem-{$ $id $}">{$ spec.title || makeTitle(spec.name) $}</label>
-  <input type="text" class="form-control" id="elem-{$ $id $}" ng-model="item[spec.name]">
+  <label for="elem-{$ $id $}">{$ title $}</label>
+  <input type="text" class="form-control" id="elem-{$ $id $}" ng-model="value.val"
+         ng-model-options="{ getterSetter: true }">
 </div>
