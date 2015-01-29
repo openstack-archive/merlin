@@ -1,4 +1,4 @@
-<collapsible-group title="{$ spec.title || makeTitle(spec.name) $}" on-add="add(item[spec.name], '')">
+<collapsible-group title="{$ title $}" on-add="add(item[spec.name], '')">
   <div class="three-columns" ng-repeat="(key, value) in item[spec.name] track by key">
     <div class="left-column">
       <div class="form-group">

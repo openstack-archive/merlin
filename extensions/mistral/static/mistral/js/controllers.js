@@ -14,7 +14,38 @@
 
   angular.module('hz')
 
-    .controller('workbookCtrl', function($scope) {
+    .controller('workbookCtrl', function($scope, workbook, $filter) {
+      $scope.workbook = workbook;
+
+      $scope.getType = function(item) {
+        console.log(item.$key, item);
+
+        var type = item._schema['@type'];
+
+        if ( type === String && item._parameters.widget === 'textarea') {
+          return 'text';
+        } else if ( type === String ) {
+          return 'string';
+        } else if ( type === Number ) {
+          return 'number';
+        } else if ( type == Array ) {
+          return 'list';
+        } else if ( type == Object && item._parameters.group === true ) {
+          return 'group';
+        } else if ( type == Object ) {
+          return 'dictionary';
+        } else {
+          return '';
+        }
+      };
+
+      $scope.getType1 = function(item) {
+
+        debugger;
+
+        return $scope.getType(item);
+      };
+
       $scope.defaults = {
         'actions': {
           name: 'Action1',
@@ -280,6 +311,14 @@
         }
       };
 
+      $scope.addAction = function() {
+        workbook.get('actions').push(undefined, {id: 'action1'});
+      };
+
+      $scope.addWorkflow = function() {
+        workbook.get('workflows').push(undefined, {id: 'workflow1'});
+      };
+
       $scope.makeTitle = function(str) {
         if ( !str ) {
           return '';
@@ -293,7 +332,7 @@
       };
 
       $scope.isAtomic = function(type) {
-        return ['string', 'text'].indexOf(type) > -1;
+        return ['string', 'text', 'number'].indexOf(type) > -1;
       };
 
       $scope.remove = function(parent, item) {

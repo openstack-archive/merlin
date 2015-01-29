@@ -14,6 +14,8 @@
   <script type="text/javascript" src="{{ STATIC_URL }}mistral/js/services.js"></script>
   <script type="text/javascript" src="{{ STATIC_URL }}mistral/js/directives.js"></script>
   <script type="text/javascript" src="{{ STATIC_URL }}mistral/js/controllers.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}merlin/lib/barricade.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}mistral/js/schema-alt.js"></script>
 {% endblock %}
 
 {% block css %}
@@ -36,8 +38,8 @@
           </div>
           <div class="pull-right">
             <div class="table-actions clearfix">
-              <button ng-click="add('actions')" class="btn btn-default btn-sm"><span class="fa fa-plus">Add Action</span></button>
-              <button class="btn btn-default btn-sm"><span class="fa fa-plus">Add Workflow</span></button>
+              <button ng-click="addAction()" class="btn btn-default btn-sm"><span class="fa fa-plus">Add Action</span></button>
+              <button ng-click="addWorkflow ()" class="btn btn-default btn-sm"><span class="fa fa-plus">Add Workflow</span></button>
             </div>
           </div>
         </div>
@@ -51,7 +53,7 @@
       <!-- Data panel start -->
       <div class="two-panels">
         <div class="left-panel">
-          <div ng-repeat="panelSpec in schema | prepareSchema | groupBy: 'panelIndex' | toArray:true | orderBy: '$key' | normalizePanels track by panelSpec.$key">
+          <div ng-repeat="panelSpec in {} | prepareSchema | groupBy: 'panelIndex' | toArray:true | orderBy: '$key' | normalizePanels track by panelSpec.$key">
             <panel ng-if="panelSpec.multiple" ng-repeat="item in data[panelSpec.name] track by item.id" title="{$ item.name $}" on-remove="remove('{$ panelSpec.name $}', item)">
               <div ng-repeat="specs in panelSpec | groupBy: 'row' | toArray: true | orderBy: '$key' track by specs.$key">
                 <div ng-class="{'three-columns': specs[0].row !== undefined }">
@@ -273,6 +275,35 @@ version: 2
 name: Workbook1
 description:                  </pre>
             </div>
+          </div>
+
+          <div ng-repeat="panelSpec in workbook.$data | toArray:true | groupBy:'_parameters.panelIndex' | toArray:true | orderBy:'$key' track by panelSpec.$key">
+            <panel ng-if="!panelSpec[0]._parameters.multiple">
+              <div ng-repeat="specs in panelSpec | groupBy: '_parameters.row' | toArray: true | orderBy: '$key' track by specs.$key">
+                <div ng-class="{'two-columns': specs[0]._parameters.row !== undefined }">
+                  <div ng-repeat="spec in specs track by spec.$key"
+                       ng-class="{'right-column': $odd && isAtomic(getType(spec)), 'left-column': $even && isAtomic(getType(spec))}">
+                    <typed-field title="{$ spec._parameters.title || makeTitle(spec.$key) $}"
+                                 value="spec" type="{$ getType(spec) $}"></typed-field>
+                    <div class="clearfix" ng-show="$odd"></div>
+                  </div>
+                </div>
+              </div>
+            </panel>
+            <panel ng-if="panelSpec[0]._parameters.multiple" ng-repeat="item in panelSpec[0].$data track by item.getID()" title="{$ item.getID() $}" on-remove="remove('{$ panelSpec.name $}', item)">
+              <div ng-repeat="specs in item.$data | toArray:true | groupBy: '_parameters.row' | toArray: true | orderBy: '$key' track by specs.$key">
+                <pre>specs {$ specs $}, {$ specs[0]._parameters $}</pre>
+                <div ng-class="{'three-columns': specs[0]._parameters.row !== undefined }">
+                  <div ng-repeat="spec in specs track by spec.$key"
+                       ng-class="{'right-column': $odd && isAtomic(getType(spec)), 'left-column': $even && isAtomic(getType(spec))}">
+                    <pre>meta {$ spec._parameters $}, {$ spec.$key $}, {$ spec $}</pre>
+                    <typed-field title="{$ spec._parameters.title || makeTitle(spec.$key) $}"
+                                 value="spec" type="{$ getType(spec) $}"></typed-field>
+                    <div class="clearfix" ng-show="$odd"></div>
+                  </div>
+                </div>
+              </div>
+            </panel>
           </div>
         </div>
       </div>
