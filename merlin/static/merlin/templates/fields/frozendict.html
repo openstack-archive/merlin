@@ -1,0 +1,15 @@
+<collapsible-group title="{$ title $}">
+  <div ng-repeat="row in value.getRows() track by row.id">
+    <div ng-class="{'three-columns': row.index !== undefined}">
+      <div ng-repeat="item in row.getItems() track by item.id"
+           ng-class="{'right-column': item.isAtomic() && $odd, 'left-column': item.isAtomic() && $even}">
+        <div class="form-group">
+          <label for="elem-{$ $id $}.{$ item.getID() $}">{$ item.getTitle() $}</label>
+          <input type="text" class="form-control" id="elem-{$ $id $}.{$ item.getID() $}" ng-model="item.value"
+                 ng-model-options="{getterSetter: true}">
+        </div>
+        <div class="clearfix" ng-if="$odd"></div>
+      </div>
+    </div>
+  </div>
+</collapsible-group>
