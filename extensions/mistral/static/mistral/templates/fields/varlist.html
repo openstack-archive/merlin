@@ -1,25 +1,28 @@
-<collapsible-group title="{$ spec.title || makeTitle(spec.name) $}"
-                   on-add="add(item[spec.name], {type: 'string', value: '', id: 'varlist'+item[spec.name].length})">
-  <div class="three-columns" ng-repeat="subItem in item[spec.name] track by subItem.id"
-       ng-class="{dictionary: subItem.type == 'dictionary', list: subItem.type == 'list'}">
+<collapsible-group title="{$ title $}"
+                   on-add="value.add()">
+  <div class="three-columns" ng-repeat="subItem in value.getValues() track by $index"
+       ng-class="subItem.get('type').get()">
     <div class="left-column">
       <div class="form-group">
         <label for="elem-{$ $id $}.$index">Key Type</label>
-        <select id="elem-{$ $id $}.$index" class="form-control" ng-model="subItem.type">
-          <option ng-repeat="value in ['string', 'list', 'dictionary']"
-                  value="{$ value $}" ng-selected="subItem.type == value">{$ makeTitle(value) $}</option>
+        <select id="elem-{$ $id $}.$index" class="form-control"
+                ng-model="subItem.get('type').value" ng-model-options="{getterSetter: true}">
+          <option ng-repeat="value in subItem.get('type').getEnumValues()"
+                  value="{$ value $}"
+                  ng-selected="subItem.get('type').get() == value">{$ value $}</option>
         </select>
       </div>
     </div>
-    <div ng-switch="subItem.type">
+    <div ng-switch="subItem.get('type').value()">
       <!-- draw string input -->
       <div class="right-column" ng-switch-when="string">
         <div class="form-group">
           <label>&nbsp;</label>
           <div class="input-group">
-            <input type="text" class="form-control" ng-model="subItem.value">
+            <input type="text" class="form-control"
+                   ng-model="subItem.get('value').value" ng-model-options="{getterSetter: true}">
             <span class="input-group-btn">
-              <button class="btn btn-default" ng-click="remove(item[spec.name], subItem)">
+              <button class="btn btn-default" ng-click="value.remove($index)">
                 <i class="fa fa-minus-circle"></i>
               </button>
             </span>
@@ -28,8 +31,8 @@
       </div>
       <!-- END: draw string input -->
       <!-- draw dictionary inputs -->
-      <div ng-switch-when="dictionary" ng-controller="dictionaryCtrl">
-        <div ng-repeat="(key, value) in subItem.value track by key">
+      <div ng-switch-when="dictionary">
+        <div ng-repeat="(key, value) in subItem.get('value').getValues() track by key">
           <div ng-hide="$first" class="left-column"></div>
           <div class="right-column">
             <div class="form-group">
@@ -37,9 +40,10 @@
                 <editable value="key" label="New Name"></editable>
               </label>
               <div class="input-group">
-                <input type="text" id="elem-{$ $id $}.{$ key $}" class="form-control" ng-model="value">
+                <input type="text" id="elem-{$ $id $}.{$ key $}" class="form-control" ng-model="value.value"
+                       ng-model-options="{getterSetter: true}">
                 <span class="input-group-btn">
-                  <button class="btn btn-default" ng-click="removeKey(subItem.value, key) || remove(item[spec.name], subItem)">
+                  <button class="btn btn-default" ng-click="subItem.get('value').remove($index)">
                     <i class="fa fa-minus-circle"></i>
                   </button>
                 </span>
@@ -48,7 +52,7 @@
           </div>
           <div ng-hide="$last" class="clearfix"></div>
           <div ng-show="$last" class="add-btn button-column">
-            <button class="btn btn-default btn-sm pull-right" ng-click="addAutoKey(subItem.value)">
+            <button class="btn btn-default btn-sm pull-right" ng-click="subItem.get('value')">
               <i class="fa fa-plus"></i>
             </button>
           </div>
@@ -56,16 +60,17 @@
       </div>
       <!-- END: draw dictionary inputs -->
       <!-- draw list inputs -->
-      <div ng-switch-when="list" ng-controller="listCtrl">
-        <div ng-repeat="value in subItem.value track by $index">
+      <div ng-switch-when="list">
+        <div ng-repeat="value in subItem.get('value').getValues() track by $index">
           <div ng-hide="$first" class="left-column"></div>
           <div class="right-column">
             <div class="form-group">
               <label ng-show="$first">&nbsp;</label>
               <div class="input-group">
-                <input type="text" class="form-control" ng-model="value">
+                <input type="text" class="form-control" ng-model="value.value"
+                       ng-model-options="{getterSetter: true}">
                 <span class="input-group-btn">
-                  <button class="btn btn-default" ng-click="remove(subItem.value, value) || remove(item[spec.name], subItem)">
+                  <button class="btn btn-default" ng-click="subItem.get('value').remove($index)">
                     <i class="fa fa-minus-circle"></i>
                   </button>
                 </span>
