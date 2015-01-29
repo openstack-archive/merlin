@@ -1,9 +1,14 @@
-<collapsible-group title="{$ spec.title || makeTitle(spec.name) $}" on-add="add(item[spec.name])" additive="{$ spec.additive $}">
-  <div ng-repeat="specs in spec.value | groupBy: 'row' | toArray: true | orderBy: '$key' track by specs.$key">
+<collapsible-group title="{$ title $}">
+  <div ng-repeat="specs in value.$data | toArray:true | groupBy: '_parameters.row' | toArray: true | orderBy: '$key' track by specs.$key">
     <div ng-class="{'three-columns': specs[0].row !== undefined }">
-      <div ng-repeat="spec in specs track by spec.name"
-           ng-class="{'right-column': $odd && isAtomic(spec.type), 'left-column': $even && isAtomic(spec.type)}">
-        <typed-field></typed-field>
+      <pre>specs {$ specs $}, {$ specs.$key $}, {$ value.$data | toArray:true | groupBy: '_parameters.row' $}</pre>
+      <div ng-repeat="spec in specs track by spec.$key"
+           ng-class="{'right-column': $odd && isAtomic(getType(spec)), 'left-column': $even && isAtomic(getType(spec))}">
+        <pre>{$ spec.$key $}, {$ spec._parameters $}, type: {$ getType(spec) $}</pre>
+        <typed-field title="{$ spec._parameters.title || makeTitle(spec.$key) $}"
+                     value="spec" type="{$ getType $}"></typed-field>
+
+        <pre>{$ getType1(spec) $}, End of type-d</pre>
         <div class="clearfix" ng-show="$odd"></div>
         </div>
     </div>

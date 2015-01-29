@@ -14,7 +14,38 @@
 
   angular.module('hz')
 
-    .controller('workbookCtrl', function($scope) {
+    .controller('workbookCtrl', function($scope, workbook, $filter) {
+      $scope.workbook = workbook;
+
+      $scope.getType = function(item) {
+        console.log(item.$key, item);
+
+        var type = item._schema['@type'];
+
+        if ( type === String && item._parameters.widget === 'textarea') {
+          return 'text';
+        } else if ( type === String ) {
+          return 'string';
+        } else if ( type === Number ) {
+          return 'number';
+        } else if ( type == Array ) {
+          return 'list';
+        } else if ( type == Object && item._parameters.group === true ) {
+          return 'group';
+        } else if ( type == Object ) {
+          return 'dictionary';
+        } else {
+          return '';
+        }
+      };
+
+      $scope.getType1 = function(item) {
+
+        debugger;
+
+        return $scope.getType(item);
+      };
+
       $scope.defaults = {
         'actions': {
           name: 'Action1',
@@ -280,6 +311,40 @@
         }
       };
 
+      function getNextIDSuffix(container, regexp) {
+        var max = Math.max.apply(Math, container.getIDs().map(function(id) {
+          var match = regexp.exec(id);
+          return match && +match[2];
+        }));
+        return max > 0 ? max + 1 : 1;
+      }
+
+      function getWorkbookNextIDSuffix(base) {
+        var containerName = base + 's',
+          regexp = /(workflow|action)([0-9]+)/,
+          container = workbook.get(containerName);
+        if ( !container ) {
+          throw 'Base should be either "action" or "workflow"!';
+        }
+        return getNextIDSuffix(container, regexp);
+      }
+
+      $scope.addAction = function() {
+        var baseId = 'action',
+          nextSuffix = getWorkbookNextIDSuffix(baseId),
+          newID = baseId + nextSuffix;
+        workbook.get('actions').push({name: 'Action ' + nextSuffix}, {id: newID});
+        workbook.addPanel(workbook.get('actions'), newID);
+      };
+
+      $scope.addWorkflow = function() {
+        var baseId = 'workflow',
+          nextSuffix = getNextIDSuffix(baseId),
+          newID = baseId + nextSuffix;
+        workbook.get('workflows').push({name: 'Workflow ' + nextSuffix}, {id: newID});
+        workbook.addPanel(workbook.get('workflows'), newID);
+      };
+
       $scope.makeTitle = function(str) {
         if ( !str ) {
           return '';
@@ -293,7 +358,7 @@
       };
 
       $scope.isAtomic = function(type) {
-        return ['string', 'text'].indexOf(type) > -1;
+        return ['string', 'text', 'number'].indexOf(type) > -1;
       };
 
       $scope.remove = function(parent, item) {
