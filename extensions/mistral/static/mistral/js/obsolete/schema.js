@@ -301,16 +301,29 @@ types.Mistral.Workbook = Barricade.create({
 
   'version': {
     '@type': Number,
-    '@meta': {'groups': ['panel1']},
+    '@enum': function() { return [2]; },
+    '@meta': {
+      'index': 2,
+      'panelIndex': 0,
+      'row': 1
+    },
     '@default': 2
   },
   'name': {
     '@type': String,
-    '@meta': {'groups': ['panel1']}
+    '@meta': {
+      'index': 0,
+      'panelIndex': 0,
+      'row': 0
+    }
   },
   'description': {
     '@type': String,
-    '@meta': {'groups': ['panel1']},
+    '@meta': {
+      'index': 1,
+      'panelIndex': 0,
+      'row': 0
+    },
     '@required': false
   },
   'actions': {

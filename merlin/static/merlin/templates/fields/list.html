@@ -1,0 +1,16 @@
+<collapsible-group title="{$ title $}" on-add="value.add()">
+  <div class="three-columns">
+    <div class="left-column">
+      <div class="form-group" ng-repeat="subItem in value.getValues() track by $index">
+        <div class="input-group">
+          <input type="text" class="form-control" ng-model="subItem.value" ng-model-options="{ getterSetter: true }">
+          <span class="input-group-btn">
+            <button class="btn btn-default" ng-click="value.remove($index)">
+              <i class="fa fa-minus-circle"></i>
+            </button>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</collapsible-group>

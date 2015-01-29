@@ -1,25 +1,28 @@
-<collapsible-group title="{$ spec.title || makeTitle(spec.name) $}"
-                   on-add="add(item[spec.name], {type: 'string', value: '', id: 'varlist'+item[spec.name].length})">
-  <div class="three-columns" ng-repeat="subItem in item[spec.name] track by subItem.id"
-       ng-class="{dictionary: subItem.type == 'dictionary', list: subItem.type == 'list'}">
+<collapsible-group title="{$ title $}"
+                   on-add="value.add()">
+  <div class="three-columns" ng-repeat="subItem in value.get() track by $index"
+       ng-class="subItem.get('type').get()">
     <div class="left-column">
       <div class="form-group">
         <label for="elem-{$ $id $}.$index">Key Type</label>
-        <select id="elem-{$ $id $}.$index" class="form-control" ng-model="subItem.type">
-          <option ng-repeat="value in ['string', 'list', 'dictionary']"
-                  value="{$ value $}" ng-selected="subItem.type == value">{$ makeTitle(value) $}</option>
+        <select id="elem-{$ $id $}.$index" class="form-control"
+                ng-model="subItem._item.get('type').value" ng-model-options="{getterSetter: true}">
+          <option ng-repeat="value in subItem._item.get('type').getEnumValues()"
+                  value="{$ value $}"
+                  ng-selected="subItem._item.get('type').get() == value">{$ value $}</option>
         </select>
       </div>
     </div>
-    <div ng-switch="subItem.type">
+    <div ng-switch="subItem._item.get('type').value()">
       <!-- draw string input -->
       <div class="right-column" ng-switch-when="string">
         <div class="form-group">
           <label>&nbsp;</label>
           <div class="input-group">
-            <input type="text" class="form-control" ng-model="subItem.value">
+            <input type="text" class="form-control"
+                   ng-model="subItem._item.get('value').value" ng-model-options="{getterSetter: true}">
             <span class="input-group-btn">
-              <button class="btn btn-default" ng-click="remove(item[spec.name], subItem)">
+              <button class="btn btn-default" ng-click="value.remove($index)">
                 <i class="fa fa-minus-circle"></i>
               </button>
             </span>
