@@ -78,6 +78,25 @@
         }
       });
 
+      models.yaqllist = fields.list.extend({
+        create: function(json, parameters) {
+          var self = fields.list.create.call(this, json, parameters);
+          self.setType('yaqllist');
+          return self;
+        }
+      }, {
+        '*': {
+          '@class': fields.frozendict.extend({}, {
+            'yaql': {
+              '@class': fields.string
+            },
+            'action': {
+              '@class': fields.string
+            }
+          })
+        }
+      });
+
       models.Action =  fields.frozendict.extend({}, {
         'name': {
           '@class': fields.string.extend({}, {
@@ -326,35 +345,26 @@
               'additive': false
             },
             'onError': {
-              '@class': fields.list.extend({}, {
+              '@class': models.yaqllist.extend({}, {
                 '@meta': {
                   'title': 'On error',
                   'index': 0
-                },
-                '*': {
-                  '@class': fields.string
                 }
               })
             },
             'onSuccess': {
-              '@class': fields.list.extend({}, {
+              '@class': models.yaqllist.extend({}, {
                 '@meta': {
                   'title': 'On success',
                   'index': 1
-                },
-                '*': {
-                  '@class': fields.string
                 }
               })
             },
             'onComplete': {
-              '@class': fields.list.extend({}, {
+              '@class': models.yaqllist.extend({}, {
                 '@meta': {
                   'title': 'On complete',
                   'index': 2
-                },
-                '*': {
-                  '@class': fields.string
                 }
               })
             }
@@ -378,6 +388,9 @@
         create: function(json, parameters) {
           var self = fields.frozendict.create.call(this, json, parameters);
           return panel.panelmixin.call(self);
+        },
+        toYAML: function() {
+          return jsyaml.dump(this.toJSON());
         }
       }, {
         'version': {

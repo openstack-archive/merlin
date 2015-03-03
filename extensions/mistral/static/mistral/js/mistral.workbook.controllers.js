@@ -6,7 +6,7 @@
 
     .controller('workbookCtrl',
     ['$scope', 'mistral.workbook.models', function($scope, models) {
-      var workbook = models.Workbook.create();
+      var workbook = models.Workbook.create({name: 'My Workbook'});
       $scope.workbook = workbook;
 
       function getNextIDSuffix(container, regexp) {

@@ -116,7 +116,6 @@
           return rows;
         };
         self.on('change', function(op) {
-          console.log(arguments);
           if ( op == 'add' ) {
             var items = self._getContents();
             utils.groupByMetaKey(items, 'row').forEach(function(items) {

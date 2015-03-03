@@ -1,16 +1,29 @@
-<collapsible-group title="{$ spec.title || makeTitle(spec.name) $}" on-add="add(item[spec.name], '')">
-  <div class="three-columns">
-    <div class="left-column" style="display:none">
+<collapsible-group title="{$ title $}" on-add="value.add()">
+  <div class="three-columns"
+       ng-repeat="subItem in value.getValues() track by $index">
+    <pre>{$ subItem $}</pre>
+    <div class="left-column" ng-show="subItem.showYaql">
       <div class="form-group">
-        <textarea class="form-control">{$ yaqlExpresion $}</textarea>
+        <textarea class="form-control" ng-model="subItem.get('yaql').value"
+                  ng-model-options="{getterSetter: true}"></textarea>
       </div>
     </div>
     <div class="right-column">
       <div class="form-group">
         <div class="input-group">
-          <span class="input-group-addon yaql-condition fa fa-unlock" role="button"></span>
-          <input type="text" class="form-control" value="{$ value $}">
-          <span class="input-group-addon fa fa-minus-circle"></span>
+          <span class="input-group-btn">
+            <button class="btn btn-default" ng-click="subItem.showYaql = !subItem.showYaql;">
+              <i class="fa"
+                 ng-class="{'fa-lock': subItem.get('yaql').value(), 'fa-unlock': !subItem.get('yaql').value()}"></i>
+            </button>
+          </span>
+          <input type="text" class="form-control" ng-model="subItem.get('action').value"
+                 ng-model-options="{getterSetter: true}">
+          <span class="input-group-btn">
+            <button class="btn btn-default" ng-click="value.remove($index)">
+              <i class="fa fa-minus-circle"></i>
+            </button>
+          </span>
         </div>
       </div>
     </div>
