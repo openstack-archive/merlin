@@ -1,5 +1,11 @@
 <div class="form-group">
   <label for="elem-{$ $id $}">{$ title $}</label>
-  <input type="text" class="form-control" id="elem-{$ $id $}" ng-model="value.value"
+  <input ng-if="!value.getSuggestions"
+         type="text" class="form-control" id="elem-{$ $id $}" ng-model="value.value"
          ng-model-options="{ getterSetter: true }">
+  <input ng-if="value.getSuggestions"
+         type="text" class="form-control" id="elem-{$ $id $}" ng-model="value.value"
+         ng-model-options="{ getterSetter: true }"
+         typeahead="option for option in value.getSuggestions() | filter:$viewValue"
+         typeahead-editable="true">
 </div>
