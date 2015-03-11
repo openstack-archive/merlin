@@ -11,4 +11,4 @@ ADD_INSTALLED_APPS = ['merlin', 'mistral']
 ADD_PANEL = 'mistral.panel.MistralPanel'
 
 ADD_ANGULAR_MODULES = ['angular.filter']
-ADD_JS_FILES = ['merlin/lib/angular-filter.js']
+ADD_JS_FILES = ['merlin/lib/angular-filter.js', 'merlin/js/lib/ui-bootstrap-tpls-0.12.0.js']
