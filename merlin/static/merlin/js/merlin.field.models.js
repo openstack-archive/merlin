@@ -9,6 +9,27 @@
         return this;
       });
 
+      var restrictedChoicesMixin = Barricade.Blueprint.create(function() {
+        var values = this.getEnumValues(),
+          labels = this.getEnumLabels(),
+          items = {};
+
+        values.forEach(function(value, index) {
+          items[value] = labels[index];
+        });
+
+        this.getLabel = function(value) {
+          return items[value];
+        };
+
+        this.getValues = function() {
+          return values;
+        };
+
+        this.setType('choices');
+        return this;
+      });
+
       var modelMixin = Barricade.Blueprint.create(function(type) {
         this.value = function() {
           if ( !arguments.length ) {
@@ -28,7 +49,7 @@
         };
 
         this.isAtomic = function() {
-          return ['number', 'string', 'text'].indexOf(this.getType()) > -1;
+          return ['number', 'string', 'text', 'choices'].indexOf(this.getType()) > -1;
         };
         this.getTitle = function() {
           var title = utils.getMeta(this, 'title');
@@ -43,6 +64,9 @@
           return title;
         };
         wildcardMixin.call(this);
+        if ( this.getEnumValues ) {
+          restrictedChoicesMixin.call(this);
+        }
         return this;
       });
 

@@ -1,0 +1,9 @@
+<div class="form-group">
+  <label for="elem-{$ $id $}.$index">{$ title $}</label>
+  <select id="elem-{$ $id $}.$index" class="form-control"
+          ng-model="value.value" ng-model-options="{getterSetter: true}">
+    <option ng-repeat="option in value.getValues()"
+            value="{$ option $}"
+            ng-selected="value.get() == option">{$ value.getLabel(option) $}</option>
+  </select>
+</div>

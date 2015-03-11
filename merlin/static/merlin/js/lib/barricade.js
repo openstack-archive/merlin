@@ -178,9 +178,16 @@ var Barricade = (function () {
             return id;
         };
 
-      this.hasID = function() {
-        return id !== undefined;
-      };
+        /**
+        * Checks whether the ID is set for this item.
+        * @method hasID
+        * @memberof Barricade.Identifiable
+        * @instance
+        * @returns {Boolean}
+        */
+        this.hasID = function() {
+            return id !== undefined;
+        };
 
         /**
         * Sets the ID.

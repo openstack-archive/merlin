@@ -6,7 +6,7 @@
 
     .run(function($http, $templateCache) {
       var fields = ['dictionary', 'frozendict', 'list', 'string',
-        'text', 'group', 'number'
+        'text', 'group', 'number', 'choices'
       ];
       fields.forEach(function(field) {
         var base = '/static/merlin/templates/fields/';
