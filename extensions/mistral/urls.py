@@ -20,4 +20,5 @@ from mistral import views
 urlpatterns = patterns('',
     url(r'^$', views.IndexView.as_view(), name='index'),
     url(r'^create$', views.CreateWorkbookView.as_view(), name='create'),
+    url(r'^actions/types$', views.ActionTypesView.as_view(), name='action_types')
 )

@@ -12,8 +12,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import json
+
 from django.core.urlresolvers import reverse_lazy
-from django import views
+from django import http
+from django.views.generic import View
 from horizon import tables
 from horizon.views import APIView
 import yaml
@@ -25,6 +28,22 @@ from mistral import tables as mistral_tables
 
 class CreateWorkbookView(APIView):
     template_name = 'project/mistral/create.html'
+
+
+class ActionTypesView(View):
+    def get(self, request, *args, **kwargs):
+        key = request.GET.get('key')
+        schema = {
+            'option1': ['keyA', 'keyB'],
+            'option2': ['keyC', 'keyD'],
+            'option3': ['keyE', 'keyF']
+        }
+        response = http.HttpResponse(content_type='application/json')
+        if key:
+            response.write(json.dumps(schema.get(key)))
+        else:
+            response.write(json.dumps(schema.keys()))
+        return response
 
 
 class IndexView(tables.DataTableView):
