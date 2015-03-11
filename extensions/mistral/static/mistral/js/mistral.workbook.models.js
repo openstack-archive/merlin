@@ -6,8 +6,8 @@
 
   angular.module('mistral')
     .factory('mistral.workbook.models',
-    ['merlin.field.models', 'merlin.panel.models', 'merlin.utils',
-      function(fields, panel, utils) {
+    ['merlin.field.models', 'merlin.panel.models', 'merlin.utils', '$http', '$q',
+      function(fields, panel, utils, $http, $q) {
         var models = {};
 
         function varlistValueFactory(json, parameters) {
@@ -104,6 +104,22 @@
         });
 
         models.Action =  fields.frozendict.extend({
+          create: function(json, parameters) {
+            var self = fields.frozendict.create.call(this, json, parameters),
+              base = self.get('base');
+            base.on('change', function(operation) {
+              var baseValue;
+              if ( operation != 'id' ) {
+                baseValue = base.get();
+                if ( baseValue ) {
+                  base.getSchema(baseValue).then(function(keys) {
+                    self.get('base-input').setSchema(keys);
+                  });
+                }
+              }
+            });
+            return self;
+          },
           toPrettyJSON: function() {
             var json = fields.frozendict.toPrettyJSON.apply(this, arguments);
             delete json.name;
@@ -119,21 +135,49 @@
             })
           },
           'base': {
-            '@class': fields.string.extend({}, {
+            '@class': fields.string.extend({
+               create: function(json, parameters) {
+                 var self = fields.string.create.call(this, json, parameters),
+                   schema = {},
+                   url = utils.getMeta(self, 'autocompletionUrl'),
+                   keys;
+
+                 self.getSchema = function(key) {
+                   var deferred = $q.defer();
+                   if ( !(key in schema) ) {
+                     $http.get(url+'?key='+key).success(function(keys) {
+                       if ( keys !== null ) {
+                         schema[key] = keys;
+                         deferred.resolve(keys);
+                       }
+                     });
+                   } else {
+                     deferred.resolve(schema[key]);
+                   }
+                   return deferred.promise;
+                 };
+                 return self;
+               }
+             }, {
               '@meta': {
                 'index': 1,
-                'row': 0
+                'row': 0,
+                autocompletionUrl: '/project/mistral/actions/types'
               }
             })
           },
           'base-input': {
-            '@class': fields.frozendict.extend({}, {
+            '@class': fields.directeddictionary.extend({}, {
               '@required': false,
               '@meta': {
                 'index': 2,
                 'title': 'Base Input'
               },
-              '?': {'@class': fields.string}
+              '?': {
+                '@class': fields.string.extend({}, {
+                  '@meta': {'row': 1}
+                })
+              }
             })
           },
           'input': {
