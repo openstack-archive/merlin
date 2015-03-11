@@ -6,8 +6,8 @@
 
   angular.module('mistral')
     .factory('mistral.workbook.models',
-    ['merlin.field.models', 'merlin.panel.models', 'merlin.utils',
-      function(fields, panel, utils) {
+    ['$http', 'merlin.field.models', 'merlin.panel.models', 'merlin.utils',
+      function($http, fields, panel, utils) {
       var models = {};
 
       var varlistValueFactory = function(json, parameters) {
@@ -104,6 +104,18 @@
       });
 
       models.Action =  fields.frozendict.extend({
+        create: function(json, parameters) {
+          var self = fields.frozendict.create.call(this, json, parameters),
+            base = self.get('base');
+          base.on('change', function(operation) {
+            if ( operation == 'set' ) {
+              if ( base.get() ) {
+                self.get('baseInput').setSchema(base.getSchema(base.get()));
+              }
+            }
+          });
+          return self;
+        },
         toJSON: function() {
           var json = fields.frozendict.toJSON.apply(this, arguments);
           delete json.name;
@@ -119,21 +131,37 @@
           })
         },
         'base': {
-          '@class': fields.string.extend({}, {
+          '@class': fields.string.extend({
+            create: function(json, parameters) {
+              var self = fields.string.create.call(this, json, parameters),
+                schema = {},
+                url = utils.getMeta(self, 'autocompletionUrl'),
+                keys;
+
+              self.getSchema = function(key) {
+                if ( !key in schema ) {
+                  keys = $http.get(url+'?key='+key);
+                  schema[key] = keys;
+                }
+                return schema[key];
+              };
+              return self;
+            }
+          }, {
             '@meta': {
               'index': 1,
-              'row': 0
+              'row': 0,
+              autocompletionUrl: '/project/mistral/actions/types'
             }
           })
         },
         'base-input': {
-          '@class': fields.frozendict.extend({}, {
+          '@class': fields.directeddictionary.extend({}, {
             '@required': false,
             '@meta': {
               'index': 2,
               'title': 'Base Input'
-            },
-            '?': {'@class': fields.string}
+            }
           })
         },
         'input': {
