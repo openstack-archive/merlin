@@ -20,7 +20,4 @@ from mistral import views
 urlpatterns = patterns('',
     url(r'^$', views.IndexView.as_view(), name='index'),
     url(r'^create$', views.CreateWorkbookView.as_view(), name='create'),
-    url(r'^create1$', views.CreateWorkbookView1.as_view(), name='create1'),
-    url(r'^edit/(?P<workbook_id>[^/]+)$', views.EditWorkbookView.as_view(),
-        name='edit')
 )

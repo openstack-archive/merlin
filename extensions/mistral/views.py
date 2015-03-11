@@ -13,8 +13,8 @@
 #    under the License.
 
 from django.core.urlresolvers import reverse_lazy
+from django import views
 from horizon import tables
-from horizon.forms import views
 from horizon.views import APIView
 import yaml
 
@@ -23,29 +23,8 @@ from mistral import forms as mistral_forms
 from mistral import tables as mistral_tables
 
 
-class CreateWorkbookView(views.ModalFormView):
-    form_class = mistral_forms.CreateWorkbookForm
+class CreateWorkbookView(APIView):
     template_name = 'project/mistral/create.html'
-    success_url = reverse_lazy('horizon:project:mistral:index')
-
-
-class CreateWorkbookView1(APIView):
-    template_name = 'project/mistral/create.html'
-
-
-class EditWorkbookView(views.ModalFormView):
-    form_class = mistral_forms.EditWorkbookForm
-    template_name = 'project/mistral/create.html'
-    success_url = reverse_lazy('horizon:project:mistral:index')
-
-    def get_initial(self):
-        workbook_id = self.kwargs['workbook_id']
-        workbook = api.get_workbook(self.request, workbook_id)
-        if workbook:
-            return {'workbook': yaml.dump(workbook),
-                    'workbook_id': workbook_id}
-        else:
-            return {}
 
 
 class IndexView(tables.DataTableView):
