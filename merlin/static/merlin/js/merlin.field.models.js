@@ -4,7 +4,7 @@
 
   angular.module('merlin')
     .factory('merlin.field.models',
-    ['merlin.utils', 'merlin.panel.models', function(utils, panels) {
+    ['merlin.utils', 'merlin.panel.models', '$http', function(utils, panels, $http) {
 
       var wildcardMixin = Barricade.Blueprint.create(function() {
         return this;
@@ -68,6 +68,10 @@
         if ( this.getEnumValues ) {
           restrictedChoicesMixin.call(this);
         }
+        var autocompletionUrl = utils.getMeta(this, 'autocompletionUrl');
+        if ( autocompletionUrl ) {
+          autoCompletionMixin.call(this, autocompletionUrl);
+        }
         return this;
       });
 
@@ -83,6 +87,20 @@
           return modelMixin.call(self, 'string');
         }
       }, {'@type': String});
+
+      var autoCompletionMixin = Barricade.Blueprint.create(function(url) {
+        var suggestions = [];
+
+        $http.get(url).success(function(data) {
+          suggestions = data;
+        });
+
+        this.getSuggestions = function() {
+          return suggestions;
+        };
+
+        return this;
+      });
 
       var textModel = Barricade.Primitive.extend({
         create: function(json, parameters) {
@@ -149,10 +167,10 @@
 
           modelMixin.call(self, 'dictionary');
 
-          self.add = function() {
+          self.add = function(newID) {
             var regexp = new RegExp('(' + baseKey + ')([0-9]+)'),
-              newID = baseKey + utils.getNextIDSuffix(self, regexp),
               newValue;
+            newID = newID || baseKey + utils.getNextIDSuffix(self, regexp);
             if ( _elClass.instanceof(Barricade.ImmutableObject) ) {
               if ( 'name' in _elClass._schema ) {
                 var nameNum = utils.getNextIDSuffix(self, regexp);
@@ -186,6 +204,27 @@
         }
       }, {'@type': Object});
 
+      var directedDictionaryModel = dictionaryModel.extend({
+        create: function(json, parameters) {
+          var self = dictionaryModel.create.call(this, json, parameters);
+          self.setType('frozendict');
+          return self;
+        },
+        setSchema: function(keys) {
+          var self = this;
+          if ( keys !== undefined && keys !== null ) {
+            self.getIDs().forEach(function(oldKey) {
+              self.remove(oldKey);
+            });
+            keys.forEach(function(newKey) {
+              self.add(newKey);
+            });
+          }
+        }
+      }, {
+        '?': {'@type': String}
+      });
+
       return {
         string: stringModel,
         text: textModel,
@@ -193,6 +232,8 @@
         list: listModel,
         dictionary: dictionaryModel,
         frozendict: frozendictModel,
+        directeddictionary: directedDictionaryModel,
+        autocompletion: autoCompletionMixin,
         wildcard: wildcardMixin // use for most general type-checks
       };
     }])
