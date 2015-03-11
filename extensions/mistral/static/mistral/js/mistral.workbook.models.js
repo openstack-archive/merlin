@@ -104,6 +104,18 @@
         });
 
         models.Action =  fields.frozendict.extend({
+          create: function(json, parameters) {
+            var self = fields.frozendict.create.call(this, json, parameters),
+              base = self.get('base');
+            base.on('change', function(operation) {
+              if ( operation == 'set' ) {
+                if ( base.get() ) {
+                  self.get('baseInput').setSchema(base.getSchema(base.get()));
+                }
+              }
+            });
+            return self;
+          },
           toPrettyJSON: function() {
             var json = fields.frozendict.toPrettyJSON.apply(this, arguments);
             delete json.name;
@@ -119,10 +131,27 @@
             })
           },
           'base': {
-            '@class': fields.string.extend({}, {
+            '@class': fields.string.extend({
+               create: function(json, parameters) {
+                 var self = fields.string.create.call(this, json, parameters),
+                   schema = {},
+                   url = utils.getMeta(self, 'autocompletionUrl'),
+                   keys;
+
+                 self.getSchema = function(key) {
+                   if ( !key in schema ) {
+                     keys = $http.get(url+'?key='+key);
+                     schema[key] = keys;
+                   }
+                   return schema[key];
+                 };
+                 return self;
+               }
+             }, {
               '@meta': {
                 'index': 1,
-                'row': 0
+                'row': 0,
+                autocompletionUrl: '/project/mistral/actions/types'
               }
             })
           },
