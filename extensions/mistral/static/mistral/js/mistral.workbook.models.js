@@ -5,7 +5,8 @@
   angular.module('hz')
 
     .factory('mistral.workbook.models',
-    ['merlin.field.models', 'merlin.panel.models', function(fields, panel) {
+    ['merlin.field.models', 'merlin.panel.models', 'merlin.utils',
+      function(fields, panel, utils) {
       var models = {};
 
       var varlistValueFactory = function(json, parameters) {
@@ -62,6 +63,10 @@
                 }
               });
               return self;
+            },
+            toJSON: function() {
+              var json = fields.frozendict.toJSON.apply(this, arguments);
+              return json.value;
             }
           }, {
             'type': {
@@ -97,7 +102,13 @@
         }
       });
 
-      models.Action =  fields.frozendict.extend({}, {
+      models.Action =  fields.frozendict.extend({
+        toJSON: function() {
+          var json = fields.frozendict.toJSON.apply(this, arguments);
+          delete json.name;
+          return json;
+        }
+      }, {
         'name': {
           '@class': fields.string.extend({}, {
             '@meta': {
@@ -114,7 +125,7 @@
             }
           })
         },
-        'baseInput': {
+        'base-input': {
           '@class': fields.frozendict.extend({}, {
             '@required': false,
             '@meta': {
@@ -141,7 +152,13 @@
         }
       });
 
-      models.Task = fields.frozendict.extend({}, {
+      models.Task = fields.frozendict.extend({
+        toJSON: function() {
+          var json = fields.frozendict.toJSON.apply(this, arguments);
+          delete json.name;
+          return json;
+        }
+      }, {
         '@meta': {
           'baseKey': 'task',
           'baseName': 'Task ',
@@ -193,7 +210,7 @@
             }
           })
         },
-        'onError': {
+        'on-error': {
           '@class': fields.list.extend({}, {
             '@meta': {
               'title': 'On error',
@@ -204,7 +221,7 @@
             }
           })
         },
-        'onSuccess': {
+        'on-success': {
           '@class': fields.list.extend({}, {
             '@meta': {
               'title': 'On success',
@@ -215,7 +232,7 @@
             }
           })
         },
-        'onComplete': {
+        'on-complete': {
           '@class': fields.list.extend({}, {
             '@meta': {
               'title': 'On complete',
@@ -227,12 +244,22 @@
           })
         },
         'policies': {
-          '@class': fields.frozendict.extend({}, {
+          '@class': fields.frozendict.extend({
+            toJSON: function() {
+              var json = fields.frozendict.toJSON.apply(this, arguments);
+              json.retry = {
+                count: utils.pop(json, 'retry-count'),
+                delay: utils.pop(json, 'retry-delay'),
+                'break-on': utils.pop(json, 'retry-break-on')
+              };
+              return json;
+            }
+          }, {
             '@meta': {
               'index': 8
             },
             '@required': false,
-            'waitBefore': {
+            'wait-before': {
               '@class': fields.number.extend({}, {
                 '@required': false,
                 '@meta': {
@@ -242,7 +269,7 @@
                 }
               })
             },
-            'waitAfter': {
+            'wait-after': {
               '@class': fields.number.extend({}, {
                 '@required': false,
                 '@meta': {
@@ -261,7 +288,7 @@
                 }
               })
             },
-            'retryCount': {
+            'retry-count': {
               '@class': fields.number.extend({}, {
                 '@required': false,
                 '@meta': {
@@ -271,7 +298,7 @@
                 }
               })
             },
-            'retryDelay': {
+            'retry-delay': {
               '@class': fields.number.extend({}, {
                 '@required': false,
                 '@meta': {
@@ -281,7 +308,7 @@
                 }
               })
             },
-            'retryBreakOn': {
+            'retry-break-on': {
               '@class': fields.number.extend({}, {
                 '@required': false,
                 '@meta': {
@@ -295,7 +322,13 @@
         }
       });
 
-      models.Workflow = fields.frozendict.extend({}, {
+      models.Workflow = fields.frozendict.extend({
+        toJSON: function() {
+          var json = fields.frozendict.toJSON.apply(this, arguments);
+          delete json.name;
+          return json;
+        }
+      }, {
         'name': {
           '@class': fields.string.extend({}, {
             '@meta': {
@@ -336,7 +369,7 @@
             }
           })
         },
-        'taskDefaults': {
+        'task-defaults': {
           '@class': fields.frozendict.extend({}, {
             '@required': false,
             '@meta': {
@@ -344,7 +377,7 @@
               'group': true,
               'additive': false
             },
-            'onError': {
+            'on-error': {
               '@class': models.yaqllist.extend({}, {
                 '@meta': {
                   'title': 'On error',
@@ -352,7 +385,7 @@
                 }
               })
             },
-            'onSuccess': {
+            'on-success': {
               '@class': models.yaqllist.extend({}, {
                 '@meta': {
                   'title': 'On success',
@@ -360,7 +393,7 @@
                 }
               })
             },
-            'onComplete': {
+            'on-complete': {
               '@class': models.yaqllist.extend({}, {
                 '@meta': {
                   'title': 'On complete',
@@ -395,13 +428,13 @@
       }, {
         'version': {
           '@class': fields.number.extend({}, {
-            '@enum': [2],
+            '@enum': [2.0],
             '@meta': {
               'index': 2,
               'panelIndex': 0,
               'row': 1
             },
-            '@default': 2
+            '@default': 2.0
           })
         },
         'name': {
