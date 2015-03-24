@@ -62,6 +62,10 @@
                 }
               });
               return self;
+            },
+            toJSON: function() {
+              var json = fields.frozendict.toJSON.apply(this, arguments);
+              return json.value;
             }
           }, {
             'type': {
@@ -97,7 +101,13 @@
         }
       });
 
-      models.Action =  fields.frozendict.extend({}, {
+      models.Action =  fields.frozendict.extend({
+        toJSON: function() {
+          var json = fields.frozendict.toJSON.apply(this, arguments);
+          delete json.name;
+          return json;
+        }
+      }, {
         'name': {
           '@class': fields.string.extend({}, {
             '@meta': {
@@ -114,7 +124,7 @@
             }
           })
         },
-        'baseInput': {
+        'base-input': {
           '@class': fields.frozendict.extend({}, {
             '@required': false,
             '@meta': {
@@ -193,7 +203,7 @@
             }
           })
         },
-        'onError': {
+        'on-error': {
           '@class': fields.list.extend({}, {
             '@meta': {
               'title': 'On error',
@@ -204,7 +214,7 @@
             }
           })
         },
-        'onSuccess': {
+        'on-success': {
           '@class': fields.list.extend({}, {
             '@meta': {
               'title': 'On success',
@@ -215,7 +225,7 @@
             }
           })
         },
-        'onComplete': {
+        'on-complete': {
           '@class': fields.list.extend({}, {
             '@meta': {
               'title': 'On complete',
@@ -232,7 +242,7 @@
               'index': 8
             },
             '@required': false,
-            'waitBefore': {
+            'wait-before': {
               '@class': fields.number.extend({}, {
                 '@required': false,
                 '@meta': {
@@ -242,7 +252,7 @@
                 }
               })
             },
-            'waitAfter': {
+            'wait-after': {
               '@class': fields.number.extend({}, {
                 '@required': false,
                 '@meta': {
@@ -261,7 +271,7 @@
                 }
               })
             },
-            'retryCount': {
+            'retry-count': {
               '@class': fields.number.extend({}, {
                 '@required': false,
                 '@meta': {
@@ -271,7 +281,7 @@
                 }
               })
             },
-            'retryDelay': {
+            'retry-delay': {
               '@class': fields.number.extend({}, {
                 '@required': false,
                 '@meta': {
@@ -281,7 +291,7 @@
                 }
               })
             },
-            'retryBreakOn': {
+            'retry-break-on': {
               '@class': fields.number.extend({}, {
                 '@required': false,
                 '@meta': {
@@ -336,7 +346,7 @@
             }
           })
         },
-        'taskDefaults': {
+        'task-defaults': {
           '@class': fields.frozendict.extend({}, {
             '@required': false,
             '@meta': {
@@ -344,7 +354,7 @@
               'group': true,
               'additive': false
             },
-            'onError': {
+            'on-error': {
               '@class': models.yaqllist.extend({}, {
                 '@meta': {
                   'title': 'On error',
@@ -352,7 +362,7 @@
                 }
               })
             },
-            'onSuccess': {
+            'on-success': {
               '@class': models.yaqllist.extend({}, {
                 '@meta': {
                   'title': 'On success',
@@ -360,7 +370,7 @@
                 }
               })
             },
-            'onComplete': {
+            'on-complete': {
               '@class': models.yaqllist.extend({}, {
                 '@meta': {
                   'title': 'On complete',
