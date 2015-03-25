@@ -36,6 +36,7 @@ module.exports = function (config) {
             './bower_components/angular/angular.js',
             './bower_components/angular-mocks/angular-mocks.js',
             './merlin/static/merlin/js/merlin.init.js',
+            './merlin/static/merlin/js/merlin.templates.js',
             './merlin/static/merlin/js/merlin.directives.js',
             './merlin/static/merlin/js/merlin.field.models.js',
             './merlin/static/merlin/js/merlin.panel.models.js',
@@ -43,7 +44,8 @@ module.exports = function (config) {
             './merlin/static/merlin/js/lib/angular-filter.js',
             './merlin/static/merlin/js/lib/barricade.js',
             './merlin/static/merlin/js/lib/js-yaml.js',
-            'merlin/test/js/utilsSpec.js'
+            'merlin/test/js/utilsSpec.js',
+            'merlin/test/js/templatesSpec.js'
         ],
 
         exclude: [
