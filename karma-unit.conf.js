@@ -36,6 +36,7 @@ module.exports = function (config) {
             './bower_components/angular/angular.js',
             './bower_components/angular-mocks/angular-mocks.js',
             './merlin/static/merlin/js/merlin.init.js',
+            './merlin/static/merlin/js/merlin.templates.js',
             './merlin/static/merlin/js/merlin.directives.js',
             './merlin/static/merlin/js/merlin.field.models.js',
             './merlin/static/merlin/js/merlin.panel.models.js',
