@@ -69,19 +69,22 @@
       }
     })
 
-    .directive('typedField', function($http, $templateCache, $compile) {
-      return {
-        restrict: 'E',
-        scope: {
-          title: '@',
-          value: '=',
-          type: '@'
-        },
-        link: function(scope, element) {
-          var template = $templateCache.get(scope.type);
-          element.replaceWith($compile(template)(scope));
+    .directive('typedField', [
+      '$templateCache', '$compile', 'merlin.templates',
+      function($templateCache, $compile, templates) {
+        return {
+          restrict: 'E',
+          scope: {
+            title: '@',
+            value: '=',
+            type: '@'
+          },
+          link: function(scope, element) {
+            templates.templateReady(scope.type).then(function(template) {
+              element.replaceWith($compile(template)(scope));
+            })
+          }
         }
-      }
-    })
+      }])
 
 })();
