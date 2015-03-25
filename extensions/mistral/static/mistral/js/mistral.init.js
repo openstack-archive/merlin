@@ -4,14 +4,9 @@
 (function() {
   angular.module('hz')
 
-    .run(function($http, $templateCache) {
-      var fields = ['varlist', 'yaqllist'];
-      fields.forEach(function(field) {
-        var base = '/static/mistral/templates/fields/';
-        $http.get(base + field + '.html').success(function(templateContent) {
-          $templateCache.put(field, templateContent);
-        });
-      })
-    })
+    .run(['merlin.templates', function(templates) {
+      templates.prefetch('/static/mistral/templates/fields/',
+        ['varlist', 'yaqllist']);
+    }])
 
 })();
