@@ -1,7 +1,8 @@
 
 (function() {
-  angular.module('hz')
+  'use strict';
 
+  angular.module('merlin')
     .factory('merlin.field.models',
     ['merlin.utils', 'merlin.panel.models', function(utils, panels) {
 
@@ -195,4 +196,5 @@
         wildcard: wildcardMixin // use for most general type-checks
       };
     }])
+
 })();

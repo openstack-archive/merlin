@@ -2,8 +2,9 @@
  * Created by tsufiev on 2/24/15.
  */
 (function() {
-  angular.module('hz')
+  'use strict';
 
+  angular.module('mistral')
     .controller('workbookCtrl',
     ['$scope', 'mistral.workbook.models', function($scope, models) {
       var workbook = models.Workbook.create({name: 'My Workbook'});

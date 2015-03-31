@@ -1,9 +1,10 @@
 /**
  * Created by tsufiev on 2/24/15.
  */
-(function(){
-  angular.module('hz')
+(function() {
+  'use strict';
 
+  angular.module('mistral')
     .factory('mistral.workbook.models',
     ['merlin.field.models', 'merlin.panel.models', 'merlin.utils',
       function(fields, panel, utils) {

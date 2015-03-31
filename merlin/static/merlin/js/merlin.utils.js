@@ -1,9 +1,10 @@
 /**
  * Created by tsufiev on 2/24/15.
  */
-(function(){
-  angular.module('hz')
+(function() {
+  'use strict';
 
+  angular.module('merlin')
     .factory('merlin.utils', function() {
       Array.prototype.condense = function() {
         return this.filter(function(el) {
@@ -91,4 +92,5 @@
         pop: pop
       }
     })
+
 })();
