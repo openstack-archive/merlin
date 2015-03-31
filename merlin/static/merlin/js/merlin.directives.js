@@ -2,6 +2,8 @@
  * Created by tsufiev on 2/24/15.
  */
 (function() {
+  'use strict';
+
   function disableClickDefaultBehaviour(element) {
     element.find('a[data-toggle="collapse"]')
       .on('click', function(e) {
@@ -10,8 +12,7 @@
       });
   }
 
-  angular.module('hz')
-
+  angular.module('merlin')
     .directive('editable', function() {
       return {
         restrict: 'E',
@@ -30,7 +31,6 @@
         }
       };
     })
-
     .directive('panel', function($parse) {
       return {
         restrict: 'E',
@@ -46,7 +46,6 @@
         }
       }
     })
-
     .directive('collapsibleGroup', function() {
       return {
         restrict: 'E',
@@ -68,7 +67,6 @@
         }
       }
     })
-
     .directive('typedField', function($http, $templateCache, $compile) {
       return {
         restrict: 'E',

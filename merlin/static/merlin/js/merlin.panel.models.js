@@ -1,9 +1,10 @@
 /**
  * Created by tsufiev on 2/24/15.
  */
-(function(){
-  angular.module('hz')
+(function() {
+  'use strict';
 
+  angular.module('merlin')
     .factory('merlin.panel.models', ['merlin.utils', function(utils) {
       var rowProto = {
         create: function(items) {
@@ -148,4 +149,5 @@
         rowmixin: rowMixin
       }
     }])
+
 })();
