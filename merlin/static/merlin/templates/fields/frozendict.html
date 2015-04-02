@@ -1,7 +1,7 @@
 <collapsible-group title="{$ title $}">
-  <div ng-repeat="row in value.getRows() track by row.id">
+  <div ng-repeat="row in value | extractRows track by row.id">
     <div ng-class="{'three-columns': row.index !== undefined}">
-      <div ng-repeat="item in row.getItems() track by item.id"
+      <div ng-repeat="item in row | extractItems track by item.id"
            ng-class="{'right-column': item.isAtomic() && $odd, 'left-column': item.isAtomic() && $even}">
         <div class="form-group">
           <label for="elem-{$ $id $}.{$ item.getID() $}">{$ item.getTitle() $}</label>

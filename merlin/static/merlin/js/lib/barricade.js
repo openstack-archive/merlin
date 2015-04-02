@@ -21,6 +21,8 @@ var Barricade = (function () {
         ImmutableObject, InstanceofMixin, MutableObject, Observable, Omittable,
         Primitive, Validatable;
 
+    var global_hash_counter = 0;
+
     /**
     * Blueprints are used to define mixins. They can be used to enable private
     * state. Blueprints are meant to be applied to new instances of a class to
@@ -166,7 +168,7 @@ var Barricade = (function () {
     * @mixin
     * @memberof Barricade
     */
-    Identifiable = Blueprint.create(function (id) {
+    Identifiable = Blueprint.create(function (counter, id) {
         /**
         * Returns the ID
         * @method getID
@@ -176,6 +178,14 @@ var Barricade = (function () {
         */
         this.getID = function () {
             return id;
+        };
+
+        var hashCode;
+        this.hashCode = function () {
+            if ( hashCode === undefined ) {
+                hashCode = 'obj-' + counter;
+            }
+            return hashCode;
         };
 
         /**
@@ -553,7 +563,7 @@ var Barricade = (function () {
                 Enumerated.call(self, schema['@enum']);
             }
 
-            Identifiable.call(self, parameters.id);
+            Identifiable.call(self, ++global_hash_counter, parameters.id);
 
             return self;
         },
@@ -935,22 +945,42 @@ var Barricade = (function () {
         },
 
         /**
-        * Converts the Arraylike and all of its elements to JSON.
+        * Converts the Arraylike and all of its elements to JSON. Produces the
+        * JSON representation that can be fed into class constructor.
         * @memberof Barricade.Arraylike
         * @instance
         * @param {Boolean} [ignoreUnused]
                  Whether to include unused entries. Has no effect at Arraylike's
                  level, but is passed into each element for them to decide.
-        * @returns {Array} JSON array containing JSON representations of each
-                           element.
+        * @returns {Array} JSON array containing raw JSON representations of
+                           each element.
         */
         toJSON: function (ignoreUnused) {
-            return this._data.map(function (el) {
-                return el.toJSON(ignoreUnused);
-            });
+            return toJSONArraylike.call(this, ignoreUnused, 'toJSON');
+        },
+
+        /**
+         * Converts the Arraylike and all of its elements to JSON. Produces the
+         * JSON prettified representation (not meant for later use by Barricade
+         * itself).
+         * @memberof Barricade.Arraylike
+         * @instance
+         * @param {Boolean} [ignoreUnused]
+         Whether to include unused entries. Has no effect at Arraylike's
+         level, but is passed into each element for them to decide.
+         * @returns {Array} JSON array containing pretty JSON representations of
+         each element.
+         */
+        toPrettyJSON: function (ignoreUnused) {
+            return toJSONArraylike.call(this, ignoreUnused, 'toPrettyJSON');
         }
     });
 
+function toJSONArraylike (ignoreUnused, methodName) {
+    return this._data.map(function (el) {
+        return el[methodName](ignoreUnused);
+    });
+}
     /**
     * Array_ is provided to simply differentiate between Barricade arrays and
     * other classes that are array-like, such as MutableObject.
@@ -1087,20 +1117,36 @@ var Barricade = (function () {
         * @param {Boolean} [ignoreUnused]
                  Whether to include unused entries. If true, unused values will
                  not have their key/value pairs show up in the resulting JSON.
-        * @returns {Object} JSON representation of the ImmutableObject and its
-                   values.
+        * @returns {Object} raw JSON representation of the ImmutableObject and
+                   its values.
         */
         toJSON: function (ignoreUnused) {
-            var data = this._data;
-            return this.getKeys().reduce(function (jsonOut, key) {
-                if (ignoreUnused !== true || data[key].isUsed()) {
-                    jsonOut[key] = data[key].toJSON(ignoreUnused);
-                }
-                return jsonOut;
-            }, {});
+            return toJSONImmutable.call(this, ignoreUnused, 'toJSON');
+        },
+
+        /**
+         * @memberof Barricade.ImmutableObject
+         * @instance
+         * @param {Boolean} [ignoreUnused]
+         Whether to include unused entries. If true, unused values will
+         not have their key/value pairs show up in the resulting JSON.
+         * @returns {Object} pretty JSON representation of the ImmutableObject
+         and its values.
+         */
+        toPrettyJSON: function (ignoreUnused) {
+            return toJSONImmutable.call(this, ignoreUnused, 'toPrettyJSON');
         }
     });
 
+function toJSONImmutable (ignoreUnused, methodName) {
+    var data = this._data;
+    return this.getKeys().reduce(function (jsonOut, key) {
+        if (ignoreUnused !== true || data[key].isUsed()) {
+            jsonOut[key] = data[key][methodName](ignoreUnused);
+        }
+        return jsonOut;
+    }, {});
+}
     /**
     * @class
     * @memberof Barricade
@@ -1201,21 +1247,39 @@ var Barricade = (function () {
                  Whether to include unused entries. If true, elements that are
                  unused will not be included in the return value. This parameter
                  is also passed to each element's `toJSON()` method.
-        * @returns {Object} JSON object containing JSON representations of each
-                   element.
+        * @returns {Object} raw JSON object containing JSON representations of
+                   each element.
         */
         toJSON: function (ignoreUnused) {
-            return this.toArray().reduce(function (jsonOut, element) {
-                if (jsonOut.hasOwnProperty(element.getID())) {
-                    logError("ID found multiple times: " + element.getID());
-                } else {
-                    jsonOut[element.getID()] = element.toJSON(ignoreUnused);
-                }
-                return jsonOut;
-            }, {});
+            return toJSONMutable.call(this, ignoreUnused, 'toJSON');
+        },
+
+        /**
+         * Converts the MutableObject and all of its elements to JSON.
+         * @memberof Barricade.MutableObject
+         * @instance
+         * @param {Boolean} [ignoreUnused]
+         Whether to include unused entries. If true, elements that are
+         unused will not be included in the return value. This parameter
+         is also passed to each element's `toJSON()` method.
+         * @returns {Object} pretty JSON object containing JSON representations
+         of each element.
+         */
+        toPrettyJSON: function (ignoreUnused) {
+            return toJSONMutable.call(this, ignoreUnused, 'toPrettyJSON');
         }
     });
 
+function toJSONMutable (ignoreUnused, methodName) {
+    return this.toArray().reduce(function (jsonOut, element) {
+        if (jsonOut.hasOwnProperty(element.getID())) {
+            logError("ID found multiple times: " + element.getID());
+        } else {
+            jsonOut[element.getID()] = element[methodName](ignoreUnused);
+        }
+        return jsonOut;
+    }, {});
+}
     /**
     * @class
     * @memberof Barricade
@@ -1286,11 +1350,23 @@ var Barricade = (function () {
 
         /**
         * Converts the Primitive to JSON (which is simply the value itself).
+        * Meant to be used in raw JSON representations.
         * @memberof Barricade.Primitive
         * @instance
         * @returns {JSON}
         */
         toJSON: function () {
+            return this._data;
+        },
+
+        /**
+         * Converts the Primitive to JSON (which is simply the value itself).
+         * Meant to be used in pretty JSON representations.
+         * @memberof Barricade.Primitive
+         * @instance
+         * @returns {JSON}
+         */
+        toPrettyJSON: function () {
             return this._data;
         }
     });
