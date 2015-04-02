@@ -21,6 +21,8 @@ var Barricade = (function () {
         ImmutableObject, InstanceofMixin, MutableObject, Observable, Omittable,
         Primitive, Validatable;
 
+    var id = 0;
+
     /**
     * Blueprints are used to define mixins. They can be used to enable private
     * state. Blueprints are meant to be applied to new instances of a class to
@@ -436,6 +438,8 @@ var Barricade = (function () {
             events[eventName].push(callback);
             return this;
         };
+
+      this.events = events;
     });
 
     /**
@@ -554,6 +558,7 @@ var Barricade = (function () {
             }
 
             Identifiable.call(self, parameters.id);
+            self._id = id++;
 
             return self;
         },
