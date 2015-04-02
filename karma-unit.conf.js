@@ -45,7 +45,8 @@ module.exports = function (config) {
             './merlin/static/merlin/js/lib/barricade.js',
             './merlin/static/merlin/js/lib/js-yaml.js',
             'merlin/test/js/utilsSpec.js',
-            'merlin/test/js/templatesSpec.js'
+            'merlin/test/js/templatesSpec.js',
+            'merlin/test/js/filtersSpec.js'
         ],
 
         exclude: [

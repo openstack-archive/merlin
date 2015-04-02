@@ -134,7 +134,6 @@
               return self.get(key);
             })
           };
-          panels.rowmixin.call(self);
           meldGroup.call(self);
           return self;
         }
@@ -151,11 +150,12 @@
           modelMixin.call(self, 'dictionary');
 
           self.add = function() {
-            var newID = baseKey + utils.getNextIDSuffix(self, /(key)([0-9]+)/),
+            var regexp = new RegExp('(' + baseKey + ')([0-9]+)'),
+              newID = baseKey + utils.getNextIDSuffix(self, regexp),
               newValue;
             if ( _elClass.instanceof(Barricade.ImmutableObject) ) {
               if ( 'name' in _elClass._schema ) {
-                var nameNum = utils.getNextIDSuffix(self, new RegExp('(' + baseName + ')([0-9]+)'));
+                var nameNum = utils.getNextIDSuffix(self, regexp);
                 newValue = {name: baseName + nameNum};
               } else {
                 newValue = {};

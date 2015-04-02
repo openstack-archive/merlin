@@ -34,14 +34,12 @@
         var nextSuffix = getWorkbookNextIDSuffix(baseActionId),
           newID = baseActionId + nextSuffix;
         workbook.get('actions').push({name: 'Action ' + nextSuffix}, {id: newID});
-        workbook.addPanel(workbook.get('actions'), newID, workbook.get('actions').length());
       };
 
       $scope.addWorkflow = function() {
         var nextSuffix = getWorkbookNextIDSuffix(baseWorkflowId),
           newID = baseWorkflowId + nextSuffix;
         workbook.get('workflows').push({name: 'Workflow ' + nextSuffix}, {id: newID});
-        workbook.addPanel(workbook.get('workflows'), newID);
       };
 
     }])
