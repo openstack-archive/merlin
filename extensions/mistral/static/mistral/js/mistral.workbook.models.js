@@ -10,7 +10,7 @@
       function(fields, panel, utils) {
         var models = {};
 
-        var varlistValueFactory = function(json, parameters) {
+        function varlistValueFactory(json, parameters) {
           var type = Barricade.getType(json);
           if ( json === undefined || type === String ) {
             return fields.string.create(json, parameters);
@@ -65,8 +65,8 @@
                 });
                 return self;
               },
-              toJSON: function() {
-                var json = fields.frozendict.toJSON.apply(this, arguments);
+              toPrettyJSON: function() {
+                var json = fields.frozendict.toPrettyJSON.apply(this, arguments);
                 return json.value;
               }
             }, {
@@ -104,8 +104,8 @@
         });
 
         models.Action =  fields.frozendict.extend({
-          toJSON: function() {
-            var json = fields.frozendict.toJSON.apply(this, arguments);
+          toPrettyJSON: function() {
+            var json = fields.frozendict.toPrettyJSON.apply(this, arguments);
             delete json.name;
             return json;
           }
@@ -154,8 +154,8 @@
         });
 
         models.Task = fields.frozendict.extend({
-          toJSON: function() {
-            var json = fields.frozendict.toJSON.apply(this, arguments);
+          toPrettyJSON: function() {
+            var json = fields.frozendict.toPrettyJSON.apply(this, arguments);
             delete json.name;
             return json;
           }
@@ -246,8 +246,8 @@
           },
           'policies': {
             '@class': fields.frozendict.extend({
-              toJSON: function() {
-                var json = fields.frozendict.toJSON.apply(this, arguments);
+              toPrettyJSON: function() {
+                var json = fields.frozendict.toPrettyJSON.apply(this, arguments);
                 json.retry = {
                   count: utils.pop(json, 'retry-count'),
                   delay: utils.pop(json, 'retry-delay'),
@@ -324,8 +324,17 @@
         });
 
         models.Workflow = fields.frozendict.extend({
-          toJSON: function() {
-            var json = fields.frozendict.toJSON.apply(this, arguments);
+          create: function(json, parameters) {
+            var self = fields.frozendict.create.call(this, json, parameters);
+            self.on('childChange', function(child, op) {
+              if ( child === self.get('type') && op !== 'id' ) {
+                self.emit('change', 'workflowType');
+              }
+            });
+            return self;
+          },
+          toPrettyJSON: function() {
+            var json = fields.frozendict.toPrettyJSON.apply(this, arguments);
             delete json.name;
             return json;
           }
@@ -370,6 +379,22 @@
               }
             })
           },
+          'tasks': {
+            '@class': fields.dictionary.extend({}, {
+              '@meta': {
+                'index': 5,
+                'group': true
+              },
+              '?': {
+                '@class': models.Task
+              }
+            })
+          }
+
+        });
+
+        models.ReverseWorkflow = models.Workflow.extend({});
+        models.DirectWorkflow = models.Workflow.extend({}, {
           'task-defaults': {
             '@class': fields.frozendict.extend({}, {
               '@required': false,
@@ -403,28 +428,22 @@
                 })
               }
             })
-          },
-          'tasks': {
-            '@class': fields.dictionary.extend({}, {
-              '@meta': {
-                'index': 5,
-                'group': true
-              },
-              '?': {
-                '@class': models.Task
-              }
-            })
           }
-
         });
 
+        var workflowTypes = {
+          'direct': models.DirectWorkflow,
+          'reverse': models.ReverseWorkflow
+        };
+
+        function workflowFactory(json, parameters) {
+          var type = json.type || 'direct';
+          return workflowTypes[type].create(json, parameters);
+        }
+
         models.Workbook = fields.frozendict.extend({
-          create: function(json, parameters) {
-            var self = fields.frozendict.create.call(this, json, parameters);
-            return panel.panelmixin.call(self);
-          },
           toYAML: function() {
-            return jsyaml.dump(this.toJSON());
+            return jsyaml.dump(this.toPrettyJSON());
           }
         }, {
           'version': {
@@ -470,13 +489,30 @@
             })
           },
           'workflows': {
-            '@class': fields.dictionary.extend({}, {
+            '@class': fields.dictionary.extend({
+              create: function(json, parameters) {
+                var self = fields.dictionary.create.call(this, json, parameters);
+                self.on('childChange', function(child, op) {
+                  if ( op === 'workflowType' ) {
+                    var workflowId = child.getID(),
+                      workflowPos = self.getPosByID(workflowId),
+                      workflowData = child.toJSON(),
+                      newType = child.get('type').get(),
+                      newWorkflow = workflowTypes[newType].create(
+                        workflowData, {id: workflowId});
+                    self.set(workflowPos, newWorkflow);
+                  }
+                });
+                return self;
+              }
+            }, {
               '@meta': {
                 'index': 4,
                 'panelIndex': 2
               },
               '?': {
-                '@class': models.Workflow
+                '@class': models.Workflow,
+                '@factory': workflowFactory
               }
             })
           }
