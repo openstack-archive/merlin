@@ -4,7 +4,7 @@
 (function() {
   'use strict';
 
-var merlinApp = angular.module('merlin', [])
+  var merlinApp = angular.module('merlin', [])
     .run(['merlin.templates', function(templates) {
       templates.prefetch('/static/merlin/templates/fields/',
         ['dictionary', 'frozendict', 'list', 'string', 'text', 'group', 'number',
