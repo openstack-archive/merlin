@@ -436,6 +436,8 @@ var Barricade = (function () {
             events[eventName].push(callback);
             return this;
         };
+
+      this.events = events;
     });
 
     /**
