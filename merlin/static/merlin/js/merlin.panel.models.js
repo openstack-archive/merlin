@@ -28,9 +28,14 @@
               if ( angular.isArray(itemsOrContainer) && !itemsOrContainer.length ) {
                 return null;
               }
-              this.id = utils.getNewId();
               if ( angular.isArray(itemsOrContainer) ) {
                 this._items = itemsOrContainer;
+                var suffix = this._items.map(function(item) {
+                  return item.getID();
+                }).reduce(function(string1, string2) {
+                  return string1 + string2;
+                }, '').hashCode();
+                this.id = utils.getNewId(suffix);
               } else {
                 this._barricadeContainer = itemsOrContainer;
                 this._barricadeId = id;
@@ -55,51 +60,44 @@
               }
               return this._rows;
             },
-            remove: function(id) {
-              for ( var i = 0; i < panels.length; i++ ) {
-                if ( panels[i].id === id ) {
-                  var container = this._barricadeContainer;
-                  container.remove.call(container, this._barricadeId);
-                  panels.splice(i, 1);
-                  break;
-                }
-              }
+            remove: function() {
+              var container = this._barricadeContainer;
+              container.remove.call(container, this._barricadeId);
             }
-          },
-          panels;
+          };
 
         this.getPanels = function(filterKey) {
-          if ( panels === undefined ) {
-            panels = [];
-            var items = self._getContents();
-            utils.groupByMetaKey(items, 'panelIndex').forEach(function(items) {
-              // check for 'actions' and 'workflows' containers
-              if ( items[0].instanceof(Barricade.MutableObject) ) {
-                items[0].getIDs().forEach(function(id) {
-                  panels.push(Object.create(panelProto).create(items[0], id));
-                });
-              } else {
-                panels.push(Object.create(panelProto).create(items));
-              }
-            });
-            panels = panels.condense();
-          }
+          var panels = [],
+            items = self._getContents();
+          utils.groupByMetaKey(items, 'panelIndex').forEach(function(items) {
+            // check for 'actions' and 'workflows' containers
+            if ( items[0].instanceof(Barricade.MutableObject) ) {
+              items[0].getIDs().forEach(function(id) {
+                panels.push(Object.create(panelProto).create(items[0], id));
+              });
+            } else {
+              panels.push(Object.create(panelProto).create(items));
+            }
+          });
+          panels = panels.condense();
+
           if ( filterKey ) {
             panels.filter(function(panel) {
               return panel._barricadeId && panel._barricadeId.match(filterKey);
             })
           }
+          console.log(panels);
           return panels;
         };
 
-        this.addPanel = function(barricadeContainer, itemID, panelIndex) {
-          var panel = Object.create(panelProto).create(barricadeContainer, itemID);
-          if ( panelIndex ) {
-            panels.splice(panelIndex, 0, panel);
-          }else {
-            panels.push(panel);
-          }
-        };
+        //this.addPanel = function(barricadeContainer, itemID, panelIndex) {
+        //  var panel = Object.create(panelProto).create(barricadeContainer, itemID);
+        //  if ( panelIndex ) {
+        //    panels.splice(panelIndex, 0, panel);
+        //  }else {
+        //    panels.push(panel);
+        //  }
+        //};
         return this;
       });
 

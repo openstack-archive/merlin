@@ -324,6 +324,15 @@
         });
 
         models.Workflow = fields.frozendict.extend({
+          create: function(json, parameters) {
+            var self = fields.frozendict.create.call(this, json, parameters);
+            self.on('childChange', function(child) {
+              if ( child === self.get('type') ) {
+                self.emit('change', 'workflowType');
+              }
+            });
+            return self;
+          },
           toJSON: function() {
             var json = fields.frozendict.toJSON.apply(this, arguments);
             delete json.name;
@@ -370,6 +379,22 @@
               }
             })
           },
+          'tasks': {
+            '@class': fields.dictionary.extend({}, {
+              '@meta': {
+                'index': 5,
+                'group': true
+              },
+              '?': {
+                '@class': models.Task
+              }
+            })
+          }
+
+        });
+
+        models.ReverseWorkflow = models.Workflow;
+        models.DirectWorkflow = models.Workflow.extend({}, {
           'task-defaults': {
             '@class': fields.frozendict.extend({}, {
               '@required': false,
@@ -403,20 +428,13 @@
                 })
               }
             })
-          },
-          'tasks': {
-            '@class': fields.dictionary.extend({}, {
-              '@meta': {
-                'index': 5,
-                'group': true
-              },
-              '?': {
-                '@class': models.Task
-              }
-            })
           }
-
         });
+
+        var workflowTypes = {
+          'direct': models.DirectWorkflow,
+          'reverse': models.ReverseWorkflow
+        };
 
         models.Workbook = fields.frozendict.extend({
           create: function(json, parameters) {
@@ -470,7 +488,26 @@
             })
           },
           'workflows': {
-            '@class': fields.dictionary.extend({}, {
+            '@class': fields.dictionary.extend({
+              create: function(json, parameters) {
+                var self = fields.dictionary.create.call(this, json, parameters);
+                self.on('childChange', function(child, op) {
+                  if ( op === 'workflowType' ) {
+                    var workflowId = child.getID(),
+                      workflowPos = self.getPosByID(workflowId),
+                      workflowData = child.toJSON(),
+                      newType = child.get('type').get(),
+                      newWorkflow = workflowTypes[newType].create(
+                        workflowData, {id: workflowId});
+                    window.oldWF = child;
+                    window.newWF = newWorkflow;
+                    self.remove()
+                    self.set(workflowPos, newWorkflow);
+                  }
+                });
+                return self;
+              }
+            }, {
               '@meta': {
                 'index': 4,
                 'panelIndex': 2

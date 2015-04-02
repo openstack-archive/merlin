@@ -61,17 +61,7 @@
       <div class="two-panels">
         <div class="left-panel">
           <panel ng-repeat="panel in workbook.getPanels() track by panel.id"
-                 title="{$ panel.getTitle() $}" removable="{$ panel.removable $}"
-                 on-remove="panel.remove(panel.id)">
-            <div ng-repeat="row in panel.getRows() track by row.id">
-              <div ng-class="{'two-columns': row.index !== undefined }">
-                <div ng-repeat="item in row.getItems() track by item.id"
-                     ng-class="{'right-column': item.isAtomic() && $odd, 'left-column': item.isAtomic() && $even}">
-                  <typed-field title="{$ item.getTitle() $}" value="item" type="{$ item.getType() $}"></typed-field>
-                  <div class="clearfix" ng-if="$odd"></div>
-                </div>
-              </div>
-            </div>
+                 >
           </panel>
         </div>
         <!-- YAML Panel -->
