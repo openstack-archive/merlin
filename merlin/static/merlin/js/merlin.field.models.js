@@ -36,6 +36,7 @@
           if ( !arguments.length ) {
             return this.get();
           } else {
+            debugger;
             this.set(arguments[0]);
           }
         };
