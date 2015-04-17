@@ -28,6 +28,20 @@ describe('merlin.utils', function() {
     });
   });
 
+  describe('getNewId function', function() {
 
+  });
+
+  describe('groupByMetaKey function', function() {
+
+  });
+
+  describe('getNextIDSuffix function', function() {
+
+  });
+
+  describe('pop function', function() {
+
+  });
 
 });
