@@ -27,15 +27,7 @@ describe('merlin.utils', function() {
       expect(array.condense()).toEqual([1, 0, 15, 7, 8]);
     });
   });
-  function extend(proto, extension) {
-    var newObj;
-    proto = (proto !== undefined ? proto : null);
-    newObj = Object.create(proto);
-    Object.keys(extension).forEach(function(key) {
-      newObj[key] = extension[key];
-    });
-    return newObj;
-  }
+
   describe('extend function', function() {
     var obj;
 
@@ -62,6 +54,22 @@ describe('merlin.utils', function() {
       expect(obj.key1).toBe(10);
       expect(obj.key2).toBe(20);
     });
-  })
+  });
+
+  describe('getNewId function', function() {
+
+  });
+
+  describe('groupByMetaKey function', function() {
+
+  });
+
+  describe('getNextIDSuffix function', function() {
+
+  });
+
+  describe('pop function', function() {
+
+  });
 
 });
