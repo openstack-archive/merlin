@@ -72,13 +72,24 @@
         return item;
       }
 
+      function pop(obj, key) {
+        if ( obj.hasOwnProperty(key) ) {
+          var value = obj[key];
+          delete obj[key];
+          return value;
+        } else {
+          return undefined;
+        }
+      }
+
       return {
         getMeta: getMeta,
         getNewId: getNewId,
         groupByMetaKey: groupByMetaKey,
         makeTitle: makeTitle,
         getNextIDSuffix: getNextIDSuffix,
-        enhanceItemWithID: enhanceItemWithID
+        enhanceItemWithID: enhanceItemWithID,
+        pop: pop
       }
     })
 
