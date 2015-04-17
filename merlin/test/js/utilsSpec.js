@@ -27,15 +27,7 @@ describe('merlin.utils', function() {
       expect(array.condense()).toEqual([1, 0, 15, 7, 8]);
     });
   });
-  function extend(proto, extension) {
-    var newObj;
-    proto = (proto !== undefined ? proto : null);
-    newObj = Object.create(proto);
-    Object.keys(extension).forEach(function(key) {
-      newObj[key] = extension[key];
-    });
-    return newObj;
-  }
+
   describe('extend function', function() {
     var obj;
 
@@ -47,21 +39,37 @@ describe('merlin.utils', function() {
     });
 
     it("doesn't remove existing keys from the resulting object", function() {
-      var newObj = extend(obj, {'key3': 30});
+      var newObj = utils.extend(obj, {'key3': 30});
       expect(newObj.key1).toBe(10);
       expect(newObj.key3).toBe(30);
     });
 
     it('overrides keys with the same names as the ones in extension', function() {
-      var newObj = extend(obj, {'key2': 40});
+      var newObj = utils.extend(obj, {'key2': 40});
       expect(newObj.key2).toBe(40);
     });
 
     it("doesn't touch the original object, even the keys with the same names", function() {
-      var newObj = extend(obj, {'key2': 40, 'key4': 50});
+      var newObj = utils.extend(obj, {'key2': 40, 'key4': 50});
       expect(obj.key1).toBe(10);
       expect(obj.key2).toBe(20);
     });
-  })
+  });
+
+  describe('getNewId function', function() {
+
+  });
+
+  describe('groupByMetaKey function', function() {
+
+  });
+
+  describe('getNextIDSuffix function', function() {
+
+  });
+
+  describe('pop function', function() {
+
+  });
 
 });
