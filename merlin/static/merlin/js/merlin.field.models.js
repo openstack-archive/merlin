@@ -123,7 +123,7 @@
           modelMixin.call(self, 'list');
 
           self.add = function() {
-            self.push();
+            self.push(undefined, parameters);
           };
           self.getValues = function() {
             return self.toArray();
@@ -169,6 +169,7 @@
 
           self.add = function(newID) {
             var regexp = new RegExp('(' + baseKey + ')([0-9]+)'),
+              params = Object.create(self._parameters || {}),
               newValue;
             newID = newID || baseKey + utils.getNextIDSuffix(self, regexp);
             if ( _elClass.instanceof(Barricade.ImmutableObject) ) {
@@ -181,7 +182,8 @@
             } else { // usually, it's either frozendict inside or string
               newValue = '';
             }
-            self.push(newValue, {id: newID});
+            params.id = newID;
+            self.push(newValue, params);
             _items[newID] = self.getByID(newID);
           };
           self.getValues = function() {
