@@ -26,4 +26,13 @@ cp /home/user/dev/merlin/extensions/enabled/_50_add_mistral_panel.py /usr/lib/py
 ``_50_add_mistral_panel.py`` you would be able to **Mistral** panel inside
 the **Project** dashboard, **Orchestration** panel group.
 
+# How to run Merlin unit-tests locally
+1. ``cd /home/user/dev/merlin``
+2. ``npm install``
+  * If npm is not installed yet, run ``sudo apt-get install npm`` (let's assume you're
+  using Ubuntu) and ``sudo apt-get install nodejs-legacy``
+3. ``node_modules/.bin/bower install``
+4. ``sudo npm install -g grunt-cli``
+5. ``grunt test:unit``
+
 For more info please refer to https://wiki.openstack.org/wiki/Merlin
