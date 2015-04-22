@@ -28,12 +28,12 @@ describe('merlin filters', function() {
   });
 
   describe('extractPanels() behavior:', function() {
-    var extractPanels, simpleObjClass;
+    var extractPanels, simpleMerlinObjClass;
 
     beforeEach(function() {
       extractPanels = $filter('extractPanels');
 
-      simpleObjClass = fields.frozendict.extend({}, {
+      simpleMerlinObjClass = fields.frozendict.extend({}, {
         '@type': Object,
         'key1': {
           '@type': Number
@@ -44,9 +44,31 @@ describe('merlin filters', function() {
       });
     });
 
+    it('works properly only with objects created from Merlin classes', function() {
+      var simpleBarricadeObjClass = Barricade.create({
+        '@type': Object,
+        'key1': {
+          '@type': Number
+        },
+        'key2': {
+          '@type': String
+        }
+      }),
+        simpleBarricadeObj = simpleBarricadeObjClass.create(),
+        simpleMerlinObj = simpleMerlinObjClass.create();
+
+      expect(function() {
+        return extractPanels(simpleBarricadeObj);
+      }).toThrow();
+
+      expect(function() {
+        return extractPanels(simpleMerlinObj);
+      }).not.toThrow();
+    });
+
     describe('the filter relies upon `@meta` object with `panelIndex` key', function() {
       it('and all fields without it are merged into a single panel', function() {
-        var simpleObj = simpleObjClass.create(),
+        var simpleObj = simpleMerlinObjClass.create(),
           panels = extractPanels(simpleObj);
 
         expect(panels.length).toBe(1);
