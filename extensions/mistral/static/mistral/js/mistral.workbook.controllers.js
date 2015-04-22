@@ -21,7 +21,7 @@
       function getWorkbookNextIDSuffix(base) {
         var containerName = base + 's',
           regexp = /(workflow|action)([0-9]+)/,
-          container = workbook.get(containerName);
+          container = $scope.workbook.get(containerName);
         if ( !container ) {
           throw 'Base should be either "action" or "workflow"!';
         }
@@ -33,13 +33,15 @@
       $scope.addAction = function() {
         var nextSuffix = getWorkbookNextIDSuffix(baseActionId),
           newID = baseActionId + nextSuffix;
-        workbook.get('actions').push({name: 'Action ' + nextSuffix}, {id: newID});
+        $scope.workbook.get('actions').push(
+          {name: 'Action ' + nextSuffix}, {id: newID});
       };
 
       $scope.addWorkflow = function() {
         var nextSuffix = getWorkbookNextIDSuffix(baseWorkflowId),
           newID = baseWorkflowId + nextSuffix;
-        workbook.get('workflows').push({name: 'Workflow ' + nextSuffix}, {id: newID});
+        $scope.workbook.get('workflows').push(
+          {name: 'Workflow ' + nextSuffix}, {id: newID});
       };
 
     }])

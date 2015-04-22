@@ -123,7 +123,7 @@
           modelMixin.call(self, 'list');
 
           self.add = function() {
-            self.push();
+            self.push(undefined, parameters);
           };
           self.getValues = function() {
             return self.toArray();
@@ -181,7 +181,7 @@
             } else { // usually, it's either frozendict inside or string
               newValue = '';
             }
-            self.push(newValue, {id: newID});
+            self.push(newValue, utils.extend(self._parameters, {id: newID}));
             _items[newID] = self.getByID(newID);
           };
           self.getValues = function() {
