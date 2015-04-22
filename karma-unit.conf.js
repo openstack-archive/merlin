@@ -33,22 +33,27 @@ module.exports = function (config) {
         ],
 
         files: [
-            './bower_components/angular/angular.js',
-            './bower_components/angular-mocks/angular-mocks.js',
-            './merlin/static/merlin/js/lib/underscore-min.js',
-            './merlin/static/merlin/js/merlin.init.js',
-            './merlin/static/merlin/js/merlin.templates.js',
-            './merlin/static/merlin/js/merlin.directives.js',
-            './merlin/static/merlin/js/merlin.filters.js',
-            './merlin/static/merlin/js/merlin.field.models.js',
-            './merlin/static/merlin/js/merlin.panel.models.js',
-            './merlin/static/merlin/js/merlin.utils.js',
-            './merlin/static/merlin/js/lib/angular-filter.js',
-            './merlin/static/merlin/js/lib/barricade.js',
-            './merlin/static/merlin/js/lib/js-yaml.js',
+            'bower_components/angular/angular.js',
+            'bower_components/angular-mocks/angular-mocks.js',
+            'merlin/static/merlin/js/lib/underscore-min.js',
+            'merlin/static/merlin/js/merlin.init.js',
+            'merlin/static/merlin/js/merlin.templates.js',
+            'merlin/static/merlin/js/merlin.directives.js',
+            'merlin/static/merlin/js/merlin.filters.js',
+            'merlin/static/merlin/js/merlin.field.models.js',
+            'merlin/static/merlin/js/merlin.panel.models.js',
+            'merlin/static/merlin/js/merlin.utils.js',
+            'merlin/static/merlin/js/lib/angular-filter.js',
+            'merlin/static/merlin/js/lib/barricade.js',
+            'merlin/static/merlin/js/lib/js-yaml.js',
             'merlin/test/js/utilsSpec.js',
             'merlin/test/js/templatesSpec.js',
-            'merlin/test/js/filtersSpec.js'
+            'merlin/test/js/filtersSpec.js',
+
+            'extensions/mistral/static/mistral/js/mistral.init.js',
+            'extensions/mistral/static/mistral/js/mistral.workbook.models.js',
+            'extensions/mistral/static/mistral/js/mistral.workbook.controllers.js',
+            'extensions/mistral/test/js/workbookSpec.js'
         ],
 
         exclude: [
