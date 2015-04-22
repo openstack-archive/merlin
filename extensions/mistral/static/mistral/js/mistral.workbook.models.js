@@ -197,6 +197,15 @@
         });
 
         models.Task = fields.frozendict.extend({
+          create: function(json, parameters) {
+            var self = fields.frozendict.create.call(this, json, parameters);
+            self.on('childChange', function(child, op) {
+              if ( child === self.get('type') && op !== 'id' ) {
+                self.emit('change', 'taskType');
+              }
+            });
+            return self;
+          },
           _getPrettyJSON: function() {
             var json = fields.frozendict._getPrettyJSON.apply(this, arguments);
             delete json.name;
@@ -219,32 +228,27 @@
           },
           'type': {
             '@class': fields.string.extend({}, {
-              '@enum': ['Action-based', 'Workflow-based'],
+              '@enum': [{
+                value: 'action', label: 'Action-based'
+              }, {
+                value: 'workflow', label: 'Workflow-based'
+              }],
+              '@default': 'action',
               '@meta': {
                 'index': 1,
                 'row': 0
               }
             })
           },
-          'action': {
-            '@class': fields.string.extend({}, {
+          'description': {
+            '@class': fields.text.extend({}, {
               '@meta': {
-                'index': 2,
+                'index': 1,
                 'row': 1
               }
             })
           },
           'input': {
-            '@class': fields.dictionary.extend({}, {
-              '@meta': {
-                'index': 3
-              },
-              '?': {
-                '@class': fields.string
-              }
-            })
-          },
-          'publish': {
             '@class': fields.dictionary.extend({}, {
               '@meta': {
                 'index': 4
@@ -254,35 +258,12 @@
               }
             })
           },
-          'on-error': {
-            '@class': fields.list.extend({}, {
+          'publish': {
+            '@class': fields.dictionary.extend({}, {
               '@meta': {
-                'title': 'On error',
                 'index': 5
               },
-              '*': {
-                '@class': fields.string
-              }
-            })
-          },
-          'on-success': {
-            '@class': fields.list.extend({}, {
-              '@meta': {
-                'title': 'On success',
-                'index': 6
-              },
-              '*': {
-                '@class': fields.string
-              }
-            })
-          },
-          'on-complete': {
-            '@class': fields.list.extend({}, {
-              '@meta': {
-                'title': 'On complete',
-                'index': 7
-              },
-              '*': {
+              '?': {
                 '@class': fields.string
               }
             })
@@ -300,7 +281,7 @@
               }
             }, {
               '@meta': {
-                'index': 8
+                'index': 9
               },
               '@required': false,
               'wait-before': {
@@ -366,6 +347,93 @@
           }
         });
 
+        models.ReverseWFTask = models.Task.extend({}, {
+          'requires': {
+            '@class': fields.string.extend({}, {
+              '@meta': {
+                'row': 2,
+                'index': 3
+              }
+            })
+          }
+        });
+
+        models.DirectWFTask = models.Task.extend({}, {
+          'on-error': {
+            '@class': fields.list.extend({}, {
+              '@meta': {
+                'title': 'On error',
+                'index': 6
+              },
+              '*': {
+                '@class': fields.string
+              }
+            })
+          },
+          'on-success': {
+            '@class': fields.list.extend({}, {
+              '@meta': {
+                'title': 'On success',
+                'index': 7
+              },
+              '*': {
+                '@class': fields.string
+              }
+            })
+          },
+          'on-complete': {
+            '@class': fields.list.extend({}, {
+              '@meta': {
+                'title': 'On complete',
+                'index': 8
+              },
+              '*': {
+                '@class': fields.string
+              }
+            })
+          }
+        });
+
+        models.ActionTaskMixin = Barricade.Blueprint.create(function() {
+          return this.extend({}, {
+            'action': {
+              '@class': fields.string.extend({}, {
+                '@meta': {
+                  'row': 1,
+                  'index': 2
+                }
+              })
+            }
+          });
+        });
+
+        models.WorkflowTaskMixin = Barricade.Blueprint.create(function() {
+          return this.extend({}, {
+            'workflow': {
+              '@class': fields.string.extend({}, {
+                '@meta': {
+                  'row': 1,
+                  'index': 2
+                }
+              })
+            }
+          });
+        });
+
+        var taskTypes = {
+          'direct': models.DirectWFTask,
+          'reverse': models.ReverseWFTask,
+          'action': models.ActionTaskMixin,
+          'workflow': models.WorkflowTaskMixin
+        };
+
+        function TaskFactory(json, parameters) {
+          var type = json.type || 'action',
+            taskType = taskTypes[parameters.wfType],
+            task = taskType.create(json, parameters);
+          return taskTypes[type].call(task);
+        }
+
         models.Workflow = fields.frozendict.extend({
           create: function(json, parameters) {
             var self = fields.frozendict.create.call(this, json, parameters);
@@ -423,13 +491,29 @@
             })
           },
           'tasks': {
-            '@class': fields.dictionary.extend({}, {
+            '@class': fields.dictionary.extend({
+              create: function(json, parameters) {
+                var self = fields.dictionary.create.call(this, json, parameters);
+                self.on('childChange', function(child, op) {
+                  if ( op === 'taskType' ) {
+                    var taskId = child.getID(),
+                      params = child._parameters,
+                      taskPos = self.getPosByID(taskId),
+                      taskData = child.toJSON();
+                    params.id = taskId;
+                    self.set(taskPos, TaskFactory(taskData, params));
+                  }
+                });
+                return self;
+              }
+            }, {
               '@meta': {
                 'index': 5,
                 'group': true
               },
               '?': {
-                '@class': models.Task
+                '@class': models.Task,
+                '@factory': TaskFactory
               }
             })
           }
@@ -480,8 +564,9 @@
         };
 
         function workflowFactory(json, parameters) {
-          var type = json.type || 'direct';
-          return workflowTypes[type].create(json, parameters);
+          var type = json.type || 'direct',
+            params = utils.extend(parameters, {wfType: type});
+          return workflowTypes[type].create(json, params);
         }
 
         models.Workbook = fields.frozendict.extend({
@@ -539,11 +624,11 @@
                   if ( op === 'workflowType' ) {
                     var workflowId = child.getID(),
                       workflowPos = self.getPosByID(workflowId),
-                      workflowData = child.toJSON(),
-                      newType = child.get('type').get(),
-                      newWorkflow = workflowTypes[newType].create(
-                        workflowData, {id: workflowId});
-                    self.set(workflowPos, newWorkflow);
+                      params = child._parameters,
+                      workflowData = child.toJSON();
+                    params.wfType = child.type;
+                    params.id = workflowId;
+                    self.set(workflowPos, workflowFactory(workflowData, params));
                   }
                 });
                 return self;
