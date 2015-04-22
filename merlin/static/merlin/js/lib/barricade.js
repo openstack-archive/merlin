@@ -871,10 +871,10 @@ var Barricade = (function () {
         * @memberof Barricade.Arraylike
         * @private
         */
-        _sift: function (json) {
+        _sift: function (json, parameters) {
             return json.map(function (el) {
                 return this._keyClassCreate(
-                    this._elSymbol, this._elementClass, el);
+                    this._elSymbol, this._elementClass, el, parameters);
             }, this);
         }, 
 
@@ -1030,11 +1030,11 @@ var Barricade = (function () {
         * @memberof Barricade.ImmutableObject
         * @private
         */
-        _sift: function (json) {
+        _sift: function (json, parameters) {
             var self = this;
             return this.getKeys().reduce(function (objOut, key) {
-                objOut[key] =
-                    self._keyClassCreate(key, self._keyClasses[key], json[key]);
+                objOut[key] = self._keyClassCreate(
+                  key, self._keyClasses[key], json[key], parameters);
                 return objOut;
             }, {});
         },
@@ -1171,10 +1171,12 @@ var Barricade = (function () {
         * @memberof Barricade.MutableObject
         * @private
         */
-        _sift: function (json) {
+        _sift: function (json, parameters) {
             return Object.keys(json).map(function (key) {
-                return this._keyClassCreate(this._elSymbol, this._elementClass,
-                                            json[key], {id: key});
+                var params = Object.create(parameters);
+                params.id = key;
+                return this._keyClassCreate(
+                  this._elSymbol, this._elementClass, json[key], params);
             }, this);
         },
 

@@ -82,6 +82,16 @@
         }
       }
 
+      function extend(proto, extension) {
+        var newObj;
+        proto = (proto !== undefined ? proto : null);
+        newObj = Object.create(proto);
+        Object.keys(extension).forEach(function(key) {
+          newObj[key] = extension[key];
+        });
+        return newObj;
+      }
+
       return {
         getMeta: getMeta,
         getNewId: getNewId,
@@ -89,6 +99,7 @@
         makeTitle: makeTitle,
         getNextIDSuffix: getNextIDSuffix,
         enhanceItemWithID: enhanceItemWithID,
+        extend: extend,
         pop: pop
       }
     })
