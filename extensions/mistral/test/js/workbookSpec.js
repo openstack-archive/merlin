@@ -26,6 +26,8 @@ describe('workbook model logic', function() {
   });
 
   function getWorkflow(workflowID) {
+    // once workflow is recreated with JSON, old instance is no longer
+    // valid, thus we need to get it this way
     return workbook.get('workflows').getByID(workflowID);
   }
 
@@ -62,6 +64,8 @@ describe('workbook model logic', function() {
       taskID = 'task1';
 
     function getTask(taskID) {
+      // once task is recreated with JSON, old instance is no longer
+      // valid, thus we need to get it this way
       return getWorkflow(workflowID).get('tasks').getByID(taskID);
     }
 

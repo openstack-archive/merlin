@@ -5,12 +5,19 @@
   'use strict';
 
   angular.module('merlin', [])
-    .run(['merlin.templates', function(templates) {
-      templates.prefetch('/static/merlin/templates/fields/',
-        ['dictionary', 'frozendict', 'list', 'string', 'text', 'group', 'number',
-          'choices'
-        ]
-      );
-    }])
+    .config(function($interpolateProvider) {
+      // Replacing the default angular symbol
+      // allow us to mix angular with django templates
+      $interpolateProvider.startSymbol('{$');
+      $interpolateProvider.endSymbol('$}');
+    })
+    // move these 2 values out of run section to change them in unit-tests
+    .value('fieldTemplatesUrl', '/static/merlin/templates/fields/')
+    .value('fieldTemplates', ['dictionary', 'frozendict', 'list',
+      'string', 'text', 'group', 'number', 'choices'])
+    .run(['merlin.templates', 'fieldTemplatesUrl', 'fieldTemplates',
+      function(templates, rootUrl, fieldList) {
+        templates.prefetch(rootUrl, fieldList);
+      }])
 
 })();

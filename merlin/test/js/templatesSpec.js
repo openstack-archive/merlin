@@ -72,7 +72,7 @@ describe('merlin templates', function() {
       success, failure;
 
     function processTemplate(fieldName) {
-      var promise = templates.templateReady(fieldName)
+      var promise = templates.templateReady(fieldName);
 
       promise.then(function() {
         success = true;
