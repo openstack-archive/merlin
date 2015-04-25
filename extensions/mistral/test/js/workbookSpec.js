@@ -57,6 +57,7 @@ describe('workbook model logic', function() {
 
       expect(getWorkflow(workflowID).instanceof(models.DirectWorkflow)).toBe(true);
     });
+
   });
 
   describe('defines task structure transformations', function() {
@@ -71,6 +72,17 @@ describe('workbook model logic', function() {
 
     beforeEach(function() {
       workbook.get('workflows').push({name: 'Workflow 1'}, {id: workflowID});
+    });
+
+    it('a task deletion works in conjunction with tasks logic', function() {
+      var workflow = getWorkflow(workflowID),
+        params = utils.extend(workflow._parameters, {id: taskID});
+
+      workflow.get('tasks').push({name: 'Task 1'}, params);
+      expect(getTask(taskID)).toBeDefined();
+
+      getTask(taskID).remove();
+      expect(getTask(taskID)).toBeUndefined();
     });
 
     describe("which start with the 'direct' workflow:", function() {

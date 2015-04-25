@@ -206,6 +206,9 @@
             });
             return self;
           },
+          remove: function() {
+            this.emit('change', 'taskRemove', this.getID());
+          },
           _getPrettyJSON: function() {
             var json = fields.frozendict._getPrettyJSON.apply(this, arguments);
             delete json.name;
@@ -216,7 +219,8 @@
             'baseKey': 'task',
             'baseName': 'Task ',
             'group': true,
-            'additive': false
+            'additive': false,
+            'removable': true
           },
           'name': {
             '@class': fields.string.extend({}, {
@@ -495,7 +499,7 @@
             '@class': fields.dictionary.extend({
               create: function(json, parameters) {
                 var self = fields.dictionary.create.call(this, json, parameters);
-                self.on('childChange', function(child, op) {
+                self.on('childChange', function(child, op, arg) {
                   if ( op === 'taskType' ) {
                     var taskId = child.getID(),
                       params = child._parameters,
@@ -503,6 +507,8 @@
                       taskData = child.toJSON();
                     params.id = taskId;
                     self.set(taskPos, TaskFactory(taskData, params));
+                  } else if ( op === 'taskRemove' ) {
+                    self.remove(arg);
                   }
                 });
                 return self;
