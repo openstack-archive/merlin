@@ -122,7 +122,7 @@ describe('merlin directives', function() {
         '<collapsible-group ' + contents + '></collapsible-group>')($scope);
     }
 
-    it('requires to specify just `on-remove` to make group removable', function() {
+    it('requires to specify `on-remove` to make group removable', function() {
       var element1, element2;
       $scope.remove = function() {};
       element1 = makeGroupElement('');
