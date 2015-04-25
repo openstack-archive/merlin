@@ -106,7 +106,7 @@
           if ( attrs.onAdd && attrs.additive !== 'false' ) {
             scope.additive = true;
           }
-          if ( attrs.onRemove ) {
+          if ( attrs.onRemove && attrs.removable !== 'false' ) {
             scope.removable = true;
           }
         }
