@@ -16,18 +16,16 @@
     .directive('editable', function() {
       return {
         restrict: 'E',
-        templateUrl: '/static/merlin/templates/editable-popup.html',
+        templateUrl: '/static/merlin/templates/editable.html',
         scope: {
           label: '@',
           value: '='
         },
         link: function(scope, element) {
-          angular.element(element).find('a[data-toggle="popover"]')
-            .popover({html: true})
-            .on('click', function(e) {
-              e.preventDefault();
-              return true;
-            });
+          element.find('a').on('click', function(e) {
+            e.preventDefault();
+            return true;
+          });
         }
       };
     })
