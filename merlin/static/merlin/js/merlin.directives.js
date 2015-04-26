@@ -22,12 +22,10 @@
           value: '='
         },
         link: function(scope, element) {
-          angular.element(element).find('a[data-toggle="popover"]')
-            .popover({html: true})
-            .on('click', function(e) {
-              e.preventDefault();
-              return true;
-            });
+          element.find('a').on('click', function(e) {
+            e.preventDefault();
+            return true;
+          });
         }
       };
     })

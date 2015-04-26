@@ -11,7 +11,7 @@ ADD_INSTALLED_APPS = ['merlin', 'mistral']
 ADD_PANEL = 'mistral.panel.MistralPanel'
 
 ADD_ANGULAR_MODULES = ['merlin', 'mistral']
-ADD_JS_FILES = ['merlin/js/custom-libs/ui-bootstrap-tpls-0.12.1.js',
+ADD_JS_FILES = ['merlin/js/custom-libs/ui-bootstrap-tpls-0.13.0-SNAPSHOT.js',
                 'merlin/js/merlin.init.js',
                 'merlin/js/merlin.templates.js',
                 'mistral/js/mistral.init.js']
