@@ -63,8 +63,7 @@
       <div class="two-panels">
         <div class="left-panel">
           <panel ng-repeat="panel in workbook | extractPanels track by panel.id"
-                 title="{$ panel.getTitle() $}" removable="{$ panel.removable $}"
-                 on-remove="panel.remove()">
+                 content="panel">
             <div ng-repeat="row in panel | extractRows track by row.id">
               <div ng-class="{'two-columns': row.index !== undefined }">
                 <div ng-repeat="item in row | extractItems track by item.id"

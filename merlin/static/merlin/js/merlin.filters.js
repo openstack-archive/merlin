@@ -36,9 +36,15 @@
           }
           return this;
         },
-        getTitle: function() {
+        title: function() {
+          var entity;
           if ( this._barricadeContainer ) {
-            return this._barricadeContainer.getByID(this._barricadeId).get('name');
+            entity = this._barricadeContainer.getByID(this._barricadeId).get('name');
+            if ( arguments.length ) {
+              entity.set(arguments[0]);
+            } else {
+              return entity.get();
+            }
           }
         },
         remove: function() {

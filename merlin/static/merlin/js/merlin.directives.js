@@ -16,20 +16,64 @@
     .directive('editable', function() {
       return {
         restrict: 'E',
-        templateUrl: '/static/merlin/templates/editable-popup.html',
-        scope: {
-          label: '@',
-          value: '='
-        },
-        link: function(scope, element) {
-          angular.element(element).find('a[data-toggle="popover"]')
-            .popover({html: true})
-            .on('click', function(e) {
-              e.preventDefault();
-              return true;
-            });
+        templateUrl: '/static/merlin/templates/editable.html',
+        require: 'ngModel',
+        scope: true,
+        link: function(scope, element, attrs, ngModelCtrl) {
+          var hiddenSpan = element.find('span.width-detector'),
+            input = element.find('input'),
+            maxWidth = 400;
+
+          function adjustWidth() {
+            var width;
+            hiddenSpan.html(scope.editableValue);
+            width = hiddenSpan.width();
+            input.width(width <= maxWidth ? width : maxWidth);
+          }
+
+          function accept() {
+            ngModelCtrl.$setViewValue(scope.editableValue);
+            scope.isEdited = false;
+            scope.$apply();
+          }
+
+          function reject() {
+            ngModelCtrl.$rollbackViewValue();
+            scope.isEdited = false;
+            scope.$apply();
+          }
+
+          scope.isEdited = false;
+          scope.$watch('editableValue', function() {
+            adjustWidth();
+          });
+          input.on('keyup', function(e) {
+            if ( e.keyCode == 13 ) {
+              accept();
+            } else if (e.keyCode == 27 ) {
+              reject();
+            }
+          });
+          ngModelCtrl.$render = function() {
+            if ( !ngModelCtrl.$viewValue ) {
+              ngModelCtrl.$viewValue = ngModelCtrl.$modelValue;
+            }
+            scope.editableValue = ngModelCtrl.$viewValue;
+            adjustWidth();
+          };
+          scope.accept = accept;
+          scope.reject = reject;
         }
       };
+    })
+    .directive('showFocus', function($timeout) {
+      return function(scope, element, attrs) {
+        scope.$watch(attrs.showFocus, function(newValue) {
+          $timeout(function() {
+            newValue && element.focus();
+          });
+        });
+      }
     })
     .directive('panel', function($parse) {
       return {
@@ -37,8 +81,7 @@
         templateUrl: '/static/merlin/templates/collapsible-panel.html',
         transclude: true,
         scope: {
-          title: '@',
-          onRemove: '&'
+          panel: '=content'
         },
         link: function(scope, element, attrs) {
           scope.removable = $parse(attrs.removable)();
