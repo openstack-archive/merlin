@@ -188,6 +188,13 @@
             if ( !Object.keys(_items).length ) {
               self.getIDs().forEach(function(id) {
                 _items[id] = self.getByID(id);
+                _items[id].keyValue = function() {
+                  if ( !arguments.length ) {
+                    return this.getID();
+                  } else {
+                    this.setID(arguments[0]);
+                  }
+                };
               });
             }
             return _items;

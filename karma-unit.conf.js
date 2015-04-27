@@ -34,6 +34,7 @@ module.exports = function (config) {
     ],
 
     files: [
+      'bower_components/jquery/dist/jquery.min.js',
       'bower_components/angular/angular.js',
       'bower_components/angular-mocks/angular-mocks.js',
       'merlin/static/merlin/js/libs/underscore/underscore-min.js',

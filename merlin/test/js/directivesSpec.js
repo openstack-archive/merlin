@@ -42,12 +42,11 @@ describe('merlin directives', function() {
     }
 
     function getPanelRemoveButton(panelElem) {
-      var iTag = panelElem.find('i').eq(1);
-      return iTag.hasClass('fa-times-circle') && iTag;
+      return panelElem.find('a').eq(2);
     }
 
-    function getCollapseBtn(groupElem) {
-      return groupElem.find('a').eq(0);
+    function getCollapseBtn(panelElem) {
+      return panelElem.find('a').eq(0);
     }
 
     function getPanelBody(panelElem) {
@@ -55,8 +54,8 @@ describe('merlin directives', function() {
       return div.hasClass('panel-body') && div;
     }
 
-    function makePanelElem(contents) {
-      var panel = $compile('<panel ' + contents + '></panel>')($scope);
+    function makePanelElem(content) {
+      var panel = $compile('<panel content="' + content + '"></panel>')($scope);
       $scope.$digest();
       return panel;
     }
@@ -67,35 +66,35 @@ describe('merlin directives', function() {
       return element;
     }
 
-    it('shows panel heading when and only when title is passed via attr', function() {
+    it('shows panel heading when and only when its title() is not false', function() {
       var title = 'My Panel',
-        element1 = makePanelElem('title="' + title +'"'),
-        element2 = makePanelElem('');
+        element1, element2;
+
+      $scope.panel1 = {
+        title: function() { return title; }
+      };
+      $scope.panel2 = {};
+      element1 = makePanelElem('panel1');
+      element2 = makePanelElem('');
 
       expect(getPanelHeading(element1).hasClass('ng-hide')).toBe(false);
       expect(element1.html()).toContain(title);
       expect(getPanelHeading(element2).hasClass('ng-hide')).toBe(true);
     });
 
-    it('requires both `title` and `removable` to be removable', function() {
+    it('requires both `.title()` and `.removable` to be removable', function() {
       var title = 'My Panel',
         element1, element2;
 
-      element1 = makePanelElem('title="' + title +'" removable="true"');
-      element2 = makePanelElem('title="' + title +'"');
-
-      expect(getPanelRemoveButton(element1).hasClass('ng-hide')).toBe(false);
-      expect(getPanelRemoveButton(element2).hasClass('ng-hide')).toBe(true);
-    });
-
-    it('with `on-remove`, but without `removable` is not removable', function() {
-      var title = 'My Panel',
-        element1, element2;
-
-      $scope.remove = function() {};
-      element1 = makePanelElem(
-        'title="' + title +'" removable="true" on-remove="remove()"');
-      element2 = makePanelElem('title="' + title +'" on-remove="remove()"');
+      $scope.panel1 = {
+        title: function() { return title; },
+        removable: true
+      };
+      $scope.panel2 = {
+        title: function() { return title; }
+      };
+      element1 = makePanelElem('panel1');
+      element2 = makePanelElem('panel2');
 
       expect(getPanelRemoveButton(element1).hasClass('ng-hide')).toBe(false);
       expect(getPanelRemoveButton(element2).hasClass('ng-hide')).toBe(true);
@@ -252,5 +251,68 @@ describe('merlin directives', function() {
       $httpBackend.flush();
       expect(element.html()).toContain('<textarea');
     })
+  });
+
+  xdescribe("'show-focus'", function() {
+    var element;
+
+    beforeEach(function() {
+      element = $compile(
+        '<div><input type="text" ng-show="show" show-focus="show"></div>')($scope);
+      $scope.$digest();
+    });
+
+    it('allows to immediately set focus on element after it was shown', function() {
+      expect(element.is(':focus')).toBe(false);
+
+      $scope.show = true;
+      $scope.$apply();
+
+      expect(element.is(':focus')).toBe(true);
+    })
+  });
+
+  describe('<editable>', function() {
+    it('starts with the value not being edited', function() {
+
+    });
+
+    it("enters the editing mode once user clicks 'fa-pencil' icon", function() {
+
+    });
+
+    describe('during editing', function() {
+      it("pressing any key except 'Enter' or 'Esc' neither exits editing state, nor changes model", function() {
+
+      });
+
+      it("pressing 'Enter' key changes model and exits editing state", function() {
+
+      });
+
+      it("clicking 'fa-check' icon changes model and exits editing state", function() {
+
+      });
+
+      it("pressing 'Esc' key exits editing state without changing model", function() {
+
+      });
+
+      it("clicking 'fa-close' icon exits editing state without changing model", function() {
+
+      });
+
+      describe('edit box automatically enlarges', function() {
+        it('to fit the value being edited', function() {
+
+        });
+
+        it('up to the limit', function() {
+
+        });
+      })
+
+    });
+
   });
 });
