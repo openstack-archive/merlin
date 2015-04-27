@@ -42,24 +42,35 @@ describe('merlin directives', function() {
     }
 
     function getPanelRemoveButton(panelElem) {
-      var iTag = panelElem.find('i').eq(0);
+      var iTag = panelElem.find('i').eq(1);
       return iTag.hasClass('fa-times-circle') && iTag;
     }
 
+    function getCollapseBtn(groupElem) {
+      return groupElem.find('a').eq(0);
+    }
+
     function getPanelBody(panelElem) {
-      var div = panelElem.children().children().eq(1).children();
+      var div = panelElem.children().children().eq(1);
       return div.hasClass('panel-body') && div;
     }
 
     function makePanelElem(contents) {
-      return $compile('<panel ' + contents + '></panel>')($scope);
+      var panel = $compile('<panel ' + contents + '></panel>')($scope);
+      $scope.$digest();
+      return panel;
+    }
+
+    function makePanelWithInnerTags() {
+      var element = $compile('<panel><span class="inner"></span></panel>')($scope);
+      $scope.$digest();
+      return element;
     }
 
     it('shows panel heading when and only when title is passed via attr', function() {
       var title = 'My Panel',
         element1 = makePanelElem('title="' + title +'"'),
         element2 = makePanelElem('');
-      $scope.$digest();
 
       expect(getPanelHeading(element1).hasClass('ng-hide')).toBe(false);
       expect(element1.html()).toContain(title);
@@ -72,7 +83,6 @@ describe('merlin directives', function() {
 
       element1 = makePanelElem('title="' + title +'" removable="true"');
       element2 = makePanelElem('title="' + title +'"');
-      $scope.$digest();
 
       expect(getPanelRemoveButton(element1).hasClass('ng-hide')).toBe(false);
       expect(getPanelRemoveButton(element2).hasClass('ng-hide')).toBe(true);
@@ -86,17 +96,37 @@ describe('merlin directives', function() {
       element1 = makePanelElem(
         'title="' + title +'" removable="true" on-remove="remove()"');
       element2 = makePanelElem('title="' + title +'" on-remove="remove()"');
-      $scope.$digest();
 
       expect(getPanelRemoveButton(element1).hasClass('ng-hide')).toBe(false);
       expect(getPanelRemoveButton(element2).hasClass('ng-hide')).toBe(true);
     });
 
     it('contents are inserted into div.panel-body tag', function() {
-      var element = $compile('<panel><span class="inner"></span></panel>')($scope);
-      $scope.$digest();
+      var panel = makePanelWithInnerTags();
 
-      expect(getPanelBody(element).find('span').hasClass('inner')).toBe(true);
+      expect(getPanelBody(panel).find('span').hasClass('inner')).toBe(true);
+    });
+
+    it('starts as being expanded', function() {
+      var panel = makePanelWithInnerTags(),
+        body = getPanelBody(panel);
+
+      expect(body.hasClass('collapse')).toBe(true);
+      expect(body.hasClass('in')).toBe(true);
+    });
+
+    it('starts to collapse after pressing on triangle next to group title', function() {
+      // NOTE(tsufiev): I wasn't able to test the final .collapse state (without .in)
+      // most probably due to transition from .collapse.in -> .collapsing -> .collapse
+      // is made with means of CSS, not
+      var element = makePanelWithInnerTags(),
+        body = getPanelBody(element),
+        link = getCollapseBtn(element);
+
+      link.triggerHandler('click');
+
+      expect(body.hasClass('collapse')).toBe(false);
+      expect(body.hasClass('collapsing')).toBe(true);
     });
 
   });
@@ -104,30 +134,65 @@ describe('merlin directives', function() {
   describe('<collapsible-group>', function() {
     function getGroupBody(groupElem) {
       var div = groupElem.children().children().eq(1);
-      return div.hasClass('collapse') && div;
+      return div.hasClass('section-body') && div;
     }
 
     function getGroupRemoveBtn(groupElem) {
       var div = groupElem.children().children().eq(0).children().eq(2);
-      return div.hasClass('add-btn') && div;
+      return div.hasClass('remove-entry') && div;
     }
 
     function getGroupAddBtn(groupElem) {
       var div = groupElem.children().children().eq(0).children().eq(1);
-      return div.hasClass('add-btn') && div;
+      return div.hasClass('add-entry') && div;
+    }
+
+    function getCollapseBtn(groupElem) {
+      return groupElem.children().children().eq(0).children().eq(0).find('a');
     }
 
     function makeGroupElement(contents) {
-      return $compile(
+      var group = $compile(
         '<collapsible-group ' + contents + '></collapsible-group>')($scope);
+      $scope.$digest();
+      return group;
     }
+
+    function makeGroupWithInnerTags() {
+      var group = $compile(
+        '<collapsible-group><span class="inner"></span></collapsible-group>'
+      )($scope);
+      $scope.$digest();
+      return group;
+    }
+
+    it('starts as being expanded', function() {
+      var element = makeGroupWithInnerTags(),
+        body = getGroupBody(element);
+
+      expect(body.hasClass('collapse')).toBe(true);
+      expect(body.hasClass('in')).toBe(true);
+    });
+
+    it('starts to collapse after pressing on triangle next to group title', function() {
+      // NOTE(tsufiev): I wasn't able to test the final .collapse state (without .in)
+      // most probably due to transition from .collapse.in -> .collapsing -> .collapse
+      // is made with means of CSS, not
+      var element = makeGroupWithInnerTags(),
+        body = getGroupBody(element),
+        link = getCollapseBtn(element);
+
+      link.triggerHandler('click');
+
+      expect(body.hasClass('collapse')).toBe(false);
+      expect(body.hasClass('collapsing')).toBe(true);
+    });
 
     it('requires to specify just `on-remove` to make group removable', function() {
       var element1, element2;
       $scope.remove = function() {};
       element1 = makeGroupElement('');
       element2 = makeGroupElement('on-remove="remove()"');
-      $scope.$digest();
 
       expect(getGroupRemoveBtn(element1).hasClass('ng-hide')).toBe(true);
       expect(getGroupRemoveBtn(element2).hasClass('ng-hide')).toBe(false);
@@ -138,7 +203,6 @@ describe('merlin directives', function() {
       $scope.add = function() {};
       element1 = makeGroupElement('');
       element2 = makeGroupElement('on-add="add()"');
-      $scope.$digest();
 
       expect(getGroupAddBtn(element1).hasClass('ng-hide')).toBe(true);
       expect(getGroupAddBtn(element2).hasClass('ng-hide')).toBe(false);
@@ -148,15 +212,12 @@ describe('merlin directives', function() {
       var element;
       $scope.add = function() {};
       element = makeGroupElement('on-add="add()" additive="false"');
-      $scope.$digest();
 
       expect(getGroupAddBtn(element).hasClass('ng-hide')).toBe(true);
     });
 
     it('contents are inserted into div.collapse tag', function() {
-      var element = $compile(
-        '<collapsible-group><span class="inner"></span></collapsible-group>')($scope);
-      $scope.$digest();
+      var element = makeGroupWithInnerTags();
 
       expect(getGroupBody(element).find('span').hasClass('inner')).toBe(true);
     });

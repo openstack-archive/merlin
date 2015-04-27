@@ -4,7 +4,7 @@
 (function() {
   'use strict';
 
-  angular.module('merlin', [])
+  angular.module('merlin', ['ui.bootstrap'])
     .config(function($interpolateProvider) {
       // Replacing the default angular symbol
       // allow us to mix angular with django templates

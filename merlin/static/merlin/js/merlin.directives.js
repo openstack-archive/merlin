@@ -5,7 +5,7 @@
   'use strict';
 
   function disableClickDefaultBehaviour(element) {
-    element.find('a[data-toggle="collapse"]')
+    element.find('a[ng-click]')
       .on('click', function(e) {
         e.preventDefault();
         return true;
@@ -42,6 +42,7 @@
         },
         link: function(scope, element, attrs) {
           scope.removable = $parse(attrs.removable)();
+          scope.isCollapsed = false;
           disableClickDefaultBehaviour(element);
         }
       }
@@ -58,6 +59,7 @@
         },
         link: function(scope, element, attrs) {
           disableClickDefaultBehaviour(element);
+          scope.isCollapsed = false;
           if ( attrs.onAdd && attrs.additive !== 'false' ) {
             scope.additive = true;
           }

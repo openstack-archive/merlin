@@ -39,6 +39,7 @@ module.exports = function (config) {
       'merlin/static/merlin/js/libs/underscore/underscore-min.js',
       'merlin/static/merlin/js/libs/js-yaml/dist/js-yaml.min.js',
       'merlin/static/merlin/js/custom-libs/barricade.js',
+      'merlin/static/merlin/js/custom-libs/ui-bootstrap-tpls-0.12.1.js',
       // explicitly require first module definition file to avoid errors
       'merlin/static/merlin/js/merlin.init.js',
       'merlin/static/merlin/js/merlin.*.js',
