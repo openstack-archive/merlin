@@ -1,7 +1,9 @@
 <div class="section">
-  <div class="three-columns">
+  <div class="section-heading three-columns">
     <div class="both-columns">
-      <h5><a data-toggle="collapse" data-target="#elem-{$ $id $}" href="#">{$ title $}</a></h5>
+      <h5><a ng-click="isCollapsed = !isCollapsed" href="#">
+        <i class="fa" ng-class="isCollapsed ? 'fa-plus-square-o' : 'fa-minus-square-o'"></i></a>
+        {$ title $}</h5>
     </div>
     <div ng-show="additive" class="add-btn button-column">
       <button class="btn btn-default btn-sm pull-right" ng-click="onAdd()">
@@ -12,6 +14,6 @@
         <i class="fa fa-times-circle pull-right"></i></a>
     </div>
   </div>
-  <div id="elem-{$ $id $}" class="collapse in" ng-transclude>
+  <div class="section-body" collapse="isCollapsed" ng-transclude>
   </div>
 </div>

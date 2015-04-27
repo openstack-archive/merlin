@@ -42,7 +42,7 @@ describe('merlin directives', function() {
     }
 
     function getPanelRemoveButton(panelElem) {
-      var iTag = panelElem.find('i').eq(0);
+      var iTag = panelElem.find('i').eq(1);
       return iTag.hasClass('fa-times-circle') && iTag;
     }
 
@@ -104,7 +104,7 @@ describe('merlin directives', function() {
   describe('<collapsible-group>', function() {
     function getGroupBody(groupElem) {
       var div = groupElem.children().children().eq(1);
-      return div.hasClass('collapse') && div;
+      return div.hasClass('section-body') && div;
     }
 
     function getGroupRemoveBtn(groupElem) {
