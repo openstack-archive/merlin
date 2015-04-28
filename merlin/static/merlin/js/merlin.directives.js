@@ -96,7 +96,7 @@
         templateUrl: '/static/merlin/templates/collapsible-group.html',
         transclude: true,
         scope: {
-          title: '@',
+          group: '=content',
           onAdd: '&',
           onRemove: '&'
         },
@@ -117,7 +117,6 @@
         return {
           restrict: 'E',
           scope: {
-            title: '@',
             value: '=',
             type: '@'
           },

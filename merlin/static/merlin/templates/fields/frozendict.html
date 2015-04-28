@@ -1,4 +1,4 @@
-<collapsible-group title="{$ title $}">
+<collapsible-group content="value">
   <div ng-repeat="row in value | extractRows track by row.id">
     <div ng-class="{'three-columns': row.index !== undefined}">
       <div ng-repeat="item in row | extractItems track by item.id"
