@@ -1,4 +1,4 @@
-<collapsible-group title="{$ title $}"
+<collapsible-group content="value"
                    on-add="value.add()">
   <div class="three-columns" ng-repeat="subItem in value.getValues() track by $index"
        ng-class="subItem.get('type').get()">

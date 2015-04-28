@@ -26,6 +26,16 @@
           return removable;
         };
 
+        if ( removable ) { // conditionally override common .title()
+          self.title = function() {
+            if ( arguments.length ) {
+              self.setID(arguments[0]);
+            } else {
+              return self.getID();
+            }
+          }
+        }
+
         self.setType('group');
 
         return self;

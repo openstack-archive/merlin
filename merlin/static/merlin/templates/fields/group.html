@@ -1,11 +1,11 @@
-<collapsible-group
-        title="{$ title $}" additive="{$ value.isAdditive() $}" on-add="value.add()"
-        removable="{$ value.isRemovable() $}" on-remove="value.remove()">
+<collapsible-group content="value" additive="{$ value.isAdditive() $}"
+                   on-add="value.add()"
+                   removable="{$ value.isRemovable() $}" on-remove="value.remove()">
   <div ng-repeat="row in value | extractRows track by row.id">
     <div ng-class="{'three-columns': row.index !== undefined }">
       <div ng-repeat="item in row | extractItems track by item.id"
            ng-class="{'right-column': item.isAtomic() && $odd, 'left-column': item.isAtomic() && $even}">
-        <typed-field title="{$ item.getTitle() $}" value="item" type="{$ item.getType() $}"></typed-field>
+        <typed-field value="item" type="{$ item.getType() $}"></typed-field>
         <div class="clearfix" ng-if="$odd"></div>
       </div>
     </div>

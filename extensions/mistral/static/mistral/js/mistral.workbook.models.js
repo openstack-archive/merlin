@@ -119,21 +119,8 @@
               }
             });
             return self;
-          },
-          _getPrettyJSON: function() {
-            var json = fields.frozendict._getPrettyJSON.apply(this, arguments);
-            delete json.name;
-            return json;
           }
         }, {
-          'name': {
-            '@class': fields.string.extend({}, {
-              '@meta': {
-                'index': 0,
-                'row': 0
-              }
-            })
-          },
           'base': {
             '@class': fields.string.extend({
                create: function(json, parameters) {
@@ -209,11 +196,6 @@
           remove: function() {
             this.emit('change', 'taskRemove', this.getID());
           },
-          _getPrettyJSON: function() {
-            var json = fields.frozendict._getPrettyJSON.apply(this, arguments);
-            delete json.name;
-            return json;
-          }
         }, {
           '@meta': {
             'baseKey': 'task',
@@ -221,14 +203,6 @@
             'group': true,
             'additive': false,
             'removable': true
-          },
-          'name': {
-            '@class': fields.string.extend({}, {
-              '@meta': {
-                'index': 0,
-                'row': 0
-              }
-            })
           },
           'type': {
             '@class': fields.string.extend({}, {
@@ -239,7 +213,7 @@
               }],
               '@default': 'action',
               '@meta': {
-                'index': 1,
+                'index': 0,
                 'row': 0
               }
             })
@@ -247,7 +221,7 @@
           'description': {
             '@class': fields.text.extend({}, {
               '@meta': {
-                'index': 1,
+                'index': 2,
                 'row': 1
               }
             })
@@ -403,8 +377,8 @@
             'action': {
               '@class': fields.string.extend({}, {
                 '@meta': {
-                  'row': 1,
-                  'index': 2
+                  'row': 0,
+                  'index': 1
                 }
               })
             }
@@ -416,8 +390,8 @@
             'workflow': {
               '@class': fields.string.extend({}, {
                 '@meta': {
-                  'row': 1,
-                  'index': 2
+                  'row': 0,
+                  'index': 1
                 }
               })
             }
@@ -448,21 +422,8 @@
               }
             });
             return self;
-          },
-          _getPrettyJSON: function() {
-            var json = fields.frozendict._getPrettyJSON.apply(this, arguments);
-            delete json.name;
-            return json;
           }
         }, {
-          'name': {
-            '@class': fields.string.extend({}, {
-              '@meta': {
-                'index': 0,
-                'row': 0
-              }
-            })
-          },
           'type': {
             '@class': fields.string.extend({}, {
               '@enum': ['reverse', 'direct'],

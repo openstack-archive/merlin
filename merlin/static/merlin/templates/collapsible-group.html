@@ -3,13 +3,16 @@
     <div class="both-columns">
       <h5><a ng-click="isCollapsed = !isCollapsed" class="collapse-entries" href="#">
         <i class="fa" ng-class="isCollapsed ? 'fa-plus-square-o' : 'fa-minus-square-o'"></i></a>
-        {$ title $}</h5>
+        <editable ng-if="removable" ng-model="group.title"
+                  ng-model-options="{getterSetter: true}"></editable>
+        <span ng-if="!removable">{$ group.title() $}</span>
+      </h5>
     </div>
-    <div ng-show="additive" class="add-btn button-column add-entry">
+    <div ng-if="additive" class="add-btn button-column add-entry">
       <button class="btn btn-default btn-sm pull-right" ng-click="onAdd()">
         <i class="fa fa-plus"></i></button>
     </div>
-    <div ng-show="removable" class="add-btn button-column remove-entry">
+    <div ng-if="removable" class="add-btn button-column remove-entry">
       <a href="#" ng-click="onRemove()">
         <i class="fa fa-times-circle pull-right"></i></a>
     </div>
