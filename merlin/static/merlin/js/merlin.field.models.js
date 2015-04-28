@@ -52,7 +52,7 @@
         this.isAtomic = function() {
           return ['number', 'string', 'text', 'choices'].indexOf(this.getType()) > -1;
         };
-        this.getTitle = function() {
+        this.title = function() {
           var title = utils.getMeta(this, 'title');
           if ( !title ) {
             if ( this.instanceof(Barricade.ImmutableObject) ) {

@@ -1,7 +1,6 @@
-<collapsible-group title="{$ title $}" on-add="value.add()">
+<collapsible-group content="value" on-add="value.add()">
   <div class="three-columns"
        ng-repeat="subItem in value.getValues() track by $index">
-    <pre>{$ subItem $}</pre>
     <div class="left-column" ng-show="subItem.showYaql">
       <div class="form-group">
         <textarea class="form-control" ng-model="subItem.get('yaql').value"

@@ -1,10 +1,10 @@
-<collapsible-group title="{$ title $}">
+<collapsible-group content="value">
   <div ng-repeat="row in value | extractRows track by row.id">
     <div ng-class="{'three-columns': row.index !== undefined}">
       <div ng-repeat="item in row | extractItems track by item.id"
            ng-class="{'right-column': item.isAtomic() && $odd, 'left-column': item.isAtomic() && $even}">
         <div class="form-group">
-          <label for="elem-{$ $id $}.{$ item.getID() $}">{$ item.getTitle() $}</label>
+          <label for="elem-{$ $id $}.{$ item.getID() $}">{$ item.title() $}</label>
           <input type="text" class="form-control" id="elem-{$ $id $}.{$ item.getID() $}" ng-model="item.value"
                  ng-model-options="{getterSetter: true}">
         </div>

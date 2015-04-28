@@ -137,17 +137,15 @@ describe('merlin directives', function() {
     }
 
     function getGroupRemoveBtn(groupElem) {
-      var div = groupElem.children().children().eq(0).children().eq(2);
-      return div.hasClass('remove-entry') && div;
+      return groupElem.find('.remove-entry');
     }
 
     function getGroupAddBtn(groupElem) {
-      var div = groupElem.children().children().eq(0).children().eq(1);
-      return div.hasClass('add-entry') && div;
+      return groupElem.find('.add-entry');
     }
 
     function getCollapseBtn(groupElem) {
-      return groupElem.children().children().eq(0).children().eq(0).find('a');
+      return groupElem.find('.collapse-entries');
     }
 
     function makeGroupElement(contents) {
@@ -193,7 +191,7 @@ describe('merlin directives', function() {
       element1 = makeGroupElement('');
       element2 = makeGroupElement('on-remove="remove()"');
 
-      expect(getGroupRemoveBtn(element1).hasClass('ng-hide')).toBe(true);
+      expect(getGroupRemoveBtn(element1).length).toBe(0);
       expect(getGroupRemoveBtn(element2).hasClass('ng-hide')).toBe(false);
     });
 
@@ -202,7 +200,7 @@ describe('merlin directives', function() {
       $scope.remove = function() {};
       element = makeGroupElement('on-remove="remove()" removable="false"');
 
-      expect(getGroupRemoveBtn(element).hasClass('ng-hide')).toBe(true);
+      expect(getGroupRemoveBtn(element).length).toBe(0);
     });
 
     it('requires to specify `on-add` to make group additive', function() {
@@ -211,7 +209,7 @@ describe('merlin directives', function() {
       element1 = makeGroupElement('');
       element2 = makeGroupElement('on-add="add()"');
 
-      expect(getGroupAddBtn(element1).hasClass('ng-hide')).toBe(true);
+      expect(getGroupAddBtn(element1).length).toBe(0);
       expect(getGroupAddBtn(element2).hasClass('ng-hide')).toBe(false);
     });
 
@@ -220,7 +218,7 @@ describe('merlin directives', function() {
       $scope.add = function() {};
       element = makeGroupElement('on-add="add()" additive="false"');
 
-      expect(getGroupAddBtn(element).hasClass('ng-hide')).toBe(true);
+      expect(getGroupAddBtn(element).length).toBe(0);
     });
 
     it('contents are inserted into div.collapse tag', function() {
@@ -258,6 +256,32 @@ describe('merlin directives', function() {
 
       $httpBackend.flush();
       expect(element.html()).toContain('<textarea');
+    });
+
+    describe('various types', function() {
+      describe('.title() of every field except group', function() {
+        it("tries to extract title from '@meta' key", function() {
+
+        });
+
+        it("when no title found in '@meta', takes value of 'name' subfield given it's ImmutableObj", function() {
+
+        });
+
+        it("when no title found both in '@meta' and in 'name' subfield, uses capitalized field ID", function() {
+
+        });
+      });
+
+      describe('.title() of group field', function() {
+        it('if the field is not removable, uses the conventional .title()', function() {
+
+        });
+
+        it('if the field is removable, uses .title() as a wrapper around .getID()/.setID()', function() {
+
+        });
+      })
     })
   });
 

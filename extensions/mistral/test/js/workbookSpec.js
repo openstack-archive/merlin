@@ -74,15 +74,37 @@ describe('workbook model logic', function() {
       workbook.get('workflows').push({name: 'Workflow 1'}, {id: workflowID});
     });
 
-    it('a task deletion works in conjunction with tasks logic', function() {
-      var workflow = getWorkflow(workflowID),
-        params = utils.extend(workflow._parameters, {id: taskID});
+    describe('', function() {
+      beforeEach(function() {
+        var workflow = getWorkflow(workflowID),
+          params = workflow._parameters;
+        workflow.get('tasks').push({name: 'Task 1'}, utils.extend(params, {id: taskID}));
+      });
 
-      workflow.get('tasks').push({name: 'Task 1'}, params);
-      expect(getTask(taskID)).toBeDefined();
+      it("corresponding JSON has the right key for the Task", function() {
+        var json = workbook.toJSON({pretty: true});
 
-      getTask(taskID).remove();
-      expect(getTask(taskID)).toBeUndefined();
+        expect(json.workflows[workflowID].tasks[taskID]).toBeDefined();
+      });
+
+      it("once the task ID is changed, it's reflected in JSON", function() {
+        var newID = 'task10',
+          json;
+
+        getTask(taskID).setID(newID);
+        json = workbook.toJSON({pretty: true});
+
+        expect(json.workflows[workflowID].tasks[taskID]).toBeUndefined();
+        expect(json.workflows[workflowID].tasks[newID]).toBeDefined();
+      });
+
+      it('a task deletion works in conjunction with tasks logic', function() {
+        expect(getTask(taskID)).toBeDefined();
+
+        getTask(taskID).remove();
+        expect(getTask(taskID)).toBeUndefined();
+      });
+
     });
 
     describe("which start with the 'direct' workflow:", function() {
@@ -200,15 +222,39 @@ describe('workbook model logic', function() {
       it('creates action with predefined name', function() {
         $scope.addAction();
 
-        expect(workbook.get('actions').get(0).get('name').get()).toBeGreaterThan('');
+        expect(workbook.get('actions').get(0).getID()).toBeGreaterThan('');
+      });
+
+      describe('', function() {
+        var actionID;
+        beforeEach(inject(function(baseActionID) {
+          actionID = baseActionID + '1';
+        }));
+
+        it("corresponding JSON has the right key for the Action", function() {
+          $scope.addAction();
+
+          expect(workbook.toJSON({pretty: true}).actions[actionID]).toBeDefined();
+        });
+
+        it("once the Action ID is changed, it's reflected in JSON", function() {
+          var newID = 'action10';
+
+          $scope.addAction();
+          workbook.get('actions').getByID(actionID).setID(newID);
+
+          expect(workbook.toJSON({pretty: true}).actions[actionID]).toBeUndefined();
+          expect(workbook.toJSON({pretty: true}).actions[newID]).toBeDefined();
+        });
+
       });
 
       it('creates actions with different names on 2 successive calls', function() {
         $scope.addAction();
         $scope.addAction();
 
-        expect(workbook.get('actions').get(0).get('name').get()).not.toEqual(
-          workbook.get('actions').get(1).get('name').get())
+        expect(workbook.get('actions').get(0).getID()).not.toEqual(
+          workbook.get('actions').get(1).getID())
       });
     });
 
@@ -219,18 +265,42 @@ describe('workbook model logic', function() {
         expect(workbook.get('workflows').get(0)).toBeDefined();
       });
 
+      describe('', function() {
+        var workflowID;
+        beforeEach(inject(function(baseWorkflowID) {
+          workflowID = baseWorkflowID + '1';
+        }));
+
+        it("corresponding JSON has the right key for the Workflow", function() {
+          $scope.addWorkflow();
+
+          expect(workbook.toJSON({pretty: true}).workflows[workflowID]).toBeDefined();
+        });
+
+        it("once the workflow ID is changed, it's reflected in JSON", function() {
+          var newID = 'workflow10';
+
+          $scope.addWorkflow();
+          workbook.get('workflows').getByID(workflowID).setID(newID);
+
+          expect(workbook.toJSON({pretty: true}).workflows[workflowID]).toBeUndefined();
+          expect(workbook.toJSON({pretty: true}).workflows[newID]).toBeDefined();
+        });
+
+      });
+
       it('creates workflow with predefined name', function() {
         $scope.addWorkflow();
 
-        expect(workbook.get('workflows').get(0).get('name').get()).toBeGreaterThan('');
+        expect(workbook.get('workflows').get(0).getID()).toBeGreaterThan('');
       });
 
       it('creates workflows with different names on 2 successive calls', function() {
         $scope.addWorkflow();
         $scope.addWorkflow();
 
-        expect(workbook.get('workflows').get(0).get('name').get()).not.toEqual(
-          workbook.get('workflows').get(1).get('name').get())
+        expect(workbook.get('workflows').get(0).getID()).not.toEqual(
+          workbook.get('workflows').get(1).getID())
       });
 
     });

@@ -5,10 +5,12 @@
   'use strict';
 
   angular.module('mistral')
+    .value('baseActionID', 'action')
+    .value('baseWorkflowID', 'workflow')
     .controller('workbookCtrl',
-    ['$scope', 'mistral.workbook.models', function($scope, models) {
-      var workbook = models.Workbook.create({name: 'My Workbook'});
-      $scope.workbook = workbook;
+    ['$scope', 'mistral.workbook.models', 'baseActionID', 'baseWorkflowID',
+      function($scope, models, baseActionId, baseWorkflowId) {
+      $scope.workbook = models.Workbook.create({name: 'My Workbook'});
 
       function getNextIDSuffix(container, regexp) {
         var max = Math.max.apply(Math, container.getIDs().map(function(id) {
@@ -27,8 +29,6 @@
         }
         return getNextIDSuffix(container, regexp);
       }
-
-      var baseActionId = 'action', baseWorkflowId = 'workflow';
 
       $scope.addAction = function() {
         var nextSuffix = getWorkbookNextIDSuffix(baseActionId),
