@@ -137,17 +137,15 @@ describe('merlin directives', function() {
     }
 
     function getGroupRemoveBtn(groupElem) {
-      var div = groupElem.children().children().eq(0).children().eq(2);
-      return div.hasClass('remove-entry') && div;
+      return groupElem.find('.remove-entry');
     }
 
     function getGroupAddBtn(groupElem) {
-      var div = groupElem.children().children().eq(0).children().eq(1);
-      return div.hasClass('add-entry') && div;
+      return groupElem.find('.add-entry');
     }
 
     function getCollapseBtn(groupElem) {
-      return groupElem.children().children().eq(0).children().eq(0).find('a');
+      return groupElem.find('.collapse-entries');
     }
 
     function makeGroupElement(contents) {
@@ -193,7 +191,7 @@ describe('merlin directives', function() {
       element1 = makeGroupElement('');
       element2 = makeGroupElement('on-remove="remove()"');
 
-      expect(getGroupRemoveBtn(element1).hasClass('ng-hide')).toBe(true);
+      expect(getGroupRemoveBtn(element1).length).toBe(0);
       expect(getGroupRemoveBtn(element2).hasClass('ng-hide')).toBe(false);
     });
 
@@ -203,7 +201,7 @@ describe('merlin directives', function() {
       element1 = makeGroupElement('');
       element2 = makeGroupElement('on-add="add()"');
 
-      expect(getGroupAddBtn(element1).hasClass('ng-hide')).toBe(true);
+      expect(getGroupAddBtn(element1).length).toBe(0);
       expect(getGroupAddBtn(element2).hasClass('ng-hide')).toBe(false);
     });
 
@@ -212,7 +210,7 @@ describe('merlin directives', function() {
       $scope.add = function() {};
       element = makeGroupElement('on-add="add()" additive="false"');
 
-      expect(getGroupAddBtn(element).hasClass('ng-hide')).toBe(true);
+      expect(getGroupAddBtn(element).length).toBe(0);
     });
 
     it('contents are inserted into div.collapse tag', function() {

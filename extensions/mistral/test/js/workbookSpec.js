@@ -188,15 +188,15 @@ describe('workbook model logic', function() {
       it('creates action with predefined name', function() {
         $scope.addAction();
 
-        expect(workbook.get('actions').get(0).get('name').get()).toBeGreaterThan('');
+        expect(workbook.get('actions').get(0).getID()).toBeGreaterThan('');
       });
 
       it('creates actions with different names on 2 successive calls', function() {
         $scope.addAction();
         $scope.addAction();
 
-        expect(workbook.get('actions').get(0).get('name').get()).not.toEqual(
-          workbook.get('actions').get(1).get('name').get())
+        expect(workbook.get('actions').get(0).getID()).not.toEqual(
+          workbook.get('actions').get(1).getID())
       });
     });
 
@@ -210,15 +210,15 @@ describe('workbook model logic', function() {
       it('creates workflow with predefined name', function() {
         $scope.addWorkflow();
 
-        expect(workbook.get('workflows').get(0).get('name').get()).toBeGreaterThan('');
+        expect(workbook.get('workflows').get(0).getID()).toBeGreaterThan('');
       });
 
       it('creates workflows with different names on 2 successive calls', function() {
         $scope.addWorkflow();
         $scope.addWorkflow();
 
-        expect(workbook.get('workflows').get(0).get('name').get()).not.toEqual(
-          workbook.get('workflows').get(1).get('name').get())
+        expect(workbook.get('workflows').get(0).getID()).not.toEqual(
+          workbook.get('workflows').get(1).getID())
       });
 
     });
