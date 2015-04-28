@@ -47,8 +47,10 @@
       }
 
       function getMeta(item, key) {
-        var meta = item._schema['@meta'];
-        return meta && meta[key];
+        if ( item ) {
+          var meta = item._schema['@meta'];
+          return meta && meta[key];
+        }
       }
 
       function makeTitle(str) {

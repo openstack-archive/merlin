@@ -9,6 +9,7 @@
 
       var groupMixin = Barricade.Blueprint.create(function() {
         var self = this,
+          origTitle = this.title,
           additive = utils.getMeta(self, 'additive'),
           removable = utils.getMeta(self, 'removable');
 
@@ -24,6 +25,14 @@
         }
         self.isRemovable = function() {
           return removable;
+        };
+
+        self.title = function() {
+          if ( arguments.length ) {
+            self.getID() && self.setID(arguments[0]);
+          } else {
+            return origTitle.call(self);
+          }
         };
 
         self.setType('group');
