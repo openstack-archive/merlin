@@ -37,13 +37,14 @@
           return this;
         },
         title: function() {
-          var entity;
+          var newID;
           if ( this._barricadeContainer ) {
-            entity = this._barricadeContainer.getByID(this._barricadeId).get('name');
             if ( arguments.length ) {
-              entity.set(arguments[0]);
+              newID = arguments[0];
+              this._barricadeContainer.getByID(this._barricadeId).setID(newID);
+              this._barricadeId = newID;
             } else {
-              return entity.get();
+              return this._barricadeId;
             }
           }
         },
