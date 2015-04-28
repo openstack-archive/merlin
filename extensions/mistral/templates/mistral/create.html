@@ -68,7 +68,7 @@
               <div ng-class="{'two-columns': row.index !== undefined }">
                 <div ng-repeat="item in row | extractItems track by item.id"
                      ng-class="{'right-column': item.isAtomic() && $odd, 'left-column': item.isAtomic() && $even}">
-                  <typed-field title="{$ item.getTitle() $}" value="item" type="{$ item.getType() $}"></typed-field>
+                  <typed-field value="item" type="{$ item.getType() $}"></typed-field>
                   <div class="clearfix" ng-if="$odd"></div>
                 </div>
               </div>
