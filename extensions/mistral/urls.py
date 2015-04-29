@@ -19,6 +19,10 @@ from mistral import views
 
 urlpatterns = patterns('',
     url(r'^$', views.IndexView.as_view(), name='index'),
-    url(r'^create$', views.CreateWorkbookView.as_view(), name='create'),
-    url(r'^actions/types$', views.ActionTypesView.as_view(), name='action_types')
+    url(r'^edit/(?:(?P<workbook_id>[^/]+))?$',
+        views.EditWorkbookView.as_view(), name='edit'),
+    url(r'^commit/(?:/(?P<workbook_id>[^/]+))?$',
+        views.CommitWorkbookView.as_view(), name='commit'),
+    url(r'^actions/types$', views.ActionTypesView.as_view(),
+        name='action_types')
 )

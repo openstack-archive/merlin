@@ -12,6 +12,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from django.core.urlresolvers import reverse_lazy, reverse
 from django.utils.translation import ugettext_lazy as _
 from django.template import defaultfilters
 from horizon import tables
@@ -22,8 +23,17 @@ from mistral import api
 class CreateWorkbook(tables.LinkAction):
     name = 'create'
     verbose_name = _('Create Workbook')
-    url = 'horizon:project:mistral:create'
+    url = reverse_lazy('horizon:project:mistral:edit', args=())
     icon = 'plus'
+
+
+class ModifyWorkbook(tables.LinkAction):
+    name = 'modify'
+    verbose_name = _('Modify Workbook')
+
+    def get_link_url(self, datum):
+        return reverse('horizon:project:mistral:edit',
+                       args=(self.table.get_object_id(datum),))
 
 
 class RemoveWorkbook(tables.DeleteAction):
@@ -37,9 +47,11 @@ class RemoveWorkbook(tables.DeleteAction):
 
 class WorkbooksTable(tables.DataTable):
     name = tables.Column('name', verbose_name=_('Workbook Name'))
-    running = tables.Column('running', verbose_name=_('Running'),
-                            filters=(defaultfilters.yesno,))
+
+    def get_object_id(self, datum):
+        return datum['id']
 
     class Meta:
         table_actions = (CreateWorkbook,)
+        row_actions = (ModifyWorkbook, RemoveWorkbook)
         name = 'workbooks'
