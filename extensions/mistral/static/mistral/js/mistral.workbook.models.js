@@ -148,7 +148,7 @@
               '@meta': {
                 'index': 1,
                 'row': 0,
-                autocompletionUrl: '/project/mistral/actions/types'
+                'autocompletionUrl': '/project/mistral/actions/types'
               }
             })
           },
@@ -378,7 +378,8 @@
               '@class': fields.string.extend({}, {
                 '@meta': {
                   'row': 0,
-                  'index': 1
+                  'index': 1,
+                  'autoCompletionUrl': '$.actions.getIDs'
                 }
               })
             }
@@ -391,7 +392,8 @@
               '@class': fields.string.extend({}, {
                 '@meta': {
                   'row': 0,
-                  'index': 1
+                  'index': 1,
+                  'autoCompletionUrl': '$.workflows.getIDs'
                 }
               })
             }
@@ -410,7 +412,8 @@
             baseClass = taskTypes[parameters.wfType],
             mixinClass = taskTypes[type],
             taskClass = mixinClass.call(baseClass);
-          return taskClass.create(json, parameters);
+          var task = taskClass.create(json, parameters);
+          return fields.autocompletionmixin.call(task, utils.getMeta(task, 'autoCompletionUrl'));
         }
 
         models.Workflow = fields.frozendict.extend({

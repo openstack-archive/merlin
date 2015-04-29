@@ -4,7 +4,8 @@
 
   angular.module('merlin')
     .factory('merlin.field.models',
-    ['merlin.utils', 'merlin.panel.models', '$http', function(utils, panels, $http) {
+    ['merlin.utils', 'merlin.panel.models', '$http', 'merlin.storage',
+      function(utils, panels, $http, storage) {
 
       var wildcardMixin = Barricade.Blueprint.create(function() {
         return this;
@@ -91,9 +92,25 @@
       var autoCompletionMixin = Barricade.Blueprint.create(function(url) {
         var suggestions = [];
 
-        $http.get(url).success(function(data) {
-          suggestions = data;
-        });
+        if ( url.indexOf('$') == 0 ) {
+          var allPath = url.substring(1).split('.').filter(function(s) { return s; }),
+            path = _.initial(allPath),
+            head = _.first(path),
+            tail = _.rest(path),
+            method = _.last(allPath),
+            tree = storage.get(self._parameters.rootID),
+            entry = tree.get(head);
+          while ( tail.length ) {
+            head = _.first(tail);
+            tail = _.rest(tail);
+            entry = entry.get(head);
+          }
+          suggestions = entry[method]();
+        } else {
+          $http.get(url).success(function(data) {
+            suggestions = data;
+          });
+        }
 
         this.getSuggestions = function() {
           return suggestions;
@@ -240,6 +257,7 @@
         dictionary: dictionaryModel,
         frozendict: frozendictModel,
         directeddictionary: directedDictionaryModel,
+        autocompletionmixin: autoCompletionMixin,
         wildcard: wildcardMixin // use for most general type-checks
       };
     }])
