@@ -1,6 +1,7 @@
 /**
  * Created by tsufiev on 2/24/15.
  */
+var workbook;
 (function() {
   'use strict';
 
@@ -9,17 +10,19 @@
     .value('baseWorkflowID', 'workflow')
     .controller('workbookCtrl',
     ['$scope', 'mistral.workbook.models', '$http',
-      'baseActionID', 'baseWorkflowID',
-      function($scope, models, $http, baseActionId, baseWorkflowId) {
+      'baseActionID', 'baseWorkflowID', 'merlin.storage',
+      function($scope, models, $http, baseActionId, baseWorkflowId, storage) {
         $scope.init = function(id, yaml, commitUrl, discardUrl) {
           $scope.workbookID = id;
           $scope.commitUrl = commitUrl;
           $scope.discardUrl = discardUrl;
+          var params = {rootID: id};
           if ( id !== undefined ) {
-            $scope.workbook = models.Workbook.create(jsyaml.safeLoad(yaml));
+            $scope.workbook = workbook = models.Workbook.create(jsyaml.safeLoad(yaml), params);
           } else {
-            $scope.workbook = models.Workbook.create({name: 'My Workbook'});
+            $scope.workbook = workbook = models.Workbook.create({name: 'My Workbook'}, params);
           }
+          storage.store(id, $scope.workbook);
         };
 
         function getNextIDSuffix(container, regexp) {

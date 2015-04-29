@@ -148,7 +148,7 @@
               '@meta': {
                 'index': 1,
                 'row': 0,
-                autocompletionUrl: '/project/mistral/actions/types'
+                'autocompletionUrl': '/project/mistral/actions/types'
               }
             })
           },
@@ -216,7 +216,7 @@
               }, {
                 value: 'workflow', label: 'Workflow-based'
               }],
-              '@default': 'action',
+              '@default': 'workflow',// 'action',
               '@meta': {
                 'index': 0,
                 'row': 0
@@ -383,7 +383,8 @@
               '@class': fields.string.extend({}, {
                 '@meta': {
                   'row': 0,
-                  'index': 1
+                  'index': 1,
+                  'autocompletionUrl': '$.actions.getIDs'
                 }
               })
             }
@@ -392,11 +393,49 @@
 
         models.WorkflowTaskMixin = Barricade.Blueprint.create(function() {
           return this.extend({}, {
+            '_workflows': {
+              '@class': fields.string,
+              '@ref': {
+                to: function() {
+                  return models.Workflow;
+                },
+                needs: function() {
+                  return models.Workbook;
+                },
+                getter: function(data) {
+                  return data.needed.get('workflows');
+                },
+                processor: function(data) {
+                  var workflows = data.standIn._workflows = data.val;
+                  return workflows._data[0];
+                }
+              }
+            },
             'workflow': {
               '@class': fields.string.extend({}, {
+                '@ref': {
+                  to: function() {
+                    return models.Workflow;
+                  },
+                  needs: function() {
+                    return models.Workbook;
+                  },
+                  getter: function(data) {
+                    return data.needed.get('workflows');
+                  },
+                  processor: function(data) {
+                    var workflows = data.standIn._workflows = data.val;
+                    return workflows._data[0];
+                  }
+                },
+                '@enum': function() {
+                  return [];
+                  return this._workflows.getIDs();
+                },
                 '@meta': {
                   'row': 0,
-                  'index': 1
+                  'index': 1,
+                  'autocompletionUrl': '$.workflows.getIDs'
                 }
               })
             }
@@ -411,7 +450,7 @@
         };
 
         function TaskFactory(json, parameters) {
-          var type = json.type || 'action',
+          var type = json.type || 'workflow',// 'action',
             baseClass = taskTypes[parameters.wfType],
             mixinClass = taskTypes[type],
             taskClass = mixinClass.call(baseClass);
@@ -542,6 +581,33 @@
           return workflowTypes[type].create(json, parameters);
         }
 
+        models.Workflows = fields.dictionary.extend({
+          create: function(json, parameters) {
+            var self = fields.dictionary.create.call(this, json, parameters);
+            self.on('childChange', function(child, op) {
+              if ( op === 'workflowType' ) {
+                var workflowId = child.getID(),
+                  workflowPos = self.getPosByID(workflowId),
+                  params = child._parameters,
+                  workflowData = child.toJSON();
+                params.wfType = child.type;
+                params.id = workflowId;
+                self.set(workflowPos, workflowFactory(workflowData, params));
+              }
+            });
+            return self;
+          }
+        }, {
+          '@meta': {
+            'index': 4,
+            'panelIndex': 2
+          },
+          '?': {
+            '@class': models.Workflow,
+            '@factory': workflowFactory
+          }
+        });
+
         models.Workbook = fields.frozendict.extend({
           toYAML: function() {
             return jsyaml.dump(this.toJSON({pretty: true}));
@@ -595,32 +661,7 @@
             })
           },
           'workflows': {
-            '@class': fields.dictionary.extend({
-              create: function(json, parameters) {
-                var self = fields.dictionary.create.call(this, json, parameters);
-                self.on('childChange', function(child, op) {
-                  if ( op === 'workflowType' ) {
-                    var workflowId = child.getID(),
-                      workflowPos = self.getPosByID(workflowId),
-                      params = child._parameters,
-                      workflowData = child.toJSON();
-                    params.wfType = child.type;
-                    params.id = workflowId;
-                    self.set(workflowPos, workflowFactory(workflowData, params));
-                  }
-                });
-                return self;
-              }
-            }, {
-              '@meta': {
-                'index': 4,
-                'panelIndex': 2
-              },
-              '?': {
-                '@class': models.Workflow,
-                '@factory': workflowFactory
-              }
-            })
+            '@class': models.Workflows
           }
         });
 

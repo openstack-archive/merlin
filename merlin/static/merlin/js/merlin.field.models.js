@@ -4,26 +4,38 @@
 
   angular.module('merlin')
     .factory('merlin.field.models',
-    ['merlin.utils', 'merlin.panel.models', '$http', function(utils, panels, $http) {
+    ['merlin.utils', 'merlin.panel.models', '$http', 'merlin.storage',
+      function(utils, panels, $http, storage) {
 
       var wildcardMixin = Barricade.Blueprint.create(function() {
         return this;
       });
 
       var restrictedChoicesMixin = Barricade.Blueprint.create(function() {
-        var values = this.getEnumValues(),
-          labels = this.getEnumLabels(),
+        var self = this,
+          values, labels, items;
+
+        function fillItems() {
+          values = self.getEnumValues();
+          labels = self.getEnumLabels();
           items = {};
 
-        values.forEach(function(value, index) {
-          items[value] = labels[index];
-        });
+          values && values.forEach(function (value, index) {
+            items[value] = labels[index];
+          });
+        }
 
         this.getLabel = function(value) {
+          if ( values === undefined ) {
+            fillItems();
+          }
           return items[value];
         };
 
         this.getValues = function() {
+          if ( values === undefined ) {
+            fillItems();
+          }
           return values;
         };
 
@@ -100,15 +112,35 @@
       }, {'@type': String});
 
       var autoCompletionMixin = Barricade.Blueprint.create(function(url) {
-        var suggestions = [];
+        var self = this;
 
-        $http.get(url).success(function(data) {
-          suggestions = data;
-        });
-
-        this.getSuggestions = function() {
-          return suggestions;
-        };
+        if ( url.indexOf('$') == 0 ) {
+          var allPath = url.substring(1).split('.').filter(function(s) { return s; }),
+            path = _.initial(allPath),
+            method = _.last(allPath),
+            head = _.first(path),
+            tail = _.rest(path),
+            tree = storage.get(this._parameters.rootID),
+            entry;
+          if ( tree ) {
+            entry = tree.get(head);
+            while ( tail.length ) {
+              head = _.first(tail);
+              tail = _.rest(tail);
+              entry = entry.get(head);
+            }
+            self.getSuggestions = function() {
+              return entry[method]();
+            };
+          }
+        } else {
+          this.getSuggestions = function() { return []; };
+          $http.get(url).success(function(data) {
+            self.getSuggestions = function() {
+              return data;
+            };
+          });
+        }
 
         return this;
       });
@@ -251,6 +283,7 @@
         dictionary: dictionaryModel,
         frozendict: frozendictModel,
         directeddictionary: directedDictionaryModel,
+        autocompletionmixin: autoCompletionMixin,
         wildcard: wildcardMixin // use for most general type-checks
       };
     }])
