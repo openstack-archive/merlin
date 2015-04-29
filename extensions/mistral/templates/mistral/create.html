@@ -38,7 +38,8 @@
 
 {% block main %}
 <h3>Create Workbook</h3>
-  <div id="create-workbook" class="fluid-container" ng-cloak ng-controller="workbookCtrl">
+  <div id="create-workbook" class="fluid-container" ng-cloak ng-controller="workbookCtrl"
+       ng-init="init({{ id|default:'undefined' }}, '{{ yaml }}', '{{ commit_url }}', '{{ discard_url }}')">
     <div class="well">
       <div class="two-panels">
         <div class="left-panel">
@@ -88,8 +89,10 @@
       <div class="two-panels">
         <div class="full-width">
           <div class="pull-right">
-            <button class="btn btn-default cancel">Cancel</button>
-            <button class="btn btn-primary">Create</button>
+            <button ng-click="discardWorkbook()" class="btn btn-default cancel">Cancel</button>
+            <button ng-click="commitWorkbook()" class="btn btn-primary">
+              {$ workbookID ? 'Modify' : 'Create' $}
+              </button>
           </div>
         </div>
       </div>

@@ -14,9 +14,10 @@
 
 import json
 
-from django.core.urlresolvers import reverse_lazy
+from django.core.urlresolvers import reverse_lazy, reverse
 from django import http
-from django.views.generic import View
+from django.views import generic as generic_views
+from horizon import messages
 from horizon import tables
 from horizon.views import APIView
 import yaml
@@ -26,11 +27,47 @@ from mistral import forms as mistral_forms
 from mistral import tables as mistral_tables
 
 
-class CreateWorkbookView(APIView):
+class EditWorkbookView(APIView):
     template_name = 'project/mistral/create.html'
 
+    def get_context_data(self, workbook_id=None, **kwargs):
+        commit_ns = 'horizon:project:mistral:commit'
+        if workbook_id is None:
+            commit_url = reverse(commit_ns, args=())
+        else:
+            commit_url = reverse(commit_ns, args=(workbook_id,))
+        context = {
+            'commit_url': commit_url,
+            'discard_url': reverse('horizon:project:mistral:index')
+            }
+        if workbook_id is not None:
+            context['id'] = workbook_id
+            context['yaml'] = api.get_workbook(self.request, workbook_id).yaml
+        return context
 
-class ActionTypesView(View):
+
+class CommitWorkbookView(generic_views.View):
+    def post(self, request, workbook_id=None, **kwargs):
+        def read_data():
+            data = json.loads(request.read())
+            return data['name'], data['yaml']
+
+        if workbook_id is None:
+            name, yaml = read_data()
+            api.create_workbook(request, name, yaml)
+            message = "The workbook {0} has been successfully created".format(
+                name)
+        else:
+            name, yaml = read_data()
+            api.modify_workbook(request, workbook_id, name, yaml)
+            message = "The workbook {0} has been successfully modified".format(
+                name)
+        messages.success(request, message)
+        return http.HttpResponseRedirect(
+            reverse_lazy('horizon:project:mistral:index'))
+
+
+class ActionTypesView(generic_views.View):
     def get(self, request, *args, **kwargs):
         key = request.GET.get('key')
         schema = {
