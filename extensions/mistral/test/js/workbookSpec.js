@@ -305,5 +305,15 @@ describe('workbook model logic', function() {
 
     });
 
+    describe("'Create'/'Modify'/'Cancel' actions", function() {
+      it('edit causes a request to an api and a return to main page', function() {
+
+      });
+
+      it('cancel causes just a return to main page', function() {
+
+      });
+    });
+
   })
 });
