@@ -4,7 +4,8 @@
 
   angular.module('merlin')
     .factory('merlin.field.models',
-    ['merlin.utils', 'merlin.panel.models', '$http', function(utils, panels, $http) {
+    ['merlin.utils', 'merlin.panel.models', '$http', 'merlin.storage',
+      function(utils, panels, $http, storage) {
 
       var wildcardMixin = Barricade.Blueprint.create(function() {
         return this;
@@ -89,15 +90,37 @@
       }, {'@type': String});
 
       var autoCompletionMixin = Barricade.Blueprint.create(function(url) {
-        var suggestions = [];
+        var self = this;
 
-        $http.get(url).success(function(data) {
-          suggestions = data;
-        });
+        if ( url.indexOf('$') == 0 ) {
+          var allPath = url.substring(1).split('.').filter(function(s) { return s; }),
+            path = _.initial(allPath),
+            method = _.last(allPath),
+            head = _.first(path),
+            tail = _.rest(path),
+            tree = storage.get(this._parameters.rootID),
+            entry;
+          if ( tree ) {
+            entry = tree.get(head);
+            while ( tail.length ) {
+              head = _.first(tail);
+              tail = _.rest(tail);
+              entry = entry.get(head);
+            }
+            self.getSuggestions = function() {
+              return entry[method]();
+            };
+          }
+        } else {
+          $http.get(url).success(function(data) {
+            self.getSuggestions = function() {
+              return data;
+            };
+          });
+        }
 
-        this.getSuggestions = function() {
-          return suggestions;
-        };
+        // the default getter
+        this.getSuggestions = function() { return []; };
 
         return this;
       });
@@ -240,6 +263,7 @@
         dictionary: dictionaryModel,
         frozendict: frozendictModel,
         directeddictionary: directedDictionaryModel,
+        autocompletionmixin: autoCompletionMixin,
         wildcard: wildcardMixin // use for most general type-checks
       };
     }])
