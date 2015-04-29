@@ -38,7 +38,8 @@
 
 {% block main %}
 <h3>Create Workbook</h3>
-  <div id="create-workbook" class="fluid-container" ng-cloak ng-controller="workbookCtrl">
+  <div id="create-workbook" class="fluid-container" ng-cloak ng-controller="workbookCtrl"
+       ng-init="init({{ id|default:'undefined' }}, '{{ yaml }}', '{{ commit_url }}', '{{ discard_url }}')">
     <div class="well">
       <div class="two-panels">
         <div class="left-panel">
@@ -54,8 +55,10 @@
         </div>
         <div class="right-panel">
           <div class="btn-group btn-toggle pull-right">
-            <button class="btn btn-sm btn-default">Graph</button>
-            <button class="btn btn-sm btn-primary active">YAML</button>
+            <button ng-click="isGraphMode = true" class="btn btn-sm"
+                ng-class="isGraphMode ? 'active btn-primary' : 'btn-default'">Graph</button>
+            <button ng-click="isGraphMode = false" class="btn btn-sm"
+                ng-class="!isGraphMode ? 'active btn-primary' : 'btn-default'">YAML</button>
           </div>
         </div>
       </div>
@@ -78,8 +81,11 @@
         <!-- YAML Panel -->
         <div class="right-panel">
           <div class="panel panel-default">
-            <div class="panel-body">
+            <div class="panel-body" ng-show="!isGraphMode">
               <pre>{$ workbook.toYAML() $}</pre>
+            </div>
+            <div class="panel-body" ng-show="isGraphMode">
+              Here will be a fancy Graph View as soon as we implement it!
             </div>
           </div>
         </div>
@@ -88,8 +94,10 @@
       <div class="two-panels">
         <div class="full-width">
           <div class="pull-right">
-            <button class="btn btn-default cancel">Cancel</button>
-            <button class="btn btn-primary">Create</button>
+            <button ng-click="discardWorkbook()" class="btn btn-default cancel">Cancel</button>
+            <button ng-click="commitWorkbook()" class="btn btn-primary">
+              {$ workbookID ? 'Modify' : 'Create' $}
+              </button>
           </div>
         </div>
       </div>

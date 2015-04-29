@@ -14,56 +14,37 @@
 
 from horizon.test import utils as test_utils
 
-
-_workbooks = []
-
-
-def find_max_id():
-    max_id = 0
-    for workbook in _workbooks:
-        if max_id < int(workbook.id):
-            max_id = int(workbook.id)
-
-    return max_id
+from mistral import models
 
 
-def create_workbook(request, json):
-    name = json['name']
-    for workbook in _workbooks:
-        if name == workbook['name']:
-            raise LookupError('Workbook with that name already exists!')
-
-    obj = test_utils.ObjDictWrapper(id=find_max_id()+1, **json)
-    _workbooks.append(obj)
+def create_workbook(request, name, yaml):
+    wb = models.Workbook.objects.create(name=name, yaml=yaml)
+    wb.save()
     return True
 
 
-def modify_workbook(request, json):
-    id = json['id']
-    for i, workbook in enumerate(_workbooks[:]):
-        if unicode(id) == unicode(workbook.id):
-            _workbooks[i] = test_utils.ObjDictWrapper(**json)
-            return True
+def modify_workbook(request, id, name, yaml):
+    try:
+        wb = models.Workbook.objects.get(id=id)
+        wb.name = name
+        wb.yaml = yaml
+        wb.save()
+    except models.Workbook.DoesNotExist:
+        return False
 
-    return False
+    return True
 
 
 def remove_workbook(request, id):
-    for i, workbook in enumerate(_workbooks[:]):
-        if unicode(id) == unicode(workbook.id):
-            del _workbooks[i]
-            return True
-
-    return False
+    models.Workbook.objects.get(id=id).delete()
 
 
 def list_workbooks(request):
-    return _workbooks
+    return models.Workbook.objects.values('id', 'name')
 
 
 def get_workbook(request, id):
-    for workbook in _workbooks:
-        if unicode(id) == unicode(workbook.id):
-            return workbook.__dict__
-
-    return None
+    try:
+        return models.Workbook.objects.get(id=id)
+    except models.Workbook.DoesNotExist:
+        return None
