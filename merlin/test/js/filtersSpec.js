@@ -28,7 +28,7 @@ describe('merlin filters', function() {
   });
 
   describe('extractPanels() behavior:', function() {
-    var extractPanels, simpleMerlinObjClass;
+    var extractPanels, simpleMerlinObjClass, simpleMerlinObjClassWithMeta;
 
     beforeEach(function() {
       extractPanels = $filter('extractPanels');
@@ -42,6 +42,32 @@ describe('merlin filters', function() {
           '@type': String
         }
       });
+
+      simpleMerlinObjClassWithMeta= fields.frozendict.extend({}, {
+        '@type': Object,
+        'key1': {
+          '@type': Number,
+          '@meta': {
+                'index': 0,
+                'panelIndex': 0,
+                'row': 0
+          }
+        },
+        'key2': {
+          '@type': String,
+          '@meta': {
+                'index': 0,
+                'panelIndex': 0,
+                'row': 0,
+            '@meta': {
+                'index': 0,
+                'panelIndex': 1,
+                'row': 0
+            }
+          }
+        }
+      });
+
     });
 
     it('works properly only with objects created from Merlin classes', function() {
@@ -75,13 +101,35 @@ describe('merlin filters', function() {
       });
 
       it('the filter is applied only to the top-level entries of the passed object', function() {
+        var simpleObj = simpleMerlinObjClassWithMeta.create(),
+          panels = extractPanels(simpleObj);
 
+        expect(panels.length).toBe(1);
       });
 
     });
 
     describe('panels generated from Barricade.MutableObject (non-permanent panels)', function() {
       it('are given a separate panel for each MutableObject entry', function() {
+        var MutableObjClass, simpleMutableBarricadeObj;
+        var dicModelClass = fields.dictionary;
+
+        MutableObjClass = Barricade.MutableObject.extend({}, {'@type': Object, '?': {'@class': fields.string}});
+
+        var immutableClassWithMutable = fields.frozendict.extend({}, {
+
+          'key4': {
+            '@class': MutableObjClass.extend({}, {
+            '@type': Object,
+            '?': {'@class': fields.string}
+          })
+          }
+
+        });
+
+        var immutableObj = immutableClassWithMutable.create({'key4': {'key5': 'String_5', 'key6': 'String_6'}});
+
+        var panels = extractPanels(immutableObj);
 
       });
 
