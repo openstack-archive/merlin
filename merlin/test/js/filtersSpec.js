@@ -28,7 +28,7 @@ describe('merlin filters', function() {
   });
 
   describe('extractPanels() behavior:', function() {
-    var extractPanels, simpleMerlinObjClass;
+    var extractPanels, simpleMerlinObjClass, simpleMerlinObjClassWithMeta;
 
     beforeEach(function() {
       extractPanels = $filter('extractPanels');
@@ -42,6 +42,32 @@ describe('merlin filters', function() {
           '@type': String
         }
       });
+
+      simpleMerlinObjClassWithMeta= fields.frozendict.extend({}, {
+        '@type': Object,
+        'key1': {
+          '@type': Number,
+          '@meta': {
+                'index': 0,
+                'panelIndex': 0,
+                'row': 0
+          }
+        },
+        'key2': {
+          '@type': String,
+          '@meta': {
+                'index': 0,
+                'panelIndex': 0,
+                'row': 0,
+            '@meta': {
+                'index': 0,
+                'panelIndex': 1,
+                'row': 0
+            }
+          }
+        }
+      });
+
     });
 
     it('works properly only with objects created from Merlin classes', function() {
@@ -75,13 +101,80 @@ describe('merlin filters', function() {
       });
 
       it('the filter is applied only to the top-level entries of the passed object', function() {
+        var simpleObj = simpleMerlinObjClassWithMeta.create(),
+          panels = extractPanels(simpleObj);
 
+        expect(panels.length).toBe(1);
       });
 
     });
 
     describe('panels generated from Barricade.MutableObject (non-permanent panels)', function() {
       it('are given a separate panel for each MutableObject entry', function() {
+        var MutableObjClass, simpleMutableBarricadeObj;
+        var dicModelClass = fields.dictionary;
+        // MutableObjClass = Barricade.MutableObject.extend({}, {
+        //  '@type': Object,
+        //  '?': {'@type': String},
+        //  'key1': {
+        //    '@type': Number,
+        //    '?': {'@type': String}
+        //  },
+        //  'key2': {
+        //    '@type': String,
+        //    '?': {'@type': String}
+        //  }
+        //});
+
+        MutableObjClass = Barricade.MutableObject.extend({}, {'@type': Object, '?': {'@type': String}});
+
+        //simpleMutableBarricadeObj = MutableObjClass.create({
+        //  'key1': 'key1',
+        //  'key2': 'key2'
+        //});
+
+        //MutableObjClass = fields.frozendict.extend({}, {
+        //  '@type': Object,
+        //  'key1': 'key1',
+        //  'key2': 'key2'
+        //});
+
+        //simpleMutableBarricadeObj = MutableObjClass.create({
+        //  'key1': 'key1',
+        //  'key2': 'key2',
+        //  'key3': 'key3'
+        //});
+
+        //var suggestNumberPanels = simpleMutableBarricadeObj.getIDs().length;
+        //expect(suggestNumberPanels).toBe(2);
+
+        var immutableClassWithMutable = fields.frozendict.extend({}, {
+          '@type': Object,
+          //'key3': {
+          //  '@type': Number,
+          //  '?': {'@class': MutableObjClass}
+          //}
+
+          'key4': {
+            '@type': Number,
+            '@meta': {
+                  'index': 0,
+                  'panelIndex': 0,
+                  'row': 0
+            },
+            '?': {'@class': dicModelClass}
+          }
+
+        });
+
+        var immutableObj = immutableClassWithMutable.create();
+
+
+        MutableObjClass.push('add', {'key1': 'key1'});
+        dicModelClass.push('add', {'key1': 'key1'});
+        //dicModelClass.add('key1', 'key1');
+        //MutableObjClass.create({'key2': 'key2'});
+        var panels = extractPanels(immutableObj);
 
       });
 
