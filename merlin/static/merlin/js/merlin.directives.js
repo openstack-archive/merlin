@@ -112,6 +112,36 @@
         }
       }
     })
+    .directive('validatable', function() {
+      return {
+        restrict: 'A',
+        require: 'ngModel',
+        link: function(scope, element, attrs, ctrl) {
+          var model;
+          if ( attrs.validatable == 'true' ) {
+            model = scope.value;
+            scope.error = '';
+            model.setValidatable(true);
+            model.on('validation', function(result) {
+              var isValid = (result == 'succeeded'),
+                baseMessage = '';
+              // (FIXME): hack until Barricade supports validation of empty required entries
+              if ( !model.get() && model.isRequired() ) {
+                isValid = false;
+                baseMessage = 'This field is required.'
+              }
+              ctrl.$setValidity('barricade', isValid);
+              scope.error = model.hasError() ? model.getError() : baseMessage;
+            });
+            ctrl.$formatters.push(function(modelValue) {
+              return modelValue === undefined ?
+                ( ctrl.$isEmpty(ctrl.$viewValue) ? undefined : ctrl.$viewValue ) :
+                modelValue;
+            });
+          }
+        }
+      }
+    })
     .directive('typedField', ['$compile', 'merlin.templates',
       function($compile, templates) {
         function updateAutoCompletionDirective(template) {
