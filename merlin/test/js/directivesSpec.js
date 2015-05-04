@@ -347,4 +347,83 @@ describe('merlin directives', function() {
     });
 
   });
+
+  describe("'validatable'", function() {
+    var fields;
+
+    beforeEach(inject(function($injector) {
+      fields = $injector.get('merlin.field.models');
+    }));
+
+    describe('working with the @constraints property:', function() {
+      var model, elt,
+        goodValue = 'allowedValue',
+        badValue = 'restrictedValue',
+        errorMessage = 'Wrong value provided';
+      beforeEach(function() {
+        var modelClass = fields.string.extend({}, {
+          '@constraints': [
+            function(value) {
+              return value !== badValue ? true : errorMessage;
+            }
+          ]
+        });
+        $scope.model = modelClass.create();
+        elt = $compile('<form name="form"><input name="model" type="text" ' +
+          'ng-model="model.value" ng-model-options="{ getterSetter: true }" ' +
+          'validatable-with="model"></form>')($scope);
+      });
+
+      describe('any valid value', function() {
+        beforeEach(function() {
+          $scope.form.model.$setViewValue(goodValue);
+          $scope.$digest();
+        });
+
+        it('is allowed to be entered', function() {
+          expect($scope.form.model.$viewValue).toEqual(goodValue);
+        });
+
+        it('is propagated into the model', function() {
+          expect($scope.model.value()).toEqual(goodValue);
+        });
+
+        it('does not cause the input to be marked as erroneous', function() {
+          expect(elt.find('input').hasClass('ng-valid')).toBe(true);
+        });
+
+        it('sets error message on scope to an empty string', function() {
+          expect($scope.error).toEqual('');
+        });
+      });
+
+      describe('any invalid value', function() {
+        beforeEach(function() {
+          $scope.form.model.$setViewValue(badValue);
+          $scope.$digest();
+        });
+
+        it('is allowed to be entered', function() {
+          expect($scope.form.model.$viewValue).toEqual(badValue);
+        });
+
+        it('is not propagated into the model', function() {
+          expect($scope.model.value()).toBe(undefined);
+        });
+
+        it('causes the input to be marked as erroneous', function() {
+          expect(elt.find('input').hasClass('ng-invalid')).toBe(true);
+        });
+
+        it('exposes error message in the parent scope', function() {
+          expect($scope.error).toEqual(errorMessage);
+        })
+      });
+    });
+
+    describe('working with the @required property', function() {
+      // TODO: fill in once validation of @required fields changes in Barricade
+    });
+  });
+
 });
