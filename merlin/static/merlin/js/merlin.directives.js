@@ -112,6 +112,26 @@
         }
       }
     })
+    .directive('validatable', function() {
+      return {
+        restrict: 'A',
+        require: 'ngModel',
+        link: function(scope, element, attrs, ctrl) {
+          scope.error = '';
+          var model = scope.value;
+          model.on('validation', function(result) {
+            var isValid = (result == 'succeeded');
+            ctrl.$setValidity('barricade', isValid);
+            scope.error = model.hasError() ? model.getError() : '';
+          });
+          ctrl.$formatters.push(function(modelValue) {
+            return modelValue === undefined ?
+              ( ctrl.$isEmpty(ctrl.$viewValue) ? undefined : ctrl.$viewValue ) :
+              modelValue;
+          });
+        }
+      }
+    })
     .directive('typedField', ['$compile', 'merlin.templates',
       function($compile, templates) {
         return {
@@ -122,6 +142,20 @@
           },
           link: function(scope, element) {
             templates.templateReady(scope.type).then(function(template) {
+              if ( scope.value.getSuggestions ) {
+                template = angular.element(template);
+                template.find('input').each(function(index, elem) {
+                  // reset the 'autocompletable' attribute only if it's already
+                  // present on the element
+                  elem = angular.element(elem);
+                  if ( elem.attr('autocompletable') ) {
+                    elem.removeAttr('autocompletable');
+                    elem.attr('typeahead-editable', true);
+                    elem.attr('typeahead',
+                      "option for option in value.getSuggestions() | filter:$viewValue");
+                  }
+                });
+              }
               element.replaceWith($compile(template)(scope));
             })
           }
