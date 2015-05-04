@@ -559,7 +559,12 @@
                 'index': 0,
                 'panelIndex': 0,
                 'row': 0
-              }
+              },
+              '@constraints': [
+                function(value) {
+                  return value !== 'workbook1' ? true : 'The worng value';
+                }
+              ]
             })
           },
           'description': {

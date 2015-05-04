@@ -32,11 +32,13 @@
       });
 
       var modelMixin = Barricade.Blueprint.create(function(type) {
+        var isValid = true;
         this.value = function() {
           if ( !arguments.length ) {
-            return this.get();
+            return isValid ? this.get() : undefined;
           } else {
             this.set(arguments[0]);
+            isValid = !this.hasError();
           }
         };
         this.id = utils.getNewId();
