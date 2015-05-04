@@ -112,6 +112,26 @@
         }
       }
     })
+    .directive('validatable', function() {
+      return {
+        restrict: 'A',
+        require: 'ngModel',
+        link: function(scope, element, attrs, ctrl) {
+          scope.error = '';
+          var model = scope.value;
+          model.on('validation', function(result) {
+            var isValid = (result == 'succeeded');
+            ctrl.$setValidity('barricade', isValid);
+            scope.error = model.hasError() ? model.getError() : '';
+          });
+          ctrl.$formatters.push(function(modelValue) {
+            return modelValue === undefined ?
+              ( ctrl.$isEmpty(ctrl.$viewValue) ? undefined : ctrl.$viewValue ) :
+              modelValue;
+          });
+        }
+      }
+    })
     .directive('typedField', ['$compile', 'merlin.templates',
       function($compile, templates) {
         function updateAutoCompletionDirective(template) {
