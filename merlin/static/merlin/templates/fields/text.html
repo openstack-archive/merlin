@@ -2,5 +2,6 @@
   <label for="elem-{$ $id $}">{$ value.title() $}</label>
   <textarea class="form-control" id="elem-{$ $id $}"
             ng-model="value.value" ng-model-options="{ getterSetter: true }"
-            autocompletable="true"></textarea>
+            autocompletable="true" validatable="true"></textarea>
+  <div ng-show="error" class="alert alert-danger">{$ error $}</div>
 </div>

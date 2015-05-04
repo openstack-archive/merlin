@@ -54,8 +54,13 @@
   }
 }
 
-editable .fa-pencil {
-  color: black;
+editable {
+  .fa-pencil {
+    color: black;
+  }
+  button:disabled {
+    color: gray;
+  }
 }
 
 .section {
