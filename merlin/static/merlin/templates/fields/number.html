@@ -1,6 +1,7 @@
 <div class="form-group">
   <pre>{$ value $}, {$ value.title() $}</pre>
   <label for="elem-{$ $id $}">{$ value.title() $}</label>
-  <input type="number" class="form-control" id="elem-{$ $id $}" ng-model="value.value"
-         ng-model-options="{ getterSetter: true }">
+  <input type="number" class="form-control" id="elem-{$ $id $}"
+         ng-model="value.value" ng-model-options="{ getterSetter: true }"
+         autocompletable="true">
 </div>

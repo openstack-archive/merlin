@@ -258,6 +258,17 @@ describe('merlin directives', function() {
       expect(element.html()).toContain('<textarea');
     });
 
+    describe('autocompletion functionality', function() {
+      it('requires both autocompletable="true" in markup and .getSuggestions() ' +
+      'to be defined in the model', function() {
+
+      });
+
+      it('possible autocompletion options are defined by the list .getSuggestions() returns', function() {
+
+      });
+    });
+
     describe('various types', function() {
       describe('.title() of every field except group', function() {
         it("tries to extract title from '@meta' key", function() {
