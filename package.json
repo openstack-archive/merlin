@@ -32,5 +32,9 @@
   "main": "Gruntfile.js",
   "dependencies": {
     "grunt": "^0.4.5"
+  },
+  "scripts": {
+    "postinstall": "bower install",
+    "test-unit": "grunt test:unit"
   }
 }
