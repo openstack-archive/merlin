@@ -16,13 +16,26 @@ ln -s /home/user/dev/merlin/merlin /usr/lib/python2.7/site-packages/merlin
 # for files of the Merlin's Mistral extension
 ln -s /home/user/dev/merlin/extensions/mistral /usr/lib/python2.7/site-packages/mistral
 ```
-1. Next thing to do is add panel with Mistral Workbook builder (a Merlin
+2. Next thing to do is add panel with Mistral Workbook builder (a Merlin
 extension) into Horizon. To do it, copy the pluggable config for the Mistral
 panel:
 ```
 cp /home/user/dev/merlin/extensions/enabled/_50_add_mistral_panel.py /usr/lib/python2.7/site-packages/openstack_dashboard/enabled/
 ```
-1. Restart Horizon web-server. According to the default values in
+3. This step is TEMPORARY and will be needed until the real API for listing/ loading/ saving 
+of Mistral workbooks is implemented. You need to add the following setting to 
+``openstack_dashboard.settings``
+   ```
+   DATABASES = {
+       'default': {
+           'ENGINE': 'django.db.backends.sqlite3',
+           'NAME': 'horizon.sqlite3'
+       }
+   }
+   ```
+
+   and run ``openstack-dashboard/manage.py syncdb`` after that.
+4. Restart Horizon web-server. According to the default values in
 ``_50_add_mistral_panel.py`` you would be able to **Mistral** panel inside
 the **Project** dashboard, **Orchestration** panel group.
 
