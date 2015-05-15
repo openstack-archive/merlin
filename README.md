@@ -16,12 +16,14 @@ following commands
    # for files of the Merlin's Mistral extension
    ln -s /home/user/dev/merlin/extensions/mistral /usr/lib/python2.7/site-packages/mistral
    ```
+
 2. Next thing to do is add panel with Mistral Workbook builder (a Merlin
 extension) into Horizon. To do it, copy the pluggable config for the Mistral
 panel:
    ```
    cp /home/user/dev/merlin/extensions/enabled/_50_add_mistral_panel.py /usr/lib/python2.7/site-packages/openstack_dashboard/enabled/
    ```
+
 3. This step is TEMPORARY and will be needed until the real API for listing/ loading/ saving 
 of Mistral workbooks is implemented. You need to add the following setting to the top of
 ``openstack_dashboard.settings``
