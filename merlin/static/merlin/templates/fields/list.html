@@ -1,7 +1,7 @@
 <collapsible-group content="value" on-add="value.add()">
-  <div class="three-columns">
+  <div class="three-columns" ng-repeat="subItem in value.getValues() track by $index">
     <div class="left-column">
-      <div class="form-group" ng-repeat="subItem in value.getValues() track by $index">
+      <div class="form-group">
         <div class="input-group">
           <input type="text" class="form-control" ng-model="subItem.value" ng-model-options="{ getterSetter: true }">
           <span class="input-group-btn">
