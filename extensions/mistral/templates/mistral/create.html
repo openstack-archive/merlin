@@ -30,24 +30,25 @@
 
 {% block css %}
   {% include "_stylesheets.html" %}
-  {% compress css %}
-    <link href='{{ STATIC_URL }}merlin/scss/merlin.scss' type='text/scss' media='screen' rel='stylesheet' />
-  {% endcompress %}
+  <!--{% compress css %}-->
+    <!--<link href='{{ STATIC_URL }}merlin/scss/merlin.scss' type='text/scss' media='screen' rel='stylesheet' />-->
+  <!--{% endcompress %}-->
+<link href='{{ STATIC_URL }}merlin/css/flexboxgrid.css' type='text/css' media='screen' rel='stylesheet' />
   {% block merlin-css %}{% endblock %}
 {% endblock %}
 
 {% block main %}
 <h3>Create Workbook</h3>
-  <div id="create-workbook" class="fluid-container" ng-cloak ng-controller="WorkbookController as wb"
+  <div id="create-workbook" ng-cloak ng-controller="WorkbookController as wb"
        ng-init="wb.init({{ id|default:'undefined' }}, '{{ yaml }}', '{{ commit_url }}', '{{ discard_url }}')">
     <div class="well">
-      <div class="two-panels">
-        <div class="left-panel">
-          <div class="pull-left">
+      <div class="row">
+        <div class="col-xs row">
+          <div class="col-xs start-xs">
             <h4><strong>{$ wb.workbook.get('name') $}</strong></h4>
           </div>
-          <div class="pull-right">
-            <div class="table-actions clearfix">
+          <div class="col-xs end-xs">
+            <div class="table-actions">
               <button ng-click="wb.addAction()" class="btn btn-default btn-sm">
                 <span class="fa fa-plus">Add Action</span></button>
               <button ng-click="wb.addWorkflow()" class="btn btn-default btn-sm">
@@ -55,8 +56,8 @@
             </div>
           </div>
         </div>
-        <div class="right-panel">
-          <div class="btn-group btn-toggle pull-right">
+        <div class="col-xs end-xs">
+          <div class="btn-group btn-toggle">
             <button ng-click="wb.isGraphMode = true" class="btn btn-sm"
                 ng-class="wb.isGraphMode ? 'active btn-primary' : 'btn-default'">Graph</button>
             <button ng-click="wb.isGraphMode = false" class="btn btn-sm"
@@ -65,23 +66,31 @@
         </div>
       </div>
       <!-- Data panel start -->
-      <div class="two-panels">
-        <div class="left-panel">
+      <div class="row">
+        <div class="col-xs">
           <panel ng-repeat="panel in wb.workbook | extractPanels:wb.keyExtractor track by panel.id"
                  content="panel">
-            <div ng-repeat="row in panel | extractRows track by row.id">
-              <div ng-class="{'two-columns': row.index !== undefined }">
-                <div ng-repeat="item in row | extractItems track by item.id"
-                     ng-class="{'right-column': item.isAtomic() && $odd, 'left-column': item.isAtomic() && $even}">
-                  <typed-field value="item" type="{$ item.getType() $}"></typed-field>
-                  <div class="clearfix" ng-if="$odd"></div>
+            <div ng-repeat="row in panel | extractFields | chunks:2 track by $index">
+              <div ng-repeat="(label, field) in row track by field.uid()">
+                <div ng-if="field.isAtomic()" class="col-xs-6">
+                  <labeled label="{$ label $}" for="{$ field.uid() $}">
+                    <typed-field value="field" type="{$ field.getType() $}"></typed-field>
+                  </labeled>
+                </div>
+                <div ng-if="!field.isAtomic()" class="col-xs-12">
+                  <collapsible-group content="field" editable-title="false" title="{$ label $}"
+                                     additive="{$ field.isAdditive() $}" on-add="field.add()">
+                    <div ng-class="field.isPlainStructure() ? 'col-xs-6' : 'col-xs-12'">
+                      <typed-field value="field" type="{$ field.getType() $}"></typed-field>
+                    </div>
+                  </collapsible-group>
                 </div>
               </div>
             </div>
           </panel>
         </div>
         <!-- YAML Panel -->
-        <div class="right-panel">
+        <div class="col-xs">
           <div class="panel panel-default">
             <div class="panel-body" ng-show="!wb.isGraphMode">
               <pre>{$ wb.workbook.toYAML() $}</pre>
@@ -93,14 +102,12 @@
         </div>
       </div>
       <!-- page footer -->
-      <div class="two-panels">
-        <div class="full-width">
-          <div class="pull-right">
-            <button ng-click="wb.discardWorkbook()" class="btn btn-default cancel">Cancel</button>
-            <button ng-click="wb.commitWorkbook()" class="btn btn-primary">
-              {$ wb.workbookID ? 'Modify' : 'Create' $}
-              </button>
-          </div>
+      <div class="row">
+        <div class="col-xs end-xs">
+          <button ng-click="wb.discardWorkbook()" class="btn btn-default cancel">Cancel</button>
+          <button ng-click="wb.commitWorkbook()" class="btn btn-primary">
+            {$ wb.workbookID ? 'Modify' : 'Create' $}
+          </button>
         </div>
       </div>
     </div>

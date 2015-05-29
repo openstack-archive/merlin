@@ -39,9 +39,24 @@
      * retrieves a template by its name which is the same as model's type and renders it,
      * recursive <typed-field></..>-s are possible.
      * */
-    .directive('typedField', typedField);
+    .directive('typedField', typedField)
+
+    .directive('labeled', labeled);
 
   typedField.$inject = ['$compile', 'merlin.templates'];
+  collapsibleGroup.$inject = ['$parse'];
+
+  function labeled() {
+    return {
+      restrict: 'E',
+      templateUrl: '/static/merlin/templates/labeled.html',
+      transclude: true,
+      scope: {
+        label: '@',
+        for: '@'
+      }
+    }
+  }
 
   function editable() {
     return {
@@ -129,18 +144,20 @@
     };
   }
 
-  function collapsibleGroup() {
+  function collapsibleGroup($parse) {
     return {
       restrict: 'E',
       templateUrl: '/static/merlin/templates/collapsible-group.html',
       transclude: true,
       scope: {
         group: '=content',
+        title: '@',
         onAdd: '&',
         onRemove: '&'
       },
       link: function(scope, element, attrs) {
         scope.isCollapsed = false;
+        scope.editableTitle = $parse(attrs.editableTitle)();
         if ( attrs.onAdd && attrs.additive !== 'false' ) {
           scope.additive = true;
         }
@@ -193,9 +210,16 @@
         value: '=',
         type: '@'
       },
-      link: function(scope, element) {
+      transclude: true,
+      link: function(scope, element, attrs, ctrl, transcludeFn) {
         templates.templateReady(scope.type).then(function(template) {
-          element.replaceWith($compile(template)(scope));
+          //var trancludedContent = transcludeFn();
+          element.append($compile(template)(scope));
+          scope.$watch('value.length()', function(newValue) {
+            if (angular.isDefined(newValue)) {
+              element.find('.button-row:last').append(transcludeFn());
+            }
+          })
         });
       }
     };

@@ -17,56 +17,63 @@
   angular
     .module('merlin')
     .filter('extractPanels', extractPanels)
-    .filter('extractRows', extractRows)
-    .filter('extractItems', extractItems);
+    .filter('extractFields', extractFields)
+    .filter('makeTitle', makeTitle)
+    .filter('chunks', chunks);
 
   extractPanels.$inject = ['merlin.utils'];
-  extractRows.$inject = ['merlin.utils'];
-  extractItems.$inject = ['merlin.utils'];
+  extractFields.$inject = ['merlin.utils'];
+  makeTitle.$inject = ['merlin.utils'];
+
+  function makeTitle(utils) {
+    return function(label, field) {
+      if (angular.isNumber(+label)) {
+        return field.title();
+      } else {
+        return utils.makeTitle(label);
+      }
+    }
+  }
 
   function extractPanels(utils) {
     var panelProto = {
-      create: function(items) {
-        if ( angular.isArray(items) && !items.length ) {
-          return null;
-        }
-        var permanentPanel = !items[0].hasID();
-        var self = this;
-        if (permanentPanel) {
-          this.items = items;
-          this.id = items.reduce(function(prevId, item) {
-            return item.uid() + prevId;
-          }, '');
-        } else {
-          this._barricadeObj = items[0];
-          this.id = this._barricadeObj.uid();
-          this.items = this._barricadeObj.getKeys().map(function(key) {
-            //return self._barricadeObj.get(key);
-            return utils.enhanceItemWithID(self._barricadeObj.get(key), key);
-          });
+      create: function(enumerator, obj) {
+        this.obj = obj;
+        this.enumerator = enumerator;
+        if (this.obj) {
+          this.id = this.obj.uid();
           this.removable = true;
+        } else {
+          var id = '';
+          enumerator(function(key, item) {
+            id += item.uid();
+          });
+          this.id = id;
         }
         return this;
       },
       title: function() {
         var newID;
-        if ( this._barricadeObj ) {
+        if (this.obj) {
           if ( arguments.length ) {
             newID = arguments[0];
-            this._barricadeObj.setID(newID);
+            this.obj.setID(newID);
           } else {
-            return this._barricadeObj.getID();
+            return this.obj.getID();
           }
         }
       },
+      each: function(callback, comparator) {
+        this.enumerator.call(this.obj, callback, comparator);
+      },
       remove: function() {
-        this._barricadeObj.emit('change', 'remove');
+        this.obj.emit('change', 'removerequest');
       }
     };
 
     return _.memoize(function(container, keyExtractor) {
       var items = [];
-      var data = {};
+      var _data = {};
       var panels = [];
 
       function rec(container) {
@@ -74,7 +81,7 @@
           var groupingKey = keyExtractor(item, container);
           if (angular.isNumber(groupingKey)) {
             items.push(item);
-            data[item.uid()] = {
+            _data[item.uid()] = {
               groupingKey: groupingKey,
               container: container,
               indexOrKey: indexOrKey
@@ -88,11 +95,25 @@
       rec(container);
 
       function extractKey(item) {
-        return angular.isDefined(item) && data[item.uid()].groupingKey;
+        return angular.isDefined(item) && _data[item.uid()].groupingKey;
       }
 
       utils.groupByExtractedKey(items, extractKey).forEach(function(items) {
-        panels.push(Object.create(panelProto).create(items));
+        var parent, enumerator, obj;
+        if (items.length > 1) {
+          parent = _data[items[0].uid()].container;
+          enumerator = function(callback) {
+            items.forEach(function(item) {
+              if (_data[item.uid()].container === parent) {
+                callback(_data[item.uid()].indexOrKey, item);
+              }
+            })
+          }
+        } else {
+          obj = items[0];
+          enumerator = obj.each;
+        }
+        panels.push(Object.create(panelProto).create(enumerator, obj));
       });
       return utils.condense(panels);
     }, function(container) {
@@ -110,54 +131,47 @@
     });
   }
 
-  function extractRows(utils) {
-    function getItems(panelOrContainer) {
-      if ( panelOrContainer.items ) {
-        return panelOrContainer.items;
-      } else if ( panelOrContainer.getKeys ) {
-        return panelOrContainer.getKeys().map(function(key) {
-          return panelOrContainer.get(key);
-        });
-      } else {
-        return panelOrContainer.getIDs().map(function(id) {
-          return panelOrContainer.getByID(id);
-        });
-      }
-    }
-
-    return _.memoize(function(panel) {
-      var rowProto = {
-          create: function(items) {
-            this.id = items[0].uid();
-            this.index = items.row;
-            this.items = items.slice();
-            return this;
-          }
-        };
-
-      return utils.groupByMetaKey(getItems(panel), 'row').map(function(items) {
-        return Object.create(rowProto).create(items);
+  function extractFields(utils) {
+    return _.memoize(function(container) {
+      var fields = {};
+      container.each(function(key, item) {
+        fields[key] = item;
       });
+      return fields;
     }, function(panel) {
       var hash = '';
-      getItems(panel).forEach(function(item) {
+      panel.each(function(key, item) {
         hash += item.uid();
       });
       return hash;
     });
   }
 
-  function extractItems(utils) {
-    return _.memoize(function(row) {
-      return row.items.sort(function(item1, item2) {
-        return utils.getMeta(item1, 'index') - utils.getMeta(item2, 'index');
-      });
-    }, function(row) {
+  function chunks() {
+    return _.memoize(function(fields, itemsPerChunk) {
+      var chunks = [];
+      var keys = Object.keys(fields);
+      var i, j, chunk;
+      itemsPerChunk = +itemsPerChunk;
+      if (!angular.isNumber(itemsPerChunk) || itemsPerChunk < 1) {
+        return chunks;
+      }
+      for (i = 0; i < keys.length; i++) {
+        chunk = {};
+        for (j = 0; j < itemsPerChunk; j++) {
+          chunk[keys[i]] = fields[keys[i]];
+        }
+        chunks.push(chunk);
+      }
+      return chunks;
+    }, function(fields) {
       var hash = '';
-      row.items.forEach(function(item) {
-        hash += item.uid();
-      });
+      var key;
+      for (key in fields) {
+        hash += fields[key].uid();
+      }
       return hash;
     });
   }
+
 })();
