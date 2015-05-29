@@ -8,18 +8,13 @@
     <div ng-switch="subItem.get('type').value()">
       <!-- draw string input -->
       <div class="right-column" ng-switch-when="string">
-        <div class="form-group">
-          <label>&nbsp;</label>
-          <div class="input-group">
-            <input type="text" class="form-control"
-                   ng-model="subItem.get('value').value" ng-model-options="{getterSetter: true}">
-            <span class="input-group-btn">
-              <button class="btn btn-default" ng-click="value.remove($index)">
-                <i class="fa fa-minus-circle"></i>
-              </button>
-            </span>
-          </div>
-        </div>
+        <typed-field type="string" value="subItem.get('value')">
+          <span class="input-group-btn">
+            <button class="btn btn-default" ng-click="value.remove($index)">
+              <i class="fa fa-minus-circle"></i>
+            </button>
+          </span>
+        </typed-field>
       </div>
       <!-- END: draw string input -->
       <!-- draw dictionary inputs -->

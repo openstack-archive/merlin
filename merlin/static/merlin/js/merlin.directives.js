@@ -132,9 +132,15 @@
             value: '=',
             type: '@'
           },
-          link: function(scope, element) {
+          transclude: true,
+          link: function(scope, element, attrs, ctrls, transclude) {
             templates.templateReady(scope.type).then(function(template) {
               template = angular.element(template);
+              transclude(scope, function(clone) {
+                if ( clone.length ) {
+                  template.append(clone);
+                }
+              });
               if ( scope.value.getSuggestions ) {
                 updateAutoCompletionDirective(template);
               }
