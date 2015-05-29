@@ -3,15 +3,7 @@
   <div class="three-columns" ng-repeat="subItem in value.getValues() track by $index"
        ng-class="subItem.get('type').get()">
     <div class="left-column">
-      <div class="form-group">
-        <label for="elem-{$ $id $}.$index">Key Type</label>
-        <select id="elem-{$ $id $}.$index" class="form-control"
-                ng-model="subItem.get('type').value" ng-model-options="{getterSetter: true}">
-          <option ng-repeat="value in subItem.get('type').getEnumValues()"
-                  value="{$ value $}"
-                  ng-selected="subItem.get('type').get() == value">{$ value $}</option>
-        </select>
-      </div>
+      <typed-field type="choices" value="subItem.get('type')"></typed-field>
     </div>
     <div ng-switch="subItem.get('type').value()">
       <!-- draw string input -->
