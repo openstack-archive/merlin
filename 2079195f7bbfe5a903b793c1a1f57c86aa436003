@@ -1,0 +1,8 @@
+Verified+2: Jenkins
+Code-Review+2: Timur Sufiev <tsufiev@mirantis.com>
+Workflow+1: Timur Sufiev <tsufiev@mirantis.com>
+Submitted-by: Jenkins
+Submitted-at: Wed, 03 Jun 2015 17:33:57 +0000
+Reviewed-on: https://review.openstack.org/179865
+Project: stackforge/merlin
+Branch: refs/heads/master
