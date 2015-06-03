@@ -114,6 +114,18 @@
     })
     .directive('typedField', ['$compile', 'merlin.templates',
       function($compile, templates) {
+        function updateAutoCompletionDirective(template) {
+          template.find('input').each(function(index, elem) {
+            elem = angular.element(elem);
+            if ( elem.attr('autocompletable') ) {
+              // process 'autocompletable' attribute only once
+              elem.removeAttr('autocompletable');
+              elem.attr('typeahead-editable', true);
+              elem.attr('typeahead',
+                "option for option in value.getSuggestions() | filter:$viewValue");
+            }
+          });
+        }
         return {
           restrict: 'E',
           scope: {
@@ -122,6 +134,10 @@
           },
           link: function(scope, element) {
             templates.templateReady(scope.type).then(function(template) {
+              template = angular.element(template);
+              if ( scope.value.getSuggestions ) {
+                updateAutoCompletionDirective(template);
+              }
               element.replaceWith($compile(template)(scope));
             })
           }
