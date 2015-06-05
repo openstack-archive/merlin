@@ -195,7 +195,7 @@
           },
           remove: function() {
             this.emit('change', 'taskRemove', this.getID());
-          },
+          }
         }, {
           '@meta': {
             'baseKey': 'task',
@@ -211,7 +211,7 @@
               }, {
                 value: 'workflow', label: 'Workflow-based'
               }],
-              '@default': 'action',
+              '@default': 'workflow',// 'action',
               '@meta': {
                 'index': 0,
                 'row': 0
@@ -390,6 +390,28 @@
           return this.extend({}, {
             'workflow': {
               '@class': fields.string.extend({}, {
+                _values: null,
+                '@enum': function() {
+                  var values;
+                  this.setDeferred({
+                    to: function() {
+                      return models.Workflows;
+                    },
+                    needs: function() {
+                      return models.Workbook;
+                    },
+                    getter: function(data) {
+                      return data.needed.get('workflows');
+                    },
+                    processor: function(obj) {
+                      return obj.val.getIDs();
+                    }
+                  }, function(processed) {
+                    values = processed;
+                  }, this);
+                  this.emit('_resolveUp', this);
+                  return values;
+                },
                 '@meta': {
                   'row': 0,
                   'index': 1,
@@ -408,7 +430,7 @@
         };
 
         function TaskFactory(json, parameters) {
-          var type = json.type || 'action',
+          var type = json.type || 'workflow',// 'action',
             baseClass = taskTypes[parameters.wfType],
             mixinClass = taskTypes[type],
             taskClass = mixinClass.call(baseClass);
@@ -539,6 +561,33 @@
           return workflowTypes[type].create(json, parameters);
         }
 
+        models.Workflows = fields.dictionary.extend({
+          create: function(json, parameters) {
+            var self = fields.dictionary.create.call(this, json, parameters);
+            self.on('childChange', function(child, op) {
+              if ( op === 'workflowType' ) {
+                var workflowId = child.getID(),
+                  workflowPos = self.getPosByID(workflowId),
+                  params = child._parameters,
+                  workflowData = child.toJSON();
+                params.wfType = child.type;
+                params.id = workflowId;
+                self.set(workflowPos, workflowFactory(workflowData, params));
+              }
+            });
+            return self;
+          }
+        }, {
+          '@meta': {
+            'index': 4,
+            'panelIndex': 2
+          },
+          '?': {
+            '@class': models.Workflow,
+            '@factory': workflowFactory
+          }
+        });
+
         models.Workbook = fields.frozendict.extend({
           toYAML: function() {
             return jsyaml.dump(this.toJSON({pretty: true}));
@@ -592,32 +641,7 @@
             })
           },
           'workflows': {
-            '@class': fields.dictionary.extend({
-              create: function(json, parameters) {
-                var self = fields.dictionary.create.call(this, json, parameters);
-                self.on('childChange', function(child, op) {
-                  if ( op === 'workflowType' ) {
-                    var workflowId = child.getID(),
-                      workflowPos = self.getPosByID(workflowId),
-                      params = child._parameters,
-                      workflowData = child.toJSON();
-                    params.wfType = child.type;
-                    params.id = workflowId;
-                    self.set(workflowPos, workflowFactory(workflowData, params));
-                  }
-                });
-                return self;
-              }
-            }, {
-              '@meta': {
-                'index': 4,
-                'panelIndex': 2
-              },
-              '?': {
-                '@class': models.Workflow,
-                '@factory': workflowFactory
-              }
-            })
+            '@class': models.Workflows
           }
         });
 
