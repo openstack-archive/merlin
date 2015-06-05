@@ -1,6 +1,7 @@
 /**
  * Created by tsufiev on 2/24/15.
  */
+var workbook;
 (function() {
   'use strict';
 
@@ -17,9 +18,9 @@
           $scope.discardUrl = discardUrl;
           var params = {rootID: id};
           if ( id !== undefined ) {
-            $scope.workbook = models.Workbook.create(jsyaml.safeLoad(yaml), params);
+            $scope.workbook = workbook = models.Workbook.create(jsyaml.safeLoad(yaml), params);
           } else {
-            $scope.workbook = models.Workbook.create({name: 'My Workbook'}, params);
+            $scope.workbook = workbook = models.Workbook.create({name: 'My Workbook'}, params);
           }
           storage.store(id, $scope.workbook);
         };
