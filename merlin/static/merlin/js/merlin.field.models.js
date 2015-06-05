@@ -12,20 +12,35 @@
       });
 
       var restrictedChoicesMixin = Barricade.Blueprint.create(function() {
-        var values = this.getEnumValues(),
-          labels = this.getEnumLabels(),
+        var self = this,
+          values, labels, items;
+
+        function fillItems() {
+          values = self.getEnumValues();
+          labels = self.getEnumLabels();
           items = {};
 
-        values.forEach(function(value, index) {
-          items[value] = labels[index];
-        });
+          values && values.forEach(function (value, index) {
+            items[value] = labels[index];
+          });
+        }
 
         this.getLabel = function(value) {
+          if ( values === undefined ) {
+            fillItems();
+          }
           return items[value];
         };
 
         this.getValues = function() {
+          if ( values === undefined ) {
+            fillItems();
+          }
           return values;
+        };
+
+        this.resetValues = function() {
+          values = undefined;
         };
 
         this.setType('choices');
