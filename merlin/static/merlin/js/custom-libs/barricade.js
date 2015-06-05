@@ -261,43 +261,86 @@ var Barricade = (function () {
     * @mixin
     * @memberof Barricade
     */
-    Deferrable = Blueprint.create(function (schema) {
-        var self = this,
-            deferred;
+    Deferrable = Blueprint.create(function () {
+        var existingCreate = this.create;
 
-        function resolver(neededValue) {
-            var ref = schema['@ref'].resolver(self, neededValue);
-            if (ref === undefined) {
-                logError('Could not resolve ', JSON.stringify(self.toJSON()));
-            }
-            return ref;
-        }
+        this.create = function() {
+            var self = existingCreate.apply(this, arguments),
+                schema = self._schema,
+                needed,
+                deferred;
 
-        if (schema.hasOwnProperty('@ref')) {
-            deferred = Deferred.create(schema['@ref'].needs, resolver);
-        }
+            self.setDeferred = function (refObj, postProcessor, callee) {
+                deferred = refObj ?
+                    Deferred.create(refObj.needs, getter, resolver) : null;
 
-        this.resolveWith = function (obj) {
-            var allResolved = true;
+                callee = callee || self;
 
-            if (deferred && !deferred.isResolved()) {
-                if (deferred.needs(obj)) {
-                    this.emit('replace', deferred.resolve(obj));
-                } else {
-                    allResolved = false;
+                if (refObj && !refObj.processor) {
+                    refObj.processor = function (o) { return o.val; };
                 }
-            }
 
-            if (this.instanceof(Container)) {
-                this.each(function (index, value) {
-                    if (!value.resolveWith(obj)) {
+                function getter(neededVal) {
+                    return refObj.getter({standIn: callee, needed: neededVal});
+                }
+
+                function resolver(retrievedValue) {
+                    postProcessor.call(callee, refObj.processor({
+                        val: retrievedValue,
+                        standIn: callee,
+                        needed: needed
+                    }));
+                }
+            };
+
+            self.setDeferred(schema['@ref'], function(processed) {
+                self.emit('replace', processed);
+            });
+
+            self.resolveWith = function (obj) {
+                var allResolved = true;
+
+                if (deferred && !deferred.isResolved()) {
+                    if (deferred.needs(obj)) {
+                        needed = obj;
+                        deferred.resolve(obj);
+                    } else {
                         allResolved = false;
                     }
-                });
-            }
+                }
 
-            return allResolved;
+                if (this.instanceof(Container)) {
+                    this.each(function (index, value) {
+                        if (!value.resolveWith(obj)) {
+                            allResolved = false;
+                        }
+                    });
+                }
+
+                return allResolved;
+            };
+
+            self.isPlaceholder = function () {
+                return !!deferred;
+            };
+
+            return self;
         };
+
+        this.isValidRef = function(instance) {
+            var clsRef = this._schema['@ref'];
+            if (!clsRef) {
+                return false;
+            }
+            if (typeof clsRef.to === 'function') {
+                return this._safeInstanceof(instance, clsRef.to());
+            } else if (typeof clsRef.to === 'object') {
+                return this._safeInstanceof(instance, clsRef.to);
+            }
+            throw new Error('Ref.to was ' + clsRef.to);
+        };
+
+        return this;
     });
 
     /**
@@ -407,7 +450,7 @@ var Barricade = (function () {
         this.emit = function (eventName) {
             var args = arguments; // Must come from correct scope
             if (events.hasOwnProperty(eventName)) {
-                events[eventName].forEach(function (callback) {
+                events[eventName].slice().forEach(function (callback) {
                     // Call with emitter as context and pass all but eventName
                     callback.apply(this, Array.prototype.slice.call(args, 1));
                 }, this);
@@ -469,10 +512,11 @@ var Barricade = (function () {
                  Callback to execute when resolve happens.
         * @returns {Barricade.Deferred}
         */
-        create: function (classGetter, onResolve) {
+        create: function (classGetter, getter, onResolve) {
             var self = Object.create(this);
             self._isResolved = false;
             self._classGetter = classGetter;
+            self._getter = getter;
             self._onResolve = onResolve;
             return self;
         },
@@ -502,17 +546,25 @@ var Barricade = (function () {
         * @param obj
         */
         resolve: function (obj) {
-            var ref;
+            var self = this,
+                neededValue;
+
+            function doResolve(realNeededValue) {
+                neededValue.off('replace', doResolve);
+                self._onResolve(realNeededValue);
+                self._isResolved = true;
+            }
 
             if (this._isResolved) {
                 throw new Error('Deferred already resolved');
             }
 
-            ref = this._onResolve(obj);
+            neededValue = this._getter(obj);
 
-            if (ref !== undefined) {
-                this._isResolved = true;
-                return ref;
+            if (neededValue.isPlaceholder()) {
+                neededValue.on('replace', doResolve);
+            } else {
+                doResolve(neededValue);
             }
         }
     };
@@ -537,7 +589,7 @@ var Barricade = (function () {
     * @mixes   Barricade.Identifiable
     * @extends Barricade.Identifiable
     */
-    Base = Extendable.call(InstanceofMixin.call({
+    Base = Deferrable.call(Extendable.call(InstanceofMixin.call({
         /**
         * Creates a `Base` instance
         * @memberof Barricade.Base
@@ -564,7 +616,6 @@ var Barricade = (function () {
 
             Observable.call(self);
             Omittable.call(self, isUsed);
-            Deferrable.call(self, schema);
             Validatable.call(self, schema);
 
             if (schema.hasOwnProperty('@enum')) {
@@ -625,7 +676,7 @@ var Barricade = (function () {
         * @private
         */
         _safeInstanceof: function (instance, class_) {
-            return typeof instance === 'object' &&
+            return getType(instance) === Object &&
                 ('instanceof' in instance) &&
                 instance.instanceof(class_);
         },
@@ -695,7 +746,7 @@ var Barricade = (function () {
                 ? this._getPrettyJSON(options)
                 : this._getJSON(options);
         }
-    }));
+    })));
 
     /**
     * @class
@@ -714,9 +765,15 @@ var Barricade = (function () {
             var self = Base.create.call(this, json, parameters);
 
             return self.on('_addedElement', function (key) {
+                // every time a new element is added we need to set the
+                // listeners for it and try to resolve any references,
+                // passing the resolution upward if needed
                 self._attachListeners(key);
                 self._tryResolveOn(self.get(key));
             }).each(function (index, value) {
+                // also we bind the handlers and do reference resolution
+                // for all the children that are already here (no upward
+                // resolution here)
                 self._attachListeners(index);
                 value.resolveWith(self);
             });
@@ -776,21 +833,8 @@ var Barricade = (function () {
         * @private
         */
         _isCorrectType: function (instance, class_) {
-            var self = this;
-
-            function isRefTo() {
-                if (typeof class_._schema['@ref'].to === 'function') {
-                    return self._safeInstanceof(instance,
-                                                class_._schema['@ref'].to());
-                } else if (typeof class_._schema['@ref'].to === 'object') {
-                    return self._safeInstanceof(instance,
-                                                class_._schema['@ref'].to);
-                }
-                throw new Error('Ref.to was ' + class_._schema['@ref'].to);
-            }
-
             return this._safeInstanceof(instance, class_) ||
-                (class_._schema.hasOwnProperty('@ref') && isRefTo());
+                class_.isValidRef(instance);
         },
 
         /**
