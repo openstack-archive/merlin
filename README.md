@@ -26,7 +26,7 @@ panel:
 
 3. This step is TEMPORARY and will be needed until the real API for listing/ loading/ saving 
 of Mistral workbooks is implemented. You need to add the following setting to the top of
-``openstack_dashboard.settings``
+``/home/user/dev/horizon/openstack_dashboard/local/local_settings.py``
    ```
    DATABASES = {
        'default': {
@@ -36,7 +36,7 @@ of Mistral workbooks is implemented. You need to add the following setting to th
    }
    ```
 
-   and run ``openstack-dashboard/manage.py syncdb`` after that.
+   and run ``/home/user/dev/horizon/manage.py syncdb`` after that.
 4. Restart Horizon web-server. According to the default values in
 ``_50_add_mistral_panel.py`` you would be able to **Mistral** panel inside
 the **Project** dashboard, **Orchestration** panel group.
