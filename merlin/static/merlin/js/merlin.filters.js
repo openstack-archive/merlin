@@ -22,13 +22,16 @@
           if ( angular.isArray(itemsOrContainer) && !itemsOrContainer.length ) {
             return null;
           }
-          this.id = utils.getNewId();
           if ( angular.isArray(itemsOrContainer) ) {
             this.items = itemsOrContainer;
+            this.id = itemsOrContainer.reduce(function(prevId, item) {
+              return item.uid() + prevId;
+            }, '');
           } else {
             this._barricadeContainer = itemsOrContainer;
             this._barricadeId = id;
             var barricadeObj = itemsOrContainer.getByID(id);
+            this.id = barricadeObj.uid();
             this.items = barricadeObj.getKeys().map(function(key) {
               return utils.enhanceItemWithID(barricadeObj.get(key), key);
             });
@@ -90,6 +93,8 @@
             item.getIDs().forEach(function(id) {
               hash += item.getByID(id).uid();
             });
+          } else {
+            hash += item.uid();
           }
         });
         return hash;

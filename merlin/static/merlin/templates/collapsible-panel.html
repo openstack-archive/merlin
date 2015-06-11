@@ -1,10 +1,10 @@
 <div class="panel panel-default merlin-panel">
   <div class="panel-heading" ng-show="panel.title()">
     <h4 class="panel-title">
-      <a ng-click="isCollapsed = !isCollapsed" href="#">
+      <a ng-click="isCollapsed = !isCollapsed" href="">
         <i class="fa fa-lg" ng-class="isCollapsed ? 'fa-caret-right' : 'fa-caret-down'"></i></a>
       <editable ng-model="panel.title" ng-model-options="{getterSetter: true}"></editable>
-      <a href="#" ng-show="panel.removable" ng-click="panel.remove()">
+      <a href="" ng-show="panel.removable" ng-click="panel.remove()">
         <i class="fa fa-times-circle pull-right"></i></a>
     </h4>
   </div>
