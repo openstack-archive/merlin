@@ -196,6 +196,11 @@
           remove: function() {
             this.emit('change', 'taskRemove', this.getID());
           },
+          _getPrettyJSON: function() {
+            var json = fields.frozendict._getPrettyJSON.apply(this, arguments);
+            delete json.type;
+            return json;
+          }
         }, {
           '@meta': {
             'baseKey': 'task',
