@@ -1,16 +1,16 @@
 <collapsible-group content="value" on-add="value.add()">
-  <div class="three-columns" ng-repeat="(key, subvalue) in value.getValues() track by key">
+  <div class="three-columns" ng-repeat="subvalue in value.getValues() track by subvalue.keyValue()">
     <div class="left-column">
       <div class="form-group">
-        <label for="elem-{$ $id $}.{$ key $}">
+        <label for="elem-{$ $id $}.{$ subvalue.uid() $}">
           <editable ng-model="subvalue.keyValue" ng-model-options="{getterSetter: true}"></editable>
         </label>
         <div class="input-group">
-          <input id="elem-{$ $id $}.{$ key $}" type="text" class="form-control" ng-model="subvalue.value"
-              ng-model-options="{ getterSetter: true }">
+          <input id="elem-{$ $id $}.{$ subvalue.uid() $}" type="text" class="form-control"
+                 ng-model="subvalue.value" ng-model-options="{ getterSetter: true }">
           <span class="input-group-btn">
             <button class="btn btn-default fa fa-minus-circle" type="button"
-                ng-click="value.remove(key)"></button>
+                ng-click="value.remove(subvalue.keyValue())"></button>
           </span>
         </div>
       </div>
