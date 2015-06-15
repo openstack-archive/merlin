@@ -192,6 +192,14 @@
 
           modelMixin.call(self, 'dictionary');
 
+          function setKey() {
+            if ( !arguments.length ) {
+              return this.getID();
+            } else {
+              this.setID(arguments[0]);
+            }
+          }
+
           self.add = function(newID) {
             var regexp = new RegExp('(' + baseKey + ')([0-9]+)'),
               newValue;
@@ -208,17 +216,17 @@
             }
             self.push(newValue, utils.extend(self._parameters, {id: newID}));
             _items[newID] = self.getByID(newID);
+            _items[newID].keyValue = function() {
+              setKey.apply(this, arguments);
+            }
           };
           self.getValues = function() {
-            if ( !Object.keys(_items).length ) {
+            if ( Object.keys(_items).length ) {
+              _items = {};
               self.getIDs().forEach(function(id) {
                 _items[id] = self.getByID(id);
                 _items[id].keyValue = function() {
-                  if ( !arguments.length ) {
-                    return this.getID();
-                  } else {
-                    this.setID(arguments[0]);
-                  }
+                  setKey.apply(this, arguments);
                 };
               });
             }
