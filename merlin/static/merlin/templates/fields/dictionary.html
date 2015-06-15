@@ -1,12 +1,14 @@
 <collapsible-group content="value" on-add="value.add()">
   <div class="three-columns" ng-repeat="(key, subvalue) in value.getValues() track by key">
+     <!--I will remove it, in final version -->
+    <!--<pre>{$ key $}, {$ subvalue $}, {$ subvalue.keyValue $}</pre>-->
     <div class="left-column">
       <div class="form-group">
         <label for="elem-{$ $id $}.{$ key $}">
-          <editable ng-model="subvalue.keyValue" ng-model-options="{getterSetter: true}"></editable>
+          <editable ng-model="subvalue[0]" ng-model-options="{getterSetter: true}"></editable>
         </label>
         <div class="input-group">
-          <input id="elem-{$ $id $}.{$ key $}" type="text" class="form-control" ng-model="subvalue.value"
+          <input id="elem-{$ $id $}.{$ key $}" type="text" class="form-control" ng-model="subvalue[1].value"
               ng-model-options="{ getterSetter: true }">
           <span class="input-group-btn">
             <button class="btn btn-default fa fa-minus-circle" type="button"

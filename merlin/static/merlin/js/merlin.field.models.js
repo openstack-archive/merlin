@@ -185,7 +185,8 @@
       var dictionaryModel = Barricade.MutableObject.extend({
         create: function(json, parameters) {
           var self = Barricade.MutableObject.create.call(this, json, parameters),
-            _items = {},
+            _items = [],
+            _item = [],
             _elClass = self._elementClass,
             baseKey = utils.getMeta(_elClass, 'baseKey') || 'key',
             baseName = utils.getMeta(_elClass, 'baseName') || utils.makeTitle(baseKey);
@@ -207,19 +208,17 @@
               newValue = '';
             }
             self.push(newValue, utils.extend(self._parameters, {id: newID}));
-            _items[newID] = self.getByID(newID);
+            _item = [];
+            _item.push(newID);
+            _item.push(self.getByID(newID));
+            _items.push(_item);
           };
           self.getValues = function() {
-            if ( !Object.keys(_items).length ) {
+            if ( Object.keys(_items).length ) {
               self.getIDs().forEach(function(id) {
                 _items[id] = self.getByID(id);
-                _items[id].keyValue = function() {
-                  if ( !arguments.length ) {
-                    return this.getID();
-                  } else {
-                    this.setID(arguments[0]);
-                  }
-                };
+                _items[id].keyValue = _items[self.getPosByID(id)][0];
+                _items[id].setID(_items[id].keyValue);
               });
             }
             return _items;
@@ -228,8 +227,14 @@
             return self.toArray();
           };
           self.remove = function(key) {
-            delete _items[key];
-            Barricade.MutableObject.remove.call(self, self.getPosByID(key));
+            //delete _items[key];
+            if (typeof key == 'number') {
+              Barricade.MutableObject.remove.call(self, self.getPosByID(_items[key][0]));
+              _items.splice(key, 1);
+            } else {
+              delete _items[key];
+              Barricade.MutableObject.remove.call(self, self.getPosByID(key));
+            }
           };
           meldGroup.call(self);
           return self;
