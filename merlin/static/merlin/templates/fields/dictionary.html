@@ -1,5 +1,6 @@
 <collapsible-group content="value" on-add="value.add()">
   <div class="three-columns" ng-repeat="(key, subvalue) in value.getValues() track by key">
+    <pre>{$ key $}, {$ subvalue $}</pre>
     <div class="left-column">
       <div class="form-group">
         <label for="elem-{$ $id $}.{$ key $}">
