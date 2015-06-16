@@ -1,7 +1,7 @@
 <div class="section">
   <div class="section-heading three-columns">
     <div class="both-columns">
-      <h5><a ng-click="isCollapsed = !isCollapsed" class="collapse-entries" href="#">
+      <h5><a ng-click="isCollapsed = !isCollapsed" class="collapse-entries" href="">
         <i class="fa" ng-class="isCollapsed ? 'fa-plus-square-o' : 'fa-minus-square-o'"></i></a>
         <editable ng-if="removable" ng-model="group.title"
                   ng-model-options="{getterSetter: true}"></editable>
@@ -13,7 +13,7 @@
         <i class="fa fa-plus"></i></button>
     </div>
     <div ng-if="removable" class="add-btn button-column remove-entry">
-      <a href="#" ng-click="onRemove()">
+      <a href="" ng-click="onRemove()">
         <i class="fa fa-times-circle pull-right"></i></a>
     </div>
   </div>

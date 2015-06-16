@@ -4,14 +4,6 @@
 (function() {
   'use strict';
 
-  function disableClickDefaultBehaviour(element) {
-    element.find('a[ng-click]')
-      .on('click', function(e) {
-        e.preventDefault();
-        return true;
-      });
-  }
-
   angular.module('merlin')
     .directive('editable', function() {
       return {
@@ -86,7 +78,6 @@
         link: function(scope, element, attrs) {
           scope.removable = $parse(attrs.removable)();
           scope.isCollapsed = false;
-          disableClickDefaultBehaviour(element);
         }
       }
     })
@@ -101,7 +92,6 @@
           onRemove: '&'
         },
         link: function(scope, element, attrs) {
-          disableClickDefaultBehaviour(element);
           scope.isCollapsed = false;
           if ( attrs.onAdd && attrs.additive !== 'false' ) {
             scope.additive = true;
