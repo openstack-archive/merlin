@@ -245,7 +245,7 @@ describe('merlin directives', function() {
       $scope.$digest();
 
       expect(element1.html()).toContain('<textarea');
-      expect(element2.html()).toContain('<input type="number"');
+      expect(element2).toContainElement('input[type=number]');
     });
 
     it('field is not rendered until the corresponding template has been served', function() {

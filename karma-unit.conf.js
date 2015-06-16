@@ -23,14 +23,15 @@ module.exports = function (config) {
 
     basePath: '',
 
-    frameworks: ['jasmine'],
+    frameworks: ['jasmine-jquery','jasmine'],
 
-    browsers: [ 'PhantomJS', 'Chrome'],
+    browsers: [ 'PhantomJS', 'Chrome', 'Firefox'],
 
     plugins: [
       'karma-jasmine',
       'karma-phantomjs-launcher',
       'karma-chrome-launcher',
+      'karma-firefox-launcher',
       'karma-ng-html2js-preprocessor'
     ],
 
