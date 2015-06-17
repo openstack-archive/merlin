@@ -167,7 +167,6 @@ describe('merlin directives', function() {
       var element = makeGroupWithInnerTags(),
         body = getGroupBody(element);
 
-      expect(body.hasClass('collapse')).toBe(true);
       expect(body.hasClass('in')).toBe(true);
     });
 
@@ -180,8 +179,7 @@ describe('merlin directives', function() {
         link = getCollapseBtn(element);
 
       link.triggerHandler('click');
-
-      expect(body.hasClass('collapse')).toBe(false);
+        
       expect(body.hasClass('collapsing')).toBe(true);
     });
 
