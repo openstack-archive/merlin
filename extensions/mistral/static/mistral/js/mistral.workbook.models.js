@@ -108,13 +108,13 @@
             var self = fields.frozendict.create.call(this, json, parameters),
               base = self.get('base');
             base.on('change', function(operation) {
-              var baseValue;
+              var argsEntry, pos, entry;
               if ( operation != 'id' ) {
-                baseValue = base.get();
-                if ( baseValue ) {
-                  base.getSchema(baseValue).then(function(keys) {
-                    self.get('base-input').setSchema(keys);
-                  });
+                pos = base._choicesWithArgs.getPosByID(base.get());
+                if ( pos > -1 ) {
+                  entry = self.get('base-input');
+                  argsEntry = base._choicesWithArgs.get(pos);
+                  entry.resetKeys(argsEntry.toJSON());
                 }
               }
             });
@@ -125,44 +125,68 @@
             '@class': fields.string.extend({
                create: function(json, parameters) {
                  var self = fields.string.create.call(this, json, parameters),
-                   schema = {},
-                   url = utils.getMeta(self, 'autocompletionUrl');
+                   stdActionsCls = Barricade.create({
+                     '@type': String,
+                     '@ref': {
+                       to: function() {
+                         return fields.StandardActions;
+                       },
+                       needs: function() {
+                         return models.Root;
+                       },
+                       getter: function(data) {
+                         return data.needed.get('standardActions');
+                       }
+                     }
+                   });
 
-                 self.getSchema = function(key) {
-                   var deferred = $q.defer();
-                   if ( !(key in schema) ) {
-                     $http.get(url+'?key='+key).success(function(keys) {
-                       schema[key] = keys;
-                       deferred.resolve(keys);
-                     }).error(function() {
-                       deferred.reject();
+                 self._stdActions = stdActionsCls.create().on(
+                   'replace', function(newValue) {
+                     self._stdActions = newValue;
+                     self._stdActions.on('change', function() {
+                       self._choicesWithArgs = self._stdActions;
+                       self._choices = self._stdActions.getIDs();
+                       self.resetValues();
                      });
-                   } else {
-                     deferred.resolve(schema[key]);
-                   }
-                   return deferred.promise;
-                 };
+                     self._stdActions.emit('change');
+                   });
+
                  return self;
-               }
+               },
+              _choices: null
              }, {
+              '@enum': function() {
+                if ( !this._choices ) {
+                  this._choices = [];
+                  this.emit('_resolveUp', this._stdActions);
+                }
+                return this._choices;
+              },
               '@meta': {
                 'index': 1,
-                'row': 0,
-                'autocompletionUrl': '/project/mistral/actions/types'
+                'row': 0
               }
             })
           },
           'base-input': {
-            '@class': fields.directeddictionary.extend({}, {
+            '@class': fields.dictionary.extend({
+              create: function(json, parameters) {
+                var self = fields.dictionary.create.call(this, json, parameters);
+                self.setType('frozendict');
+                return self;
+              }
+            }, {
               '@required': false,
+              '?': {
+                '@class': fields.string.extend({}, {
+                  '@meta': {
+                    'row': 0
+                  }
+                })
+              },
               '@meta': {
                 'index': 2,
                 'title': 'Base Input'
-              },
-              '?': {
-                '@class': fields.string.extend({}, {
-                  '@meta': {'row': 1}
-                })
               }
             })
           },
@@ -548,7 +572,7 @@
                     params.id = taskId;
                     self.set(taskPos, TaskFactory(taskData, params));
                   } else if ( op === 'taskRemove' ) {
-                    self.remove(arg);
+                    self.removeItem(arg);
                   }
                 });
                 return self;
@@ -699,6 +723,26 @@
           },
           'workflows': {
             '@class': models.Workflows
+          }
+        });
+
+        models.StandardActions = Barricade.create({
+          '@type': Object,
+          '?': {
+            '@type': Array,
+            '*': {
+              '@type': String
+            }
+          }
+        });
+
+        models.Root = Barricade.ImmutableObject.extend({}, {
+          '@type': Object,
+          'standardActions': {
+            '@class': models.StandardActions
+          },
+          'workbook': {
+            '@class': models.Workbook
           }
         });
 
