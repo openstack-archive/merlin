@@ -208,8 +208,8 @@
             var regexp = new RegExp('(' + baseKey + ')([0-9]+)'),
               newValue;
             newID = newID || baseKey + utils.getNextIDSuffix(self, regexp);
-            if (_elClass.instanceof(Barricade.ImmutableObject)) {
-              if ('name' in _elClass._schema) {
+            if ( _elClass.instanceof(Barricade.ImmutableObject) ) {
+              if ( 'name' in _elClass._schema ) {
                 var nameNum = utils.getNextIDSuffix(self, regexp);
                 newValue = {name: baseName + nameNum};
               } else {
@@ -229,39 +229,32 @@
             }
             return _items;
           };
+          self.empty = function() {
+            for ( var i = this._data.length; i > 0; i-- ) {
+              self.remove(i-1);
+            }
+            _items = [];
+          };
+          self.resetKeys = function(keys) {
+            self.empty();
+            keys.forEach(function(key) {
+              self.push(undefined, {id: key});
+            });
+          };
           self._getContents = function() {
             return self.toArray();
           };
-          self.remove = function(key) {
+          self.removeItem = function(key) {
             var pos = self.getPosByID(key);
-            Barricade.MutableObject.remove.call(self, pos);
+            self.remove(self.getPosByID(key));
             _items.splice(pos, 1);
           };
           meldGroup.call(self);
+          // initialize cache with starting values
+          self.getValues();
           return self;
         }
       }, {'@type': Object});
-
-      var directedDictionaryModel = dictionaryModel.extend({
-        create: function(json, parameters) {
-          var self = dictionaryModel.create.call(this, json, parameters);
-          self.setType('frozendict');
-          return self;
-        },
-        setSchema: function(keys) {
-          var self = this;
-          if ( keys !== undefined && keys !== null ) {
-            self.getIDs().forEach(function(oldKey) {
-              self.remove(oldKey);
-            });
-            keys.forEach(function(newKey) {
-              self.add(newKey);
-            });
-          }
-        }
-      }, {
-        '?': {'@type': String}
-      });
 
       return {
         string: stringModel,
@@ -270,7 +263,6 @@
         list: listModel,
         dictionary: dictionaryModel,
         frozendict: frozendictModel,
-        directeddictionary: directedDictionaryModel,
         autocompletionmixin: autoCompletionMixin,
         wildcard: wildcardMixin // use for most general type-checks
       };
