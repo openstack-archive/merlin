@@ -20,6 +20,14 @@
           } else {
             $scope.workbook = models.Workbook.create({name: 'My Workbook'});
           }
+          $scope.root = models.Root.create();
+          $scope.root.set('workbook', $scope.workbook);
+
+          $scope.root.set('standardActions', {
+            'nova.create_server': ['image', 'flavor', 'network_id'],
+            'neutron.create_network': ['name', 'create_subnet'],
+            'glance.create_image': ['image_url']
+          });
         };
 
         function getNextIDSuffix(container, regexp) {
