@@ -1024,6 +1024,12 @@ var Barricade = (function () {
             return this.emit('change', 'remove', index);
         },
 
+      empty: function() {
+        for ( var i = this._data.length; i > 0; i-- ) {
+          this.remove(i-1);
+        }
+      },
+
         /**
         * Returns an array containing the Arraylike's elements
         * @memberof Barricade.Arraylike

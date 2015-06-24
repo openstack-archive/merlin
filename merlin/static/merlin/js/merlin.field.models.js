@@ -227,9 +227,9 @@
           self._getContents = function() {
             return self.toArray();
           };
-          self.remove = function(key) {
+          self.removeItem = function(key) {
             delete _items[key];
-            Barricade.MutableObject.remove.call(self, self.getPosByID(key));
+            self.remove(self.getPosByID(key));
           };
           meldGroup.call(self);
           return self;
