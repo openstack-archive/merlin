@@ -159,27 +159,46 @@ describe('merlin filters', function() {
       });
 
       it('are given a separate panel for each MutableObject entry', function() {
+        var panels;
         topLevelObj.set('key2', {
           'id1': {'name': 'String1'},
           'id2': {'name': 'String2'}
         });
-        var panels = extractPanels(topLevelObj);
+        panels = extractPanels(topLevelObj);
+
         expect(panels.length).toBe(2);
       });
 
-      it('have their title exposed via .title() which mirrors their id', function() {
+      describe('', function() {
         var panels;
-        topLevelObj.set('key2', {'id1': {'name': 'some name'}});
-        panels = extractPanels(topLevelObj);
-        expect(panels[0].title()).toBe('id1');
-      });
 
-      it('are removable (thus are not permanent)', function() {
-        var panels;
-        topLevelObj.set('key2', {'id1': {'name': 'String1'}});
-        panels = extractPanels(topLevelObj);
+        beforeEach(function() {
+          topLevelObj.set('key2', {'id1': {'name': 'some name'}});
+          panels = extractPanels(topLevelObj);
+        });
 
-        expect(panels[0].removable).toBe(true);
+        it('have their title exposed via .title() which mirrors their id', function() {
+          expect(panels[0].title()).toBe('id1');
+        });
+
+        it("panel's title() acts also as a setter of the underlying object id", function() {
+          panels[0].title('id2');
+
+          expect(panels[0].title()).toBe('id2');
+          expect(topLevelObj.get('key2').getByID('id2')).toBeDefined();
+        });
+
+        it('are removable (thus are not permanent)', function() {
+          expect(panels[0].removable).toBe(true);
+        });
+
+        it('remove() function actually removes a panel', function() {
+          panels[0].remove();
+          panels = extractPanels(topLevelObj);
+
+          expect(panels.length).toBe(0);
+        });
+
       });
 
     });
@@ -360,7 +379,7 @@ describe('merlin filters', function() {
         immutableObj.set('key2', {'id_1': {key1: 'String_1'}});
         panels1 = extractPanels(immutableObj);
 
-        immutableObj.get('key2').remove('id_1');
+        immutableObj.get('key2').removeItem('id_1');
         immutableObj.set('key2', {'id_1': {key1: 'String_1'}});
         panels2 = extractPanels(immutableObj);
 
@@ -645,7 +664,7 @@ describe('merlin filters', function() {
             rows1 = extractRows(mutableObj),
             rows2;
 
-          mutableObj.remove('id1');
+          mutableObj.removeItem('id1');
           mutableObj.push('string1', {id: 'id1'});
           rows2 = extractRows(mutableObj);
 
