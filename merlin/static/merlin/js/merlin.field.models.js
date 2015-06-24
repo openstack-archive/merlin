@@ -224,38 +224,28 @@
             }
             return _items;
           };
+          self.empty = function() {
+            for ( var i = this._data.length; i > 0; i-- ) {
+              self.remove(i-1);
+            }
+          };
+          self.resetKeys = function(keys) {
+            self.empty();
+            keys.forEach(function(key) {
+              self.push(undefined, {id: key});
+            });
+          };
           self._getContents = function() {
             return self.toArray();
           };
-          self.remove = function(key) {
+          self.removeItem = function(key) {
             delete _items[key];
-            Barricade.MutableObject.remove.call(self, self.getPosByID(key));
+            self.remove(self.getPosByID(key));
           };
           meldGroup.call(self);
           return self;
         }
       }, {'@type': Object});
-
-      var directedDictionaryModel = dictionaryModel.extend({
-        create: function(json, parameters) {
-          var self = dictionaryModel.create.call(this, json, parameters);
-          self.setType('frozendict');
-          return self;
-        },
-        setSchema: function(keys) {
-          var self = this;
-          if ( keys !== undefined && keys !== null ) {
-            self.getIDs().forEach(function(oldKey) {
-              self.remove(oldKey);
-            });
-            keys.forEach(function(newKey) {
-              self.add(newKey);
-            });
-          }
-        }
-      }, {
-        '?': {'@type': String}
-      });
 
       return {
         string: stringModel,
@@ -264,7 +254,6 @@
         list: listModel,
         dictionary: dictionaryModel,
         frozendict: frozendictModel,
-        directeddictionary: directedDictionaryModel,
         autocompletionmixin: autoCompletionMixin,
         wildcard: wildcardMixin // use for most general type-checks
       };
