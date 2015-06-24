@@ -52,8 +52,9 @@
           }
         },
         remove: function() {
-          var container = this._barricadeContainer;
-          container.remove.call(container, this._barricadeId);
+          var container = this._barricadeContainer,
+            pos = container.getPosByID(this._barricadeId);
+          container.remove(pos);
         }
       };
 
