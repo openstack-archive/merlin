@@ -5,6 +5,12 @@
   'use strict';
 
   angular.module('merlin')
+    /*
+    * Allows to edit field name in-place.
+    * For example, you have a field named 'Input 1' and you want to replace this name with "Base input" value.
+    * If you add editable directive to such field, you will get a marker icon near this field,
+    * and with clicking on this icon you can type new name and save or discard changes.
+    * */
     .directive('editable', function() {
       return {
         restrict: 'E',
@@ -58,6 +64,9 @@
         }
       };
     })
+    /*
+    * this directive auto-sets the focus to an input field once it is shown.
+    * */
     .directive('showFocus', function($timeout) {
       return function(scope, element, attrs) {
         scope.$watch(attrs.showFocus, function(newValue) {
@@ -67,6 +76,9 @@
         });
       }
     })
+    /*
+    * tells Merlin to render this element as a panel.
+    * */
     .directive('panel', function($parse) {
       return {
         restrict: 'E',
@@ -81,6 +93,9 @@
         }
       }
     })
+    /*
+    * tells Merlin to render this element as a group with ability to collapse.
+    * */
     .directive('collapsibleGroup', function() {
       return {
         restrict: 'E',
@@ -102,6 +117,9 @@
         }
       }
     })
+    /*
+    * sets up the DOM nodes related to validation of model being edited in this widget (and specifies the name of this model on scope).
+    * */
     .directive('validatableWith', function($parse) {
       return {
         restrict: 'A',
@@ -132,6 +150,9 @@
         }
       }
     })
+    /*
+    * retrieves a template by its name which is the same as model's type and renders it, recursive <typed-field></..>-s are possible.
+    * */
     .directive('typedField', ['$compile', 'merlin.templates',
       function($compile, templates) {
         function updateAutoCompletionDirective(template) {
