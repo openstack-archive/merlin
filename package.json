@@ -16,6 +16,7 @@
     "grunt-eslint": "7.0.1",
     "grunt-html2js": "0.2.9",
     "grunt-karma": "0.10.1",
+    "grunt-markdown": "^0.7.0",
     "grunt-open": "0.2.3",
     "grunt-protractor-runner": "1.1.4",
     "grunt-shell": "1.1.1",
