@@ -31,6 +31,37 @@ describe('workbook model logic', function() {
     return workbook.get('workflows').getByID(workflowID);
   }
 
+  describe('defines the standard actions getter for Action->Base field:', function() {
+    var root, action1;
+
+    beforeEach(function() {
+      root = models.Root.create();
+      root.set('workbook', workbook);
+      root.set('standardActions', {
+        'nova.create_server': ['image', 'flavor', 'network_id'],
+        'neutron.create_network': ['name', 'create_subnet'],
+        'glance.create_image': ['image_url']
+      });
+      workbook.get('actions').add('action1');
+      action1 = workbook.get('actions').getByID('action1');
+    });
+
+    it('all actions are present as choices for the Base field', function() {
+      var availableActions = action1.get('base').getValues();
+
+      expect(availableActions).toEqual([
+        'nova.create_server', 'neutron.create_network', 'glance.create_image']);
+    });
+
+    it("'Base Input' field is set to have keys corresponding to 'Base' field value", function() {
+      action1.get('base').set('nova.create_server');
+      expect(action1.get('base-input').getIDs()).toEqual(['image', 'flavor', 'network_id']);
+
+      action1.get('base').set('neutron.create_network');
+      expect(action1.get('base-input').getIDs()).toEqual(['name', 'create_subnet']);
+    });
+  });
+
   describe('defines workflow structure transformations:', function() {
     var workflowID = 'workflow1';
 
@@ -71,7 +102,7 @@ describe('workbook model logic', function() {
     }
 
     beforeEach(function() {
-      workbook.get('workflows').push({name: 'Workflow 1'}, {id: workflowID});
+      workbook.get('workflows').add(workflowID);
     });
 
     describe('', function() {
@@ -120,11 +151,30 @@ describe('workbook model logic', function() {
         expect(getTask(taskID).instanceof(models.DirectWFTask)).toBe(true);
       });
 
-      it("changing task type from 'action' to 'workflow' causes proper structure changes", function() {
-        getTask(taskID).get('type').set('workflow');
+      it("'action'-based task offers available custom actions for its Action field", function() {
+        workbook.get('actions').add('action1');
+        expect(getTask(taskID).get('action').getValues()).toEqual(['action1']);
 
-        expect(getTask(taskID).instanceof(models.WorkflowTaskMixin)).toBe(true);
-        expect(getTask(taskID).instanceof(models.DirectWFTask)).toBe(true);
+        workbook.get('actions').add('action2');
+        expect(getTask(taskID).get('action').getValues()).toEqual(['action1', 'action2']);
+      });
+
+      describe("changing task type from 'action' to 'workflow' causes", function() {
+        beforeEach(function() {
+          getTask(taskID).get('type').set('workflow');
+        });
+
+        it('proper structure changes', function() {
+          expect(getTask(taskID).instanceof(models.WorkflowTaskMixin)).toBe(true);
+          expect(getTask(taskID).instanceof(models.DirectWFTask)).toBe(true);
+        });
+
+        it('and causes the Workflow field to suggest available workflows as choices', function() {
+          expect(getTask(taskID).get('workflow').getValues()).toEqual(['workflow1']);
+
+          workbook.get('workflows').add('workflow2');
+          expect(getTask(taskID).get('workflow').getValues()).toEqual([workflowID, 'workflow2']);
+        });
       });
 
       it("changing workflow type to 'reverse' causes the proper changes to its tasks", function() {
@@ -168,11 +218,30 @@ describe('workbook model logic', function() {
         expect(getTask(taskID).instanceof(models.ReverseWFTask)).toBe(true);
       });
 
-      it("changing task type from 'action' to 'workflow' causes proper structure changes", function() {
-        getTask(taskID).get('type').set('workflow');
+      it("'action'-based task offers available custom actions for its Action field", function() {
+        workbook.get('actions').add('action1');
+        expect(getTask(taskID).get('action').getValues()).toEqual(['action1']);
 
-        expect(getTask(taskID).instanceof(models.WorkflowTaskMixin)).toBe(true);
-        expect(getTask(taskID).instanceof(models.ReverseWFTask)).toBe(true);
+        workbook.get('actions').add('action2');
+        expect(getTask(taskID).get('action').getValues()).toEqual(['action1', 'action2']);
+      });
+
+      describe("changing task type from 'action' to 'workflow' causes", function() {
+        beforeEach(function() {
+          getTask(taskID).get('type').set('workflow');
+        });
+
+        it('proper structure changes', function() {
+          expect(getTask(taskID).instanceof(models.WorkflowTaskMixin)).toBe(true);
+          expect(getTask(taskID).instanceof(models.ReverseWFTask)).toBe(true);
+        });
+
+        it('and causes the Workflow field to suggest available workflows as choices', function() {
+          expect(getTask(taskID).get('workflow').getValues()).toEqual(['workflow1']);
+
+          workbook.get('workflows').add('workflow2');
+          expect(getTask(taskID).get('workflow').getValues()).toEqual([workflowID, 'workflow2']);
+        });
       });
 
       it("changing workflow type to 'direct' causes the proper changes to its tasks", function() {
@@ -202,118 +271,4 @@ describe('workbook model logic', function() {
     });
   });
 
-  describe('defines top-level actions available to user:', function() {
-    var $scope;
-
-    beforeEach(inject(function(_$controller_) {
-      var $controller = _$controller_;
-      $scope = {};
-      $controller('workbookCtrl', {$scope: $scope});
-      $scope.workbook = workbook;
-    }));
-
-    describe("'Add Action' action", function() {
-      it('adds a new Action', function() {
-        $scope.addAction();
-
-        expect(workbook.get('actions').get(0)).toBeDefined();
-      });
-
-      it('creates action with predefined name', function() {
-        $scope.addAction();
-
-        expect(workbook.get('actions').get(0).getID()).toBeGreaterThan('');
-      });
-
-      describe('', function() {
-        var actionID;
-        beforeEach(inject(function(baseActionID) {
-          actionID = baseActionID + '1';
-        }));
-
-        it("corresponding JSON has the right key for the Action", function() {
-          $scope.addAction();
-
-          expect(workbook.toJSON({pretty: true}).actions[actionID]).toBeDefined();
-        });
-
-        it("once the Action ID is changed, it's reflected in JSON", function() {
-          var newID = 'action10';
-
-          $scope.addAction();
-          workbook.get('actions').getByID(actionID).setID(newID);
-
-          expect(workbook.toJSON({pretty: true}).actions[actionID]).toBeUndefined();
-          expect(workbook.toJSON({pretty: true}).actions[newID]).toBeDefined();
-        });
-
-      });
-
-      it('creates actions with different names on 2 successive calls', function() {
-        $scope.addAction();
-        $scope.addAction();
-
-        expect(workbook.get('actions').get(0).getID()).not.toEqual(
-          workbook.get('actions').get(1).getID())
-      });
-    });
-
-    describe("'Add Workflow' action", function() {
-      it('adds a new Workflow', function() {
-        $scope.addWorkflow();
-
-        expect(workbook.get('workflows').get(0)).toBeDefined();
-      });
-
-      describe('', function() {
-        var workflowID;
-        beforeEach(inject(function(baseWorkflowID) {
-          workflowID = baseWorkflowID + '1';
-        }));
-
-        it("corresponding JSON has the right key for the Workflow", function() {
-          $scope.addWorkflow();
-
-          expect(workbook.toJSON({pretty: true}).workflows[workflowID]).toBeDefined();
-        });
-
-        it("once the workflow ID is changed, it's reflected in JSON", function() {
-          var newID = 'workflow10';
-
-          $scope.addWorkflow();
-          workbook.get('workflows').getByID(workflowID).setID(newID);
-
-          expect(workbook.toJSON({pretty: true}).workflows[workflowID]).toBeUndefined();
-          expect(workbook.toJSON({pretty: true}).workflows[newID]).toBeDefined();
-        });
-
-      });
-
-      it('creates workflow with predefined name', function() {
-        $scope.addWorkflow();
-
-        expect(workbook.get('workflows').get(0).getID()).toBeGreaterThan('');
-      });
-
-      it('creates workflows with different names on 2 successive calls', function() {
-        $scope.addWorkflow();
-        $scope.addWorkflow();
-
-        expect(workbook.get('workflows').get(0).getID()).not.toEqual(
-          workbook.get('workflows').get(1).getID())
-      });
-
-    });
-
-    describe("'Create'/'Modify'/'Cancel' actions", function() {
-      it('edit causes a request to an api and a return to main page', function() {
-
-      });
-
-      it('cancel causes just a return to main page', function() {
-
-      });
-    });
-
-  })
 });

@@ -141,4 +141,65 @@ describe('merlin models:', function() {
     });
 
   });
+
+  describe('linkedCollection field', function() {
+    var collectionCls, linkedObjCls, linkedObj, lnkField;
+
+    beforeEach(function() {
+      collectionCls = fields.dictionary.extend({}, {
+        '?': {
+          '@class': fields.string
+        }
+      });
+      linkedObjCls = fields.frozendict.extend({}, {
+        'realCollection': {
+          '@class': collectionCls
+        },
+        'linkedField': {
+          '@class': fields.linkedcollection.extend({
+            create: function(json, parameters) {
+              parameters = Object.create(parameters);
+              parameters.toCls = collectionCls;
+              parameters.neededCls = linkedObjCls;
+              parameters.substitutedEntryID = 'realCollection';
+              return fields.linkedcollection.create.call(this, json, parameters);
+            },
+            _dropDownLimit: 4
+          })
+        }
+      });
+      linkedObj = linkedObjCls.create({'realCollection': {'a': '', 'b': ''}});
+      lnkField = linkedObj.get('linkedField');
+    });
+
+    it('provides access from @enum values of one field to IDs of another one', function() {
+      expect(lnkField.getValues()).toEqual(['a', 'b']);
+
+      linkedObj.get('realCollection').add('c');
+      expect(lnkField.getValues()).toEqual(['a', 'b', 'c']);
+    });
+
+    describe('and exposes _collection attribute', function() {
+      it('in case more complex things need to be done', function() {
+        expect(lnkField._collection).toBeDefined();
+      });
+
+      it("which is truly initialized after first @enum's .getValues() call", function() {
+        expect(lnkField._collection.isPlaceholder()).toBe(true);
+
+        lnkField.getValues();
+        expect(lnkField._collection.isPlaceholder()).toBe(false);
+        expect(lnkField._collection).toBe(linkedObj.get('realCollection'));
+      });
+    });
+
+    describe('exposes .isDropDown() call due to @enum presense', function() {
+      it('which always returns false due to deferred nature of linkedField', function() {
+        expect(lnkField.isDropDown()).toBe(false);
+
+        lnkField.getValues();
+        expect(lnkField.isDropDown()).toBe(false);
+      });
+    });
+  });
 });
