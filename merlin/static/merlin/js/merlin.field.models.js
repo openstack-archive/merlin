@@ -10,9 +10,9 @@
         return this;
       });
 
-      var restrictedChoicesMixin = Barricade.Blueprint.create(function() {
+      var viewChoicesMixin = Barricade.Blueprint.create(function() {
         var self = this,
-          values, labels, items;
+          values, labels, items, isDropDown;
 
         function fillItems() {
           values = self.getEnumValues();
@@ -40,6 +40,15 @@
 
         this.resetValues = function() {
           values = undefined;
+        };
+
+        this.isDropDown = function() {
+          // what starts its life as being dropdown / not being dropdown
+          // should remain so forever
+          if ( angular.isUndefined(isDropDown) ) {
+            isDropDown = !this.isEmpty() && this.getValues().length < 5;
+          }
+          return isDropDown;
         };
 
         this.setType('choices');
@@ -92,11 +101,7 @@
         };
         wildcardMixin.call(this);
         if ( this.getEnumValues ) {
-          restrictedChoicesMixin.call(this);
-        }
-        var autocompletionUrl = utils.getMeta(this, 'autocompletionUrl');
-        if ( autocompletionUrl ) {
-          autoCompletionMixin.call(this, autocompletionUrl);
+          viewChoicesMixin.call(this);
         }
         return this;
       });
@@ -113,19 +118,6 @@
           return modelMixin.call(self, 'string');
         }
       }, {'@type': String});
-
-      var autoCompletionMixin = Barricade.Blueprint.create(function(url) {
-        var self = this;
-
-        this.getSuggestions = function() { return []; };
-        $http.get(url).success(function(data) {
-          self.getSuggestions = function() {
-            return data;
-          };
-        });
-
-        return this;
-      });
 
       var textModel = Barricade.Primitive.extend({
         create: function(json, parameters) {
@@ -253,14 +245,55 @@
         }
       }, {'@type': Object});
 
+      var linkedCollectionModel = stringModel.extend({
+          create: function(json, parameters) {
+            var self = stringModel.create.call(this, json, parameters),
+              collectionCls = Barricade.create({
+                '@type': String,
+                '@ref': {
+                  to: function() {
+                    return parameters.toCls;
+                  },
+                  needs: function() {
+                    return parameters.neededCls;
+                  },
+                  getter: function(data) {
+                    return data.needed.get(parameters.substitutedEntryID);
+                  }
+                }
+              });
+
+            self._collection = collectionCls.create().on(
+              'replace', function(newValue) {
+                self._collection = newValue;
+                self._collection.on('change', function() {
+                  self._choices = self._collection.getIDs();
+                  self.resetValues();
+                });
+                self._collection.emit('change');
+              });
+
+            return self;
+          },
+          _choices: []
+        }, {
+          '@enum': function() {
+            if ( this._collection.isPlaceholder() ) {
+              this.emit('_resolveUp', this._collection);
+            }
+            return this._choices;
+          }
+        }
+      );
+
       return {
         string: stringModel,
         text: textModel,
         number: numberModel,
         list: listModel,
+        linkedcollection: linkedCollectionModel,
         dictionary: dictionaryModel,
         frozendict: frozendictModel,
-        autocompletionmixin: autoCompletionMixin,
         wildcard: wildcardMixin // use for most general type-checks
       };
     }])
