@@ -660,14 +660,14 @@
           }
         }, {
           'version': {
-            '@class': fields.number.extend({}, {
-              '@enum': [2.0],
+            '@class': fields.string.extend({}, {
+              '@enum': ['2.0'],
               '@meta': {
                 'index': 2,
                 'panelIndex': 0,
                 'row': 1
               },
-              '@default': 2.0
+              '@default': '2.0'
             })
           },
           'name': {
