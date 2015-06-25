@@ -110,10 +110,10 @@
             base.on('change', function(operation) {
               var argsEntry, pos, entry;
               if ( operation != 'id' ) {
-                pos = base._stdActions.getPosByID(base.get());
+                pos = base._collection.getPosByID(base.get());
                 if ( pos > -1 ) {
                   entry = self.get('base-input');
-                  argsEntry = base._stdActions.get(pos);
+                  argsEntry = base._collection.get(pos);
                   entry.resetKeys(argsEntry.toJSON());
                 }
               }
@@ -122,44 +122,15 @@
           }
         }, {
           'base': {
-            '@class': fields.string.extend({
+            '@class': fields.linkedcollection.extend({
                create: function(json, parameters) {
-                 var self = fields.string.create.call(this, json, parameters),
-                   stdActionsCls = Barricade.create({
-                     '@type': String,
-                     '@ref': {
-                       to: function() {
-                         return fields.StandardActions;
-                       },
-                       needs: function() {
-                         return models.Root;
-                       },
-                       getter: function(data) {
-                         return data.needed.get('standardActions');
-                       }
-                     }
-                   });
-
-                 self._stdActions = stdActionsCls.create().on(
-                   'replace', function(newValue) {
-                     self._stdActions = newValue;
-                     self._stdActions.on('change', function() {
-                       self._choices = self._stdActions.getIDs();
-                       self.resetValues();
-                     });
-                     self._stdActions.emit('change');
-                   });
-
-                 return self;
-               },
-              _choices: []
+                 parameters = Object.create(parameters);
+                 parameters.toCls = models.StandardActions;
+                 parameters.neededCls = models.Root;
+                 parameters.substitutedEntryID = 'standardActions';
+                 return fields.linkedcollection.create.call(this, json, parameters);
+               }
              }, {
-              '@enum': function() {
-                if ( this._stdActions.isPlaceholder() ) {
-                  this.emit('_resolveUp', this._stdActions);
-                }
-                return this._choices;
-              },
               '@meta': {
                 'index': 1,
                 'row': 0
@@ -402,43 +373,15 @@
         models.ActionTaskMixin = Barricade.Blueprint.create(function() {
           return this.extend({}, {
             'action': {
-              '@class': fields.string.extend({
+              '@class': fields.linkedcollection.extend({
                 create: function(json, parameters) {
-                  var self = fields.string.create.call(this, json, parameters),
-                    actionsCls = Barricade.create({
-                      '@type': String,
-                      '@ref': {
-                        to: function() {
-                          return models.Actions;
-                        },
-                        needs: function() {
-                          return models.Workbook;
-                        },
-                        getter: function(data) {
-                          return data.needed.get('actions');
-                        }
-                      }
-                    });
-
-                  self._actions = actionsCls.create().on(
-                    'replace', function(newValue) {
-                      self._actions = newValue;
-                      self._actions.on('change', function() {
-                        self._choices = self._actions.getIDs();
-                        self.resetValues();
-                      });
-                      self._actions.emit('change');
-                    });
-                  return self;
-                },
-                _choices: []
+                  parameters = Object.create(parameters);
+                  parameters.toCls = models.Actions;
+                  parameters.neededCls = models.Workbook;
+                  parameters.substitutedEntryID = 'actions';
+                  return fields.linkedcollection.create.call(this, json, parameters);
+                }
               }, {
-                '@enum': function() {
-                  if ( this._actions.isPlaceholder() ) {
-                    this.emit('_resolveUp', this._actions);
-                  }
-                  return this._choices;
-                },
                 '@meta': {
                   'row': 0,
                   'index': 1
@@ -451,43 +394,15 @@
         models.WorkflowTaskMixin = Barricade.Blueprint.create(function() {
           return this.extend({}, {
             'workflow': {
-              '@class': fields.string.extend({
+              '@class': fields.linkedcollection.extend({
                 create: function(json, parameters) {
-                  var self = fields.string.create.call(this, json, parameters),
-                    workflowsCls = Barricade.create({
-                      '@type': String,
-                      '@ref': {
-                        to: function() {
-                          return models.Workflows;
-                        },
-                        needs: function() {
-                          return models.Workbook;
-                        },
-                        getter: function(data) {
-                          return data.needed.get('workflows');
-                        }
-                      }
-                    });
-
-                  self._workflows = workflowsCls.create().on(
-                    'replace', function(newValue) {
-                      self._workflows = newValue;
-                      self._workflows.on('change', function() {
-                        self._choices = self._workflows.getIDs();
-                        self.resetValues();
-                      });
-                      self._workflows.emit('change');
-                  });
-                  return self;
-                },
-                _choices: []
+                  parameters = Object.create(parameters);
+                  parameters.toCls = models.Workflows;
+                  parameters.neededCls = models.Workbook;
+                  parameters.substitutedEntryID = 'workflows';
+                  return fields.linkedcollection.create.call(this, json, parameters);
+                }
               }, {
-                '@enum': function() {
-                  if ( this._workflows.isPlaceholder() ) {
-                    this.emit('_resolveUp', this._workflows);
-                  }
-                  return this._choices;
-                },
                 '@meta': {
                   'row': 0,
                   'index': 1

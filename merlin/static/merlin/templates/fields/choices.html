@@ -1,9 +1,16 @@
 <div class="form-group">
-  <label for="elem-{$ $id $}.$index">{$ value.title() $}</label>
-  <select id="elem-{$ $id $}.$index" class="form-control"
+  <label for="elem-{$ $id $}">{$ value.title() $}</label>
+  <select ng-if="value.isDropDown()"
+          id="elem-{$ $id $}" class="form-control"
           ng-model="value.value" ng-model-options="{getterSetter: true}">
     <option ng-repeat="option in value.getValues()"
             value="{$ option $}"
             ng-selected="value.get() == option">{$ value.getLabel(option) $}</option>
   </select>
+  <input ng-if="!value.isDropDown()"
+         type="text" class="form-control" id="elem-{$ $id $}"
+         ng-model="value.value" ng-model-options="{ getterSetter: true }"
+         validatable-with="value" typeahead-editable="true"
+         typeahead="option for option in value.getValues() | filter:$viewValue">
+  <div ng-show="error" class="alert alert-danger">{$ error $}</div>
 </div>
