@@ -185,19 +185,31 @@
       var dictionaryModel = Barricade.MutableObject.extend({
         create: function(json, parameters) {
           var self = Barricade.MutableObject.create.call(this, json, parameters),
-            _items = {},
+            _items = [],
             _elClass = self._elementClass,
             baseKey = utils.getMeta(_elClass, 'baseKey') || 'key',
             baseName = utils.getMeta(_elClass, 'baseName') || utils.makeTitle(baseKey);
 
           modelMixin.call(self, 'dictionary');
 
+          function makeCacheWrapper(container, key) {
+            var value = container.getByID(key);
+            value.keyValue = function () {
+              if ( arguments.length ) {
+                value.setID(arguments[0]);
+              } else {
+                return value.getID();
+              }
+            };
+            return value;
+          }
+
           self.add = function(newID) {
             var regexp = new RegExp('(' + baseKey + ')([0-9]+)'),
               newValue;
             newID = newID || baseKey + utils.getNextIDSuffix(self, regexp);
-            if ( _elClass.instanceof(Barricade.ImmutableObject) ) {
-              if ( 'name' in _elClass._schema ) {
+            if (_elClass.instanceof(Barricade.ImmutableObject)) {
+              if ('name' in _elClass._schema) {
                 var nameNum = utils.getNextIDSuffix(self, regexp);
                 newValue = {name: baseName + nameNum};
               } else {
@@ -207,19 +219,12 @@
               newValue = '';
             }
             self.push(newValue, utils.extend(self._parameters, {id: newID}));
-            _items[newID] = self.getByID(newID);
+            _items.push(makeCacheWrapper(self, newID));
           };
           self.getValues = function() {
-            if ( !Object.keys(_items).length ) {
-              self.getIDs().forEach(function(id) {
-                _items[id] = self.getByID(id);
-                _items[id].keyValue = function() {
-                  if ( !arguments.length ) {
-                    return this.getID();
-                  } else {
-                    this.setID(arguments[0]);
-                  }
-                };
+            if ( !_items.length ) {
+              _items = self.toArray().map(function(value) {
+                return makeCacheWrapper(self, value.getID());
               });
             }
             return _items;
@@ -228,8 +233,9 @@
             return self.toArray();
           };
           self.remove = function(key) {
-            delete _items[key];
-            Barricade.MutableObject.remove.call(self, self.getPosByID(key));
+            var pos = self.getPosByID(key);
+            Barricade.MutableObject.remove.call(self, pos);
+            _items.splice(pos, 1);
           };
           meldGroup.call(self);
           return self;
