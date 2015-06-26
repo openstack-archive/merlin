@@ -48,12 +48,11 @@ module.exports = function (config) {
       'merlin/static/merlin/js/merlin.init.js',
       'merlin/static/merlin/js/merlin.*.js',
       'merlin/static/merlin/templates/**/*.html',
-      'merlin/test/js/*Spec.js',
+      'merlin/test/js/*.spec.js',
       // explicitly require first module definition file to avoid errors
       'extensions/mistral/static/mistral/js/mistral.init.js',
       'extensions/mistral/static/mistral/js/mistral.*.js',
-      'extensions/mistral/test/js/*Spec.js',
-      'extensions/mistral/test/js/*spec.js'
+      'extensions/mistral/test/js/*.spec.js'
     ],
 
     preprocessors: {
