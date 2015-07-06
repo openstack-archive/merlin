@@ -1,0 +1,88 @@
+{% extends 'merlin/base.html' %}
+{% load i18n %}
+{% block title %}{% trans "Template Builder" %}{% endblock %}
+
+{% block merlin-css %}
+{% endblock %}
+
+{% block merlin-js %}
+  <script type="text/javascript" src="{{ STATIC_URL }}hotbuilder/js/hotbuilder.init.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}hotbuilder/js/hotbuilder.controllers.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}hotbuilder/js/hotbuilder.models.js"></script>
+{% endblock %}
+
+{% block page_header %}
+  {% include "horizon/common/_page_header.html" with title=_("Template Builder") %}
+{% endblock page_header %}
+
+{% block main %}
+  <h3>Compose Template</h3>
+  <div ng-controller="HotbuilderController as hotbuilder"
+       ng-init="hotbuilder.setUrl('{% url "horizon:project:hotbuilder:resource_types" %}')">
+    <div class="well">
+      <div class="row">
+        <div class="col-xs">
+          <tabset>
+            <tab heading="Resources">
+              <panel content="hotbuilder.panel">
+
+                <collapsible-group class="col-xs-12" content="{}"
+                                   title="'Recent resources'">
+                  <div class="col-xs-6">
+                    <draggable-entry
+                        ng-repeat="entry in hotbuilder.entries"
+                        entry="entry" entry-icon="server">
+                    </draggable-entry>
+                  </div>
+                </collapsible-group>
+                <collapsible-group class="col-xs-12" content="{}"
+                                   title="'More resources'">
+                  <div class="col-xs-6">
+                    <div class="has-feedback">
+                      <input type="text" ng-model="filterValue" placeholder="Filter">
+                      <span class="form-control-feedback fa fa-filter"></span>
+                    </div>
+                    <draggable-entry
+                        ng-repeat="entry in hotbuilder.allEntries | filter:filterValue"
+                        entry="entry" entry-icon="server">
+                    </draggable-entry>
+                  </div>
+                </collapsible-group>
+              </panel>
+            </tab>
+            <tab ng-repeat="tab in hotbuilder.tabs" heading="{$ tab.title $}" active="tab.active">
+              <panel>
+                {$ tab.content $}
+              </panel>
+            </tab>
+          </tabset>
+        </div>
+        <div class="col-xs end-xs">
+          <div class="btn-group btn-toggle">
+            <button ng-click="isGraphMode = true" class="btn btn-sm"
+                    ng-class="isGraphMode ? 'active btn-primary' : 'btn-default'">Graph</button>
+            <button ng-click="isGraphMode = false" class="btn btn-sm"
+                    ng-class="!isGraphMode ? 'active btn-primary' : 'btn-default'">YAML</button>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-body" ng-show="!isGraphMode">
+              <pre>{$ workbook.toYAML() $}</pre>
+            </div>
+            <div class="panel-body" ng-show="isGraphMode">
+              Here will be a fancy Graph View as soon as we implement it!
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- page footer -->
+      <div class="row">
+        <div class="col-xs end-xs">
+          <button ng-click="discardWorkbook()" class="btn btn-default cancel">Cancel</button>
+          <button ng-click="commitWorkbook()" class="btn btn-primary">
+            {$ workbookID ? 'Modify' : 'Create' $}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

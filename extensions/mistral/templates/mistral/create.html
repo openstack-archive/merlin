@@ -1,41 +1,18 @@
-{% extends "base.html" %}
+{% extends "merlin/base.html" %}
 {% load i18n %}
-{% load url from future %}
-{% load static %}
-{% load compress %}
 {% block title %}{% trans "Create Workbook" %}{% endblock %}
 
 {% block page_header %}
   {% include "horizon/common/_page_header.html" with title=_("Workbooks") %}
 {% endblock page_header %}
 
-{% block js %}
-{% include "horizon/_scripts.html" %}
-<script type="text/javascript" src="{{ STATIC_URL }}merlin/js/custom-libs/barricade.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}merlin/libs/js-yaml/dist/js-yaml.min.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}merlin/libs/underscore/underscore-min.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}merlin/js/merlin.init.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}merlin/js/merlin.templates.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}merlin/js/merlin.filters.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}merlin/js/merlin.directives.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}merlin/js/merlin.field.models.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}merlin/js/merlin.panel.models.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}merlin/js/merlin.utils.js"></script>
-
-<script type="text/javascript" src="{{ STATIC_URL }}mistral/js/mistral.init.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}mistral/js/mistral.workbook.controllers.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}mistral/js/mistral.workbook.models.js"></script>
-
+{% block merlin-js %}
+  <script type="text/javascript" src="{{ STATIC_URL }}mistral/js/mistral.init.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}mistral/js/mistral.workbook.controllers.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}mistral/js/mistral.workbook.models.js"></script>
 {% endblock %}
 
-{% block css %}
-  {% include "_stylesheets.html" %}
-  {% compress css %}
-    <link href='{{ STATIC_URL }}merlin/scss/merlin.scss' type='text/scss' media='screen' rel='stylesheet' />
-  {% endcompress %}
-<link href='{{ STATIC_URL }}merlin/libs/flexboxgrid/dist/flexboxgrid.css' type='text/css' media='screen' rel='stylesheet' />
-  {% block merlin-css %}{% endblock %}
-{% endblock %}
+{% block merlin-css %}{% endblock %}
 
 {% block main %}
 <h3>Create Workbook</h3>
