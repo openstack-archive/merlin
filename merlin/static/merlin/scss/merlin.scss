@@ -7,6 +7,9 @@
   }
   .right-panel {
     @include make-xs-column(6);
+    .btn-group {
+      margin-bottom: 10px;
+    }
   }
   .full-width {
     @include make-xs-column(12);
@@ -131,5 +134,15 @@ i.fa-times-circle {
     margin-bottom: 0;
     font-size: 15px;
     color: inherit;
+  }
+}
+
+.has-feedback {
+  input {
+    width: 100%;
+  }
+  .form-control-feedback {
+    top: -5px;
+    right: 7px;
   }
 }
