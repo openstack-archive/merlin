@@ -1,39 +1,15 @@
-{% extends "base.html" %}
+{% extends "merlin/base.html" %}
 {% load i18n %}
-{% load url from future %}
-{% load static %}
-{% load compress %}
 {% block title %}{% trans "Create Workbook" %}{% endblock %}
 
 {% block page_header %}
   {% include "horizon/common/_page_header.html" with title=_("Workbooks") %}
 {% endblock page_header %}
 
-{% block js %}
-{% include "horizon/_scripts.html" %}
-<script type="text/javascript" src="{{ STATIC_URL }}merlin/js/custom-libs/barricade.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}merlin/js/libs/js-yaml/dist/js-yaml.min.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}merlin/js/libs/underscore/underscore-min.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}merlin/js/merlin.init.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}merlin/js/merlin.templates.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}merlin/js/merlin.filters.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}merlin/js/merlin.directives.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}merlin/js/merlin.field.models.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}merlin/js/merlin.panel.models.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}merlin/js/merlin.utils.js"></script>
-
-<script type="text/javascript" src="{{ STATIC_URL }}mistral/js/mistral.init.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}mistral/js/mistral.workbook.controllers.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}mistral/js/mistral.workbook.models.js"></script>
-
-{% endblock %}
-
-{% block css %}
-  {% include "_stylesheets.html" %}
-  {% compress css %}
-    <link href='{{ STATIC_URL }}merlin/scss/merlin.scss' type='text/scss' media='screen' rel='stylesheet' />
-  {% endcompress %}
-  {% block merlin-css %}{% endblock %}
+{% block merlin-js %}
+  <script type="text/javascript" src="{{ STATIC_URL }}mistral/js/mistral.init.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}mistral/js/mistral.workbook.controllers.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}mistral/js/mistral.workbook.models.js"></script>
 {% endblock %}
 
 {% block main %}
@@ -54,19 +30,7 @@
                 <span class="fa fa-plus">Add Workflow</span></button>
             </div>
           </div>
-        </div>
-        <div class="right-panel">
-          <div class="btn-group btn-toggle pull-right">
-            <button ng-click="wb.isGraphMode = true" class="btn btn-sm"
-                ng-class="wb.isGraphMode ? 'active btn-primary' : 'btn-default'">Graph</button>
-            <button ng-click="wb.isGraphMode = false" class="btn btn-sm"
-                ng-class="!wb.isGraphMode ? 'active btn-primary' : 'btn-default'">YAML</button>
-          </div>
-        </div>
-      </div>
-      <!-- Data panel start -->
-      <div class="two-panels">
-        <div class="left-panel">
+          <div class="clearfix"></div>
           <panel ng-repeat="panel in wb.workbook | extractPanels track by panel.id"
                  content="panel">
             <div ng-repeat="row in panel | extractRows track by row.id">
@@ -80,8 +44,14 @@
             </div>
           </panel>
         </div>
-        <!-- YAML Panel -->
         <div class="right-panel">
+          <div class="btn-group btn-toggle pull-right">
+            <button ng-click="wb.isGraphMode = true" class="btn btn-sm"
+                ng-class="wb.isGraphMode ? 'active btn-primary' : 'btn-default'">Graph</button>
+            <button ng-click="wb.isGraphMode = false" class="btn btn-sm"
+                ng-class="!wb.isGraphMode ? 'active btn-primary' : 'btn-default'">YAML</button>
+          </div>
+          <div class="clearfix"></div>
           <div class="panel panel-default">
             <div class="panel-body" ng-show="!wb.isGraphMode">
               <pre>{$ wb.workbook.toYAML() $}</pre>
