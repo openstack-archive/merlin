@@ -42,6 +42,7 @@
     .directive('typedField', typedField)
 
     .directive('editableTitle', editableTitle)
+.directive('draggableEntry', draggableEntry)
     .directive('labeled', labeled);
 
   function labeled() {
@@ -229,5 +230,22 @@
         });
       }
     };
+  }
+
+  function draggableEntry() {
+    return {
+      restrict: 'E',
+      scope: {
+        entry: '='
+      },
+      link: link,
+      templateUrl: '/static/merlin/templates/draggable-entry.html'
+    };
+
+    function link(scope, element, attrs) {
+      if (angular.isDefined(attrs.entryIcon)) {
+        scope.iconCls = 'fa-' + attrs.entryIcon;
+      }
+    }
   }
 })();
