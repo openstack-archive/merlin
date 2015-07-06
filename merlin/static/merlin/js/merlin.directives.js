@@ -39,8 +39,11 @@
      * retrieves a template by its name which is the same as model's type and renders it,
      * recursive <typed-field></..>-s are possible.
      * */
-    .directive('typedField', typedField);
+    .directive('typedField', typedField)
 
+    .directive('draggableEntry', draggableEntry);
+
+  collapsibleGroup.$inject = ['$parse'];
   typedField.$inject = ['$compile', 'merlin.templates'];
 
   function editable() {
@@ -129,7 +132,7 @@
     };
   }
 
-  function collapsibleGroup() {
+  function collapsibleGroup($parse) {
     return {
       restrict: 'E',
       templateUrl: '/static/merlin/templates/collapsible-group.html',
@@ -140,7 +143,11 @@
         onRemove: '&'
       },
       link: function(scope, element, attrs) {
-        scope.isCollapsed = false;
+        if (angular.isDefined(attrs.collapsed)) {
+          scope.isCollapsed = $parse(attrs.collapsed)();
+        } else {
+          scope.isCollapsed = false;
+        }
         if ( attrs.onAdd && attrs.additive !== 'false' ) {
           scope.additive = true;
         }
@@ -199,5 +206,22 @@
         });
       }
     };
+  }
+
+  function draggableEntry() {
+    return {
+      restrict: 'E',
+      scope: {
+        entry: '='
+      },
+      link: link,
+      templateUrl: '/static/merlin/templates/draggable-entry.html'
+    };
+
+    function link(scope, element, attrs) {
+      if (angular.isDefined(attrs.entryIcon)) {
+        scope.iconCls = 'fa-' + attrs.entryIcon;
+      }
+    }
   }
 })();

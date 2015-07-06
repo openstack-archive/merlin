@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load compress %}
+
+{% block js %}
+  {% include "horizon/_scripts.html" %}
+  <script type="text/javascript" src="{{ STATIC_URL }}merlin/js/custom-libs/barricade.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}merlin/js/libs/js-yaml/dist/js-yaml.min.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}merlin/js/libs/underscore/underscore-min.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}merlin/js/merlin.init.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}merlin/js/merlin.templates.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}merlin/js/merlin.filters.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}merlin/js/merlin.directives.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}merlin/js/merlin.field.models.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}merlin/js/merlin.panel.models.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}merlin/js/merlin.utils.js"></script>
+  {% block merlin-js %}{% endblock %}
+{% endblock %}
+
+{% block css %}
+  {% include "_stylesheets.html" %}
+  {% compress css %}
+    <link href='{{ STATIC_URL }}merlin/scss/merlin.scss' type='text/scss' media='screen' rel='stylesheet' />
+  {% endcompress %}
+  {% block merlin-css %}{% endblock %}
+{% endblock %}
