@@ -61,4 +61,15 @@ i.fa-times-circle {
   .section .section .section-heading & {
     margin-top: 7px;
   }
-};
+}
+
+.has-feedback {
+  input {
+    width: 100%;
+  }
+  .form-control-feedback {
+    top: -5px;
+    right: 7px;
+  }
+}
+
