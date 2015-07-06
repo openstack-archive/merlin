@@ -52,12 +52,24 @@ module.exports = function(grunt){
                 // run tests once instead of continuously
                 singleRun: true
             }
+        },
+        markdown: {
+            all: {
+                files: [{
+                    expand: true,
+                    src: './README.md',
+                    dest: './',
+                    ext: '.html'
+                }]
+            }
         }
     });
     grunt.loadNpmTasks('grunt-karma');
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-uglify');
+    grunt.loadNpmTasks('grunt-markdown');
     grunt.registerTask('test:unit', [
         'karma:unit'
     ]);
+    grunt.registerTask('md', ['markdown:all'])
 };
