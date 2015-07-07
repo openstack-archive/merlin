@@ -2,304 +2,308 @@
 (function() {
   'use strict';
 
-  angular.module('merlin')
-    .factory('merlin.field.models',
-    ['merlin.utils', 'merlin.panel.models', '$http', function(utils, panels, $http) {
+  angular
+    .module('merlin')
+    .factory('merlin.field.models', merlinFieldModels);
 
-      var wildcardMixin = Barricade.Blueprint.create(function() {
-        return this;
-      });
+  merlinFieldModels.$inject = ['merlin.utils', 'merlin.panel.models', '$http'];
 
-      var viewChoicesMixin = Barricade.Blueprint.create(function() {
-        var self = this,
-          dropDownLimit = this._dropDownLimit || 5,
-          values, labels, items, isDropDown;
+  function merlinFieldModels(utils, panels, $http) {
+    var wildcardMixin = Barricade.Blueprint.create(function() {
+      return this;
+    });
 
-        function fillItems() {
-          values = self.getEnumValues();
-          labels = self.getEnumLabels();
-          items = {};
+    var viewChoicesMixin = Barricade.Blueprint.create(function() {
+      var self = this;
+      var dropDownLimit = this._dropDownLimit || 5;
+      var values, labels, items, isDropDown;
 
-          values && values.forEach(function (value, index) {
+      function fillItems() {
+        values = self.getEnumValues();
+        labels = self.getEnumLabels();
+        items = {};
+
+        if (values) {
+          values.forEach(function (value, index) {
             items[value] = labels[index];
           });
         }
-
-        this.getLabel = function(value) {
-          if ( values === undefined ) {
-            fillItems();
-          }
-          return items[value];
-        };
-
-        this.getValues = function() {
-          if ( values === undefined ) {
-            fillItems();
-          }
-          return values;
-        };
-
-        this.resetValues = function() {
-          values = undefined;
-        };
-
-        this.isDropDown = function() {
-          // what starts its life as being dropdown / not being dropdown
-          // should remain so forever
-          if ( angular.isUndefined(isDropDown) ) {
-            isDropDown = !this.isEmpty() && this.getValues().length < dropDownLimit;
-          }
-          return isDropDown;
-        };
-
-        this.setType('choices');
-        return this;
-      });
-
-      var modelMixin = Barricade.Blueprint.create(function(type) {
-        var isValid = true,
-          isValidatable = false;
-        this.value = function() {
-          if ( !arguments.length ) {
-            if ( isValidatable ) {
-              return isValid ? this.get() : undefined;
-            } else {
-              return this.get();
-            }
-          } else {
-            this.set(arguments[0]);
-            isValid = !this.hasError();
-          }
-        };
-        this.id = utils.getNewId();
-
-        this.getType = function() {
-          return type;
-        };
-
-        this.setValidatable = function(validatable) {
-          isValidatable = validatable;
-        };
-
-        this.setType = function(_type) {
-          type = _type;
-        };
-
-        this.isAtomic = function() {
-          return ['number', 'string', 'text', 'choices'].indexOf(this.getType()) > -1;
-        };
-        this.title = function() {
-          var title = utils.getMeta(this, 'title');
-          if ( !title ) {
-            if ( this.instanceof(Barricade.ImmutableObject) ) {
-              if ( this.getKeys().indexOf('name') > -1 ) {
-                return this.get('name').get();
-              }
-            }
-            title = utils.makeTitle(this.getID()) || '';
-          }
-          return title;
-        };
-        wildcardMixin.call(this);
-        if ( this.getEnumValues ) {
-          viewChoicesMixin.call(this);
-        }
-        return this;
-      });
-
-      function meldGroup() {
-        if ( utils.getMeta(this, 'group') ) {
-          panels.groupmixin.call(this);
-        }
       }
 
-      var stringModel = Barricade.Primitive.extend({
-        create: function(json, parameters) {
-          var self = Barricade.Primitive.create.call(this, json, parameters);
-          return modelMixin.call(self, 'string');
+      this.getLabel = function(value) {
+        if ( angular.isUndefined(values) ) {
+          fillItems();
         }
-      }, {'@type': String});
-
-      var textModel = Barricade.Primitive.extend({
-        create: function(json, parameters) {
-          var self = Barricade.Primitive.create.call(this, json, parameters);
-          return modelMixin.call(self, 'text');
-        }
-      }, {'@type': String});
-
-      var numberModel = Barricade.Primitive.extend({
-        create: function(json, parameters) {
-          var self = Barricade.Primitive.create.call(this, json, parameters);
-          return modelMixin.call(self, 'number');
-        }
-      }, {'@type': Number});
-
-      var listModel = Barricade.Array.extend({
-        create: function(json, parameters) {
-          var self = Barricade.Array.create.call(this, json, parameters);
-
-          modelMixin.call(self, 'list');
-
-          self.add = function() {
-            self.push(undefined, parameters);
-          };
-          self.getValues = function() {
-            return self.toArray();
-          };
-          self._getContents = function() {
-            return self.toArray();
-          };
-          meldGroup.call(self);
-          return self;
-        }
-      }, {'@type': Array});
-
-      var frozendictModel = Barricade.ImmutableObject.extend({
-        create: function(json, parameters) {
-          var self = Barricade.ImmutableObject.create.call(this, json, parameters);
-          self.getKeys().forEach(function(key) {
-            utils.enhanceItemWithID(self.get(key), key);
-          });
-
-          modelMixin.call(self, 'frozendict');
-          self.getValues = function() {
-            return self._data;
-          };
-          self._getContents = function() {
-            return self.getKeys().map(function(key) {
-              return self.get(key);
-            })
-          };
-          meldGroup.call(self);
-          return self;
-        }
-      }, {'@type': Object});
-
-      var dictionaryModel = Barricade.MutableObject.extend({
-        create: function(json, parameters) {
-          var self = Barricade.MutableObject.create.call(this, json, parameters),
-            _items = [],
-            _elClass = self._elementClass,
-            baseKey = utils.getMeta(_elClass, 'baseKey') || 'key',
-            baseName = utils.getMeta(_elClass, 'baseName') || utils.makeTitle(baseKey);
-
-          modelMixin.call(self, 'dictionary');
-
-          function makeCacheWrapper(container, key) {
-            var value = container.getByID(key);
-            value.keyValue = function () {
-              if ( arguments.length ) {
-                value.setID(arguments[0]);
-              } else {
-                return value.getID();
-              }
-            };
-            return value;
-          }
-
-          self.add = function(newID) {
-            var regexp = new RegExp('(' + baseKey + ')([0-9]+)'),
-              newValue;
-            newID = newID || baseKey + utils.getNextIDSuffix(self, regexp);
-            if ( _elClass.instanceof(Barricade.ImmutableObject) ) {
-              if ( 'name' in _elClass._schema ) {
-                var nameNum = utils.getNextIDSuffix(self, regexp);
-                newValue = {name: baseName + nameNum};
-              } else {
-                newValue = {};
-              }
-            } else { // usually, it's either frozendict inside or string
-              newValue = '';
-            }
-            self.push(newValue, utils.extend(self._parameters, {id: newID}));
-            _items.push(makeCacheWrapper(self, newID));
-          };
-          self.getValues = function() {
-            if ( !_items.length ) {
-              _items = self.toArray().map(function(value) {
-                return makeCacheWrapper(self, value.getID());
-              });
-            }
-            return _items;
-          };
-          self.empty = function() {
-            for ( var i = this._data.length; i > 0; i-- ) {
-              self.remove(i-1);
-            }
-            _items = [];
-          };
-          self.resetKeys = function(keys) {
-            self.empty();
-            keys.forEach(function(key) {
-              self.push(undefined, {id: key});
-            });
-          };
-          self._getContents = function() {
-            return self.toArray();
-          };
-          self.removeItem = function(key) {
-            var pos = self.getPosByID(key);
-            self.remove(self.getPosByID(key));
-            _items.splice(pos, 1);
-          };
-          meldGroup.call(self);
-          // initialize cache with starting values
-          self.getValues();
-          return self;
-        }
-      }, {'@type': Object});
-
-      var linkedCollectionModel = stringModel.extend({
-          create: function(json, parameters) {
-            var self = stringModel.create.call(this, json, parameters),
-              collectionCls = Barricade.create({
-                '@type': String,
-                '@ref': {
-                  to: function() {
-                    return parameters.toCls;
-                  },
-                  needs: function() {
-                    return parameters.neededCls;
-                  },
-                  getter: function(data) {
-                    return data.needed.get(parameters.substitutedEntryID);
-                  }
-                }
-              });
-
-            self._collection = collectionCls.create().on(
-              'replace', function(newValue) {
-                self._collection = newValue;
-                self._collection.on('change', function() {
-                  self._choices = self._collection.getIDs();
-                  self.resetValues();
-                });
-                self._collection.emit('change');
-              });
-
-            return self;
-          },
-          _choices: []
-        }, {
-          '@enum': function() {
-            if ( this._collection.isPlaceholder() ) {
-              this.emit('_resolveUp', this._collection);
-            }
-            return this._choices;
-          }
-        }
-      );
-
-      return {
-        string: stringModel,
-        text: textModel,
-        number: numberModel,
-        list: listModel,
-        linkedcollection: linkedCollectionModel,
-        dictionary: dictionaryModel,
-        frozendict: frozendictModel,
-        wildcard: wildcardMixin // use for most general type-checks
+        return items[value];
       };
-    }])
 
+      this.getValues = function() {
+        if ( angular.isUndefined(values) ) {
+          fillItems();
+        }
+        return values;
+      };
+
+      this.resetValues = function() {
+        values = undefined;
+      };
+
+      this.isDropDown = function() {
+        // what starts its life as being dropdown / not being dropdown
+        // should remain so forever
+        if ( angular.isUndefined(isDropDown) ) {
+          isDropDown = !this.isEmpty() && this.getValues().length < dropDownLimit;
+        }
+        return isDropDown;
+      };
+
+      this.setType('choices');
+      return this;
+    });
+
+    var modelMixin = Barricade.Blueprint.create(function(type) {
+      var isValid = true;
+      var isValidatable = false;
+      this.value = function() {
+        if ( !arguments.length ) {
+          if ( isValidatable ) {
+            return isValid ? this.get() : undefined;
+          } else {
+            return this.get();
+          }
+        } else {
+          this.set(arguments[0]);
+          isValid = !this.hasError();
+        }
+      };
+      this.id = utils.getNewId();
+
+      this.getType = function() {
+        return type;
+      };
+
+      this.setValidatable = function(validatable) {
+        isValidatable = validatable;
+      };
+
+      this.setType = function(_type) {
+        type = _type;
+      };
+
+      this.isAtomic = function() {
+        return ['number', 'string', 'text', 'choices'].indexOf(this.getType()) > -1;
+      };
+      this.title = function() {
+        var title = utils.getMeta(this, 'title');
+        if ( !title ) {
+          if ( this.instanceof(Barricade.ImmutableObject) ) {
+            if ( this.getKeys().indexOf('name') > -1 ) {
+              return this.get('name').get();
+            }
+          }
+          title = utils.makeTitle(this.getID()) || '';
+        }
+        return title;
+      };
+      wildcardMixin.call(this);
+      if ( this.getEnumValues ) {
+        viewChoicesMixin.call(this);
+      }
+      return this;
+    });
+
+    function meldGroup() {
+      if ( utils.getMeta(this, 'group') ) {
+        panels.groupmixin.call(this);
+      }
+    }
+
+    var stringModel = Barricade.Primitive.extend({
+      create: function(json, parameters) {
+        var self = Barricade.Primitive.create.call(this, json, parameters);
+        return modelMixin.call(self, 'string');
+      }
+    }, {'@type': String});
+
+    var textModel = Barricade.Primitive.extend({
+      create: function(json, parameters) {
+        var self = Barricade.Primitive.create.call(this, json, parameters);
+        return modelMixin.call(self, 'text');
+      }
+    }, {'@type': String});
+
+    var numberModel = Barricade.Primitive.extend({
+      create: function(json, parameters) {
+        var self = Barricade.Primitive.create.call(this, json, parameters);
+        return modelMixin.call(self, 'number');
+      }
+    }, {'@type': Number});
+
+    var listModel = Barricade.Array.extend({
+      create: function(json, parameters) {
+        var self = Barricade.Array.create.call(this, json, parameters);
+
+        modelMixin.call(self, 'list');
+
+        self.add = function() {
+          self.push(undefined, parameters);
+        };
+        self.getValues = function() {
+          return self.toArray();
+        };
+        self._getContents = function() {
+          return self.toArray();
+        };
+        meldGroup.call(self);
+        return self;
+      }
+    }, {'@type': Array});
+
+    var frozendictModel = Barricade.ImmutableObject.extend({
+      create: function(json, parameters) {
+        var self = Barricade.ImmutableObject.create.call(this, json, parameters);
+        self.getKeys().forEach(function(key) {
+          utils.enhanceItemWithID(self.get(key), key);
+        });
+
+        modelMixin.call(self, 'frozendict');
+        self.getValues = function() {
+          return self._data;
+        };
+        self._getContents = function() {
+          return self.getKeys().map(function(key) {
+            return self.get(key);
+          });
+        };
+        meldGroup.call(self);
+        return self;
+      }
+    }, {'@type': Object});
+
+    var dictionaryModel = Barricade.MutableObject.extend({
+      create: function(json, parameters) {
+        var self = Barricade.MutableObject.create.call(this, json, parameters);
+        var _items = [];
+        var _elClass = self._elementClass;
+        var baseKey = utils.getMeta(_elClass, 'baseKey') || 'key';
+        var baseName = utils.getMeta(_elClass, 'baseName') || utils.makeTitle(baseKey);
+
+        modelMixin.call(self, 'dictionary');
+
+        function makeCacheWrapper(container, key) {
+          var value = container.getByID(key);
+          value.keyValue = function () {
+            if ( arguments.length ) {
+              value.setID(arguments[0]);
+            } else {
+              return value.getID();
+            }
+          };
+          return value;
+        }
+
+        self.add = function(newID) {
+          var regexp = new RegExp('(' + baseKey + ')([0-9]+)');
+          var newValue;
+          newID = newID || baseKey + utils.getNextIDSuffix(self, regexp);
+          if ( _elClass.instanceof(Barricade.ImmutableObject) ) {
+            if ( 'name' in _elClass._schema ) {
+              var nameNum = utils.getNextIDSuffix(self, regexp);
+              newValue = {name: baseName + nameNum};
+            } else {
+              newValue = {};
+            }
+          } else { // usually, it's either frozendict inside or string
+            newValue = '';
+          }
+          self.push(newValue, utils.extend(self._parameters, {id: newID}));
+          _items.push(makeCacheWrapper(self, newID));
+        };
+        self.getValues = function() {
+          if ( !_items.length ) {
+            _items = self.toArray().map(function(value) {
+              return makeCacheWrapper(self, value.getID());
+            });
+          }
+          return _items;
+        };
+        self.empty = function() {
+          for ( var i = this._data.length; i > 0; i-- ) {
+            self.remove(i - 1);
+          }
+          _items = [];
+        };
+        self.resetKeys = function(keys) {
+          self.empty();
+          keys.forEach(function(key) {
+            self.push(undefined, {id: key});
+          });
+        };
+        self._getContents = function() {
+          return self.toArray();
+        };
+        self.removeItem = function(key) {
+          var pos = self.getPosByID(key);
+          self.remove(self.getPosByID(key));
+          _items.splice(pos, 1);
+        };
+        meldGroup.call(self);
+        // initialize cache with starting values
+        self.getValues();
+        return self;
+      }
+    }, {'@type': Object});
+
+    var linkedCollectionModel = stringModel.extend({
+        create: function(json, parameters) {
+          var self = stringModel.create.call(this, json, parameters);
+          var collectionCls = Barricade.create({
+              '@type': String,
+              '@ref': {
+                to: function() {
+                  return parameters.toCls;
+                },
+                needs: function() {
+                  return parameters.neededCls;
+                },
+                getter: function(data) {
+                  return data.needed.get(parameters.substitutedEntryID);
+                }
+              }
+            });
+
+          self._collection = collectionCls.create().on(
+            'replace', function(newValue) {
+              self._collection = newValue;
+              self._collection.on('change', function() {
+                self._choices = self._collection.getIDs();
+                self.resetValues();
+              });
+              self._collection.emit('change');
+            });
+
+          return self;
+        },
+        _choices: []
+      }, {
+        '@enum': function() {
+          if ( this._collection.isPlaceholder() ) {
+            this.emit('_resolveUp', this._collection);
+          }
+          return this._choices;
+        }
+      }
+    );
+
+    return {
+      string: stringModel,
+      text: textModel,
+      number: numberModel,
+      list: listModel,
+      linkedcollection: linkedCollectionModel,
+      dictionary: dictionaryModel,
+      frozendict: frozendictModel,
+      wildcard: wildcardMixin // use for most general type-checks
+    };
+  }
 })();
