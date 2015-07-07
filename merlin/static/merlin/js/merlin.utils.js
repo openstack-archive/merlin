@@ -8,23 +8,24 @@
     .factory('merlin.utils', function() {
       Array.prototype.condense = function() {
         return this.filter(function(el) {
-          return el !== undefined && el != null;
+          return angular.isDefined(el) && el !== null;
         });
       };
 
-      var _id_counter = 0;
+      var idCounter = 0;
 
       function getNewId() {
-        _id_counter++;
-        return 'id-' + _id_counter;
+        idCounter++;
+        return 'id-' + idCounter;
       }
 
       function groupByMetaKey(sequence, metaKey, insertAtBeginning) {
-        var newSequence = [], defaultBucket = [],
-          index;
+        var newSequence = [];
+        var defaultBucket = [];
+        var index;
         sequence.forEach(function(item) {
           index = getMeta(item, metaKey);
-          if ( index !== undefined ) {
+          if ( angular.isDefined(index) ) {
             if ( !newSequence[index] ) {
               newSequence[index] = [];
               newSequence[index][metaKey] = index;
@@ -86,7 +87,7 @@
 
       function extend(proto, extension) {
         var newObj;
-        proto = (proto !== undefined ? proto : null);
+        proto = (angular.isDefined(proto) ? proto : null);
         newObj = Object.create(proto);
         Object.keys(extension).forEach(function(key) {
           newObj[key] = extension[key];
@@ -103,7 +104,7 @@
         enhanceItemWithID: enhanceItemWithID,
         extend: extend,
         pop: pop
-      }
-    })
+      };
+    });
 
 })();
