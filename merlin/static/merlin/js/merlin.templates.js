@@ -1,37 +1,41 @@
 (function() {
-  angular.module('merlin')
-    .factory('merlin.templates', [
-      '$http', '$q', function($http, $q) {
-        var promises = {};
+  angular
+    .module('merlin')
+    .factory('merlin.templates', merlinTemplates);
 
-        function makeEmptyPromise() {
-          var deferred = $q.defer();
-          deferred.reject();
-          return deferred.promise;
-        }
+  merlinTemplates.$inject = ['$http', '$q'];
 
-        function prefetch(baseUrl, fields) {
-          if ( !angular.isArray(fields) ) {
-            fields = [fields];
-          }
-          fields.forEach(function(field) {
-            var deferred = $q.defer();
-            $http.get(baseUrl + field + '.html').success(function(templateContent) {
-              deferred.resolve(templateContent);
-            }).error(function(data) {
-              deferred.reject(data);
-            });
-            promises[field] = deferred.promise;
-          });
-        }
+  function merlinTemplates($http, $q) {
+    var promises = {};
 
-        function templateReady(field) {
-          return promises[field] || makeEmptyPromise();
-        }
+    function makeEmptyPromise() {
+      var deferred = $q.defer();
+      deferred.reject();
+      return deferred.promise;
+    }
 
-        return {
-          prefetch: prefetch,
-          templateReady: templateReady
-        };
-      }])
+    function prefetch(baseUrl, fields) {
+      if ( !angular.isArray(fields) ) {
+        fields = [fields];
+      }
+      fields.forEach(function(field) {
+        var deferred = $q.defer();
+        $http.get(baseUrl + field + '.html').success(function(templateContent) {
+          deferred.resolve(templateContent);
+        }).error(function(data) {
+          deferred.reject(data);
+        });
+        promises[field] = deferred.promise;
+      });
+    }
+
+    function templateReady(field) {
+      return promises[field] || makeEmptyPromise();
+    }
+
+    return {
+      prefetch: prefetch,
+      templateReady: templateReady
+    };
+  }
 })();
