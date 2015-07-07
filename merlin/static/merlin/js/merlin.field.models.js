@@ -168,7 +168,7 @@
           self._getContents = function() {
             return self.getKeys().map(function(key) {
               return self.get(key);
-            })
+            });
           };
           meldGroup.call(self);
           return self;
@@ -300,6 +300,6 @@
         frozendict: frozendictModel,
         wildcard: wildcardMixin // use for most general type-checks
       };
-    }])
+    }]);
 
 })();

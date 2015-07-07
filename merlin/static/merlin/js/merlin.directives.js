@@ -74,7 +74,7 @@
             newValue && element.focus();
           });
         });
-      }
+      };
     })
     /*
     * tells Merlin to render this element as a panel.
@@ -91,7 +91,7 @@
           scope.removable = $parse(attrs.removable)();
           scope.isCollapsed = false;
         }
-      }
+      };
     })
     /*
     * tells Merlin to render this element as a group with ability to collapse.
@@ -115,7 +115,7 @@
             scope.removable = true;
           }
         }
-      }
+      };
     })
     /*
     * sets up the DOM nodes related to validation of model being edited in this widget (and specifies the name of this model on scope).
@@ -136,7 +136,7 @@
               // (FIXME): hack until Barricade supports validation of empty required entries
               if ( !model.get() && model.isRequired() ) {
                 isValid = false;
-                baseMessage = 'This field is required.'
+                baseMessage = 'This field is required.';
               }
               ctrl.$setValidity('barricade', isValid);
               scope.error = model.hasError() ? model.getError() : baseMessage;
@@ -148,7 +148,7 @@
             });
           }
         }
-      }
+      };
     })
     /*
     * retrieves a template by its name which is the same as model's type and renders it, recursive <typed-field></..>-s are possible.
@@ -164,9 +164,9 @@
           link: function(scope, element) {
             templates.templateReady(scope.type).then(function(template) {
               element.replaceWith($compile(template)(scope));
-            })
+            });
           }
-        }
-      }])
+        };
+      }]);
 
 })();

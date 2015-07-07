@@ -136,7 +136,7 @@
           hash += item.uid();
         });
         return hash;
-      })
+      });
     }])
 
     .filter('extractItems', ['merlin.utils', function(utils) {
@@ -150,7 +150,7 @@
           hash += item.uid();
         });
         return hash;
-      })
-    }])
+      });
+    }]);
 
 })();

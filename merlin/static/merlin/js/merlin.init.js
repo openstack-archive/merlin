@@ -18,6 +18,6 @@
     .run(['merlin.templates', 'fieldTemplatesUrl', 'fieldTemplates',
       function(templates, rootUrl, fieldList) {
         templates.prefetch(rootUrl, fieldList);
-      }])
+      }]);
 
 })();
