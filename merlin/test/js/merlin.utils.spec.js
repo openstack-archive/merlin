@@ -16,15 +16,10 @@ describe('merlin.utils', function() {
     });
   });
 
-  describe('condense Array method', function() {
-    it('Array prototype should have condense()', function() {
-      var array = [];
-      expect(array.condense).toBeDefined();
-    });
-
+  describe('condense function', function() {
     it('condense() should throw away undefined and null values', function() {
       var array = [1, 0, 15, undefined, 7, null, null, 8];
-      expect(array.condense()).toEqual([1, 0, 15, 7, 8]);
+      expect(utils.condense(array)).toEqual([1, 0, 15, 7, 8]);
     });
   });
 
