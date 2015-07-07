@@ -33,7 +33,7 @@
             } else {
               return self.getID();
             }
-          }
+          };
         }
 
         self.setType('group');
@@ -43,7 +43,7 @@
 
       return {
         groupmixin: groupMixin
-      }
-    }])
+      };
+    }]);
 
 })();
