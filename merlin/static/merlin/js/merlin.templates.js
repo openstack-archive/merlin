@@ -33,5 +33,5 @@
           prefetch: prefetch,
           templateReady: templateReady
         };
-      }])
+      }]);
 })();

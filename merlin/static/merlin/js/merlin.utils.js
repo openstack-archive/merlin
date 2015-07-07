@@ -103,7 +103,7 @@
         enhanceItemWithID: enhanceItemWithID,
         extend: extend,
         pop: pop
-      }
-    })
+      };
+    });
 
 })();
