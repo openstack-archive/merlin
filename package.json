@@ -43,6 +43,6 @@
     "postinstall": "bower install",
     "test-unit": "grunt test:unit",
     "test": "karma start ./karma-unit.conf.js",
-    "lint": "eslint --no-color ./merlin/static"
+    "lint": "eslint --no-color ./merlin/static ./extensions/mistral/static"
   }
 }

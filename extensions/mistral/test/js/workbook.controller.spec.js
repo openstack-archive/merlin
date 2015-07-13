@@ -27,24 +27,22 @@ describe('together workbook model and controller', function() {
 
 
   describe('define top-level actions available to user:', function () {
-    var $scope;
+    var wbCtrl;
 
     beforeEach(inject(function (_$controller_) {
-      var $controller = _$controller_;
-      $scope = {};
-      $controller('workbookCtrl', {$scope: $scope});
-      $scope.workbook = workbook;
+      wbCtrl = _$controller_('WorkbookController', {});
+      wbCtrl.workbook = workbook;
     }));
 
     describe("'Add Action' action", function () {
       it('adds a new Action', function () {
-        $scope.addAction();
+        wbCtrl.addAction();
 
         expect(workbook.get('actions').get(0)).toBeDefined();
       });
 
       it('creates action with predefined name', function () {
-        $scope.addAction();
+        wbCtrl.addAction();
 
         expect(workbook.get('actions').get(0).getID()).toBeGreaterThan('');
       });
@@ -56,7 +54,7 @@ describe('together workbook model and controller', function() {
         }));
 
         it("corresponding JSON has the right key for the Action", function () {
-          $scope.addAction();
+          wbCtrl.addAction();
 
           expect(workbook.toJSON({pretty: true}).actions[actionID]).toBeDefined();
         });
@@ -64,7 +62,7 @@ describe('together workbook model and controller', function() {
         it("once the Action ID is changed, it's reflected in JSON", function () {
           var newID = 'action10';
 
-          $scope.addAction();
+          wbCtrl.addAction();
           workbook.get('actions').getByID(actionID).setID(newID);
 
           expect(workbook.toJSON({pretty: true}).actions[actionID]).toBeUndefined();
@@ -74,8 +72,8 @@ describe('together workbook model and controller', function() {
       });
 
       it('creates actions with different names on 2 successive calls', function () {
-        $scope.addAction();
-        $scope.addAction();
+        wbCtrl.addAction();
+        wbCtrl.addAction();
 
         expect(workbook.get('actions').get(0).getID()).not.toEqual(
           workbook.get('actions').get(1).getID())
@@ -84,7 +82,7 @@ describe('together workbook model and controller', function() {
 
     describe("'Add Workflow' action", function () {
       it('adds a new Workflow', function () {
-        $scope.addWorkflow();
+        wbCtrl.addWorkflow();
 
         expect(workbook.get('workflows').get(0)).toBeDefined();
       });
@@ -96,7 +94,7 @@ describe('together workbook model and controller', function() {
         }));
 
         it("corresponding JSON has the right key for the Workflow", function () {
-          $scope.addWorkflow();
+          wbCtrl.addWorkflow();
 
           expect(workbook.toJSON({pretty: true}).workflows[workflowID]).toBeDefined();
         });
@@ -104,7 +102,7 @@ describe('together workbook model and controller', function() {
         it("once the workflow ID is changed, it's reflected in JSON", function () {
           var newID = 'workflow10';
 
-          $scope.addWorkflow();
+          wbCtrl.addWorkflow();
           workbook.get('workflows').getByID(workflowID).setID(newID);
 
           expect(workbook.toJSON({pretty: true}).workflows[workflowID]).toBeUndefined();
@@ -114,14 +112,14 @@ describe('together workbook model and controller', function() {
       });
 
       it('creates workflow with predefined name', function () {
-        $scope.addWorkflow();
+        wbCtrl.addWorkflow();
 
         expect(workbook.get('workflows').get(0).getID()).toBeGreaterThan('');
       });
 
       it('creates workflows with different names on 2 successive calls', function () {
-        $scope.addWorkflow();
-        $scope.addWorkflow();
+        wbCtrl.addWorkflow();
+        wbCtrl.addWorkflow();
 
         expect(workbook.get('workflows').get(0).getID()).not.toEqual(
           workbook.get('workflows').get(1).getID())
