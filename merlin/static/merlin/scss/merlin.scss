@@ -1,53 +1,8 @@
-@import "/bootstrap/scss/bootstrap";
-
-.two-panels {
-  @include make-row();
-  .left-panel {
-    @include make-xs-column(6);
-  }
-  .right-panel {
-    @include make-xs-column(6);
-  }
-  .full-width {
-    @include make-xs-column(12);
-  }
-}
-
-.two-columns {
-  @include make-row();
-  .left-column {
-    @include make-xs-column(6);
-  }
-  .right-column {
-    @include make-xs-column(6);
-  }
-}
-
-.three-columns {
-  @include make-row();
-  .left-column {
-    @include make-xs-column(5);
-  }
-  .right-column {
-    @include make-xs-column(5);
-  }
-  .both-columns {
-    @include make-xs-column(10);
-  }
-  .button-column {
-    @include make-xs-column(2);
-  }
-}
-
 .panel-default.merlin-panel {
   .panel-heading {
     color: inherit;
     background-color: inherit;
     border: none;
-    padding-left: 20px;
-  }
-  .panel-body {
-    padding-left: 20px;
   }
   textarea {
     resize: vertical;
@@ -64,19 +19,15 @@ editable {
 }
 
 .section {
-  .form-group {
-    padding-left: 15px;
-  }
-  .section {
-    margin-left: 15px;
-  }
-  a {
-    padding-left: 5px;
-    text-decoration: none;
-    color: black;
-  }
   h5 {
     font-weight: bold;
+  }
+
+  .section-heading {
+    a {
+      text-decoration: none;
+      color: black;
+    }
   }
 }
 
@@ -93,28 +44,8 @@ editable {
   }
 }
 
-.popover-content > button {
-  margin: 5px;
-  float: right;
-}
-
-.popover.right {
-  width: 200px;
-}
-
-.dictionary .add-btn {
-  margin-top: 26px;
-}
-
 .list .add-btn {
-  margin-top: 2px;
-  &.varlist-1st-row {
-    margin-top: 26px;
-  }
-}
-
-.right-column .form-group {
-  padding-left: 0;
+  margin-bottom: 15px;
 }
 
 .well .panel-body pre {
@@ -124,12 +55,10 @@ editable {
 }
 
 i.fa-times-circle {
-  padding-right: 10px;
-  .section .section & {
-    font-weight: bold;
-    margin-top: 10px;
-    margin-bottom: 0;
-    font-size: 15px;
-    color: inherit;
+  font-size: 15px;
+  color: inherit;
+
+  .section .section .section-heading & {
+    margin-top: 7px;
   }
-}
+};

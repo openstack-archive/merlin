@@ -129,13 +129,6 @@ describe('workbook model logic', function() {
         expect(json.workflows[workflowID].tasks[newID]).toBeDefined();
       });
 
-      it('a task deletion works in conjunction with tasks logic', function() {
-        expect(getTask(taskID)).toBeDefined();
-
-        getTask(taskID).remove();
-        expect(getTask(taskID)).toBeUndefined();
-      });
-
     });
 
     describe("which start with the 'direct' workflow:", function() {

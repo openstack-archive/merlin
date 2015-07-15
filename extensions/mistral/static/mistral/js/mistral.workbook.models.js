@@ -18,11 +18,15 @@
       if ( angular.isUndefined(json) || type === String ) {
         return fields.string.create(json, parameters);
       } else if ( type === Array ) {
-        return fields.list.extend({}, {
+        return fields.list.extend({
+          inline: true
+        }, {
           '*': {'@class': fields.string}
         }).create(json, parameters);
       } else if ( type === Object ) {
-        return fields.dictionary.extend({}, {
+        return fields.dictionary.extend({
+          inline: true
+        }, {
           '?': {'@class': fields.string}
         }).create(json, parameters);
       }
@@ -31,7 +35,6 @@
     models.varlist = fields.list.extend({
       create: function(json, parameters) {
         var self = fields.list.create.call(this, json, parameters);
-        self.setType('varlist');
         self.on('childChange', function(child, op) {
           if ( op == 'empty' ) {
             self.each(function(index, item) {
@@ -48,6 +51,7 @@
         '@class': fields.frozendict.extend({
           create: function(json, parameters) {
             var self = fields.frozendict.create.call(this, json, parameters);
+            self.isAtomic = function() { return false; };
             self.on('childChange', function(child) {
               if ( child.instanceof(Barricade.Enumerated) ) { // type change
                 var value = self.get('value');
@@ -87,23 +91,23 @@
       }
     });
 
-    models.yaqllist = fields.list.extend({
+    models.YAQLField = fields.frozendict.extend({
       create: function(json, parameters) {
-        var self = fields.list.create.call(this, json, parameters);
-        self.setType('yaqllist');
+        var self = fields.frozendict.create.call(this, json, parameters);
+        self.setType('yaqlfield');
         return self;
       }
     }, {
-      '*': {
-        '@class': fields.frozendict.extend({}, {
-          'yaql': {
-            '@class': fields.string
-          },
-          'action': {
-            '@class': fields.string
-          }
-        })
+      'yaql': {
+        '@class': fields.string
+      },
+      'action': {
+        '@class': fields.string
       }
+    });
+
+    models.yaqllist = fields.list.extend({}, {
+      '*': {'@class': models.YAQLField}
     });
 
     models.Action =  fields.frozendict.extend({
@@ -135,8 +139,7 @@
           }
         }, {
           '@meta': {
-            'index': 1,
-            'row': 0
+            'index': 1
           }
         })
       },
@@ -144,18 +147,24 @@
         '@class': fields.dictionary.extend({
           create: function(json, parameters) {
             var self = fields.dictionary.create.call(this, json, parameters);
+            self.isAdditive = function() { return false; };
             self.setType('frozendict');
             return self;
+          },
+          // here we override `each' method inherited from fields.dictionary<-MutableObject
+          // because it provides entry index as the first argument of the callback, while
+          // we need to get the key/ID value as first argument (mimicking the `each' method
+          // ImmutableObject)
+          each: function(callback) {
+            var self = this;
+            this.getIDs().forEach(function(id) {
+              callback.call(self, id, self.getByID(id));
+            });
+            return this;
           }
         }, {
           '@required': false,
-          '?': {
-            '@class': fields.string.extend({}, {
-              '@meta': {
-                'row': 0
-              }
-            })
-          },
+          '?': {'@class': fields.string},
           '@meta': {
             'index': 2,
             'title': 'Base Input'
@@ -189,9 +198,6 @@
         });
         return self;
       },
-      remove: function() {
-        this.emit('change', 'taskRemove', this.getID());
-      },
       _getPrettyJSON: function() {
         var json = fields.frozendict._getPrettyJSON.apply(this, arguments);
         delete json.type;
@@ -200,10 +206,7 @@
     }, {
       '@meta': {
         'baseKey': 'task',
-        'baseName': 'Task ',
-        'group': true,
-        'additive': false,
-        'removable': true
+        'baseName': 'Task '
       },
       'type': {
         '@class': fields.string.extend({}, {
@@ -214,16 +217,14 @@
           }],
           '@default': 'action',
           '@meta': {
-            'index': 0,
-            'row': 0
+            'index': 0
           }
         })
       },
       'description': {
         '@class': fields.text.extend({}, {
           '@meta': {
-            'index': 2,
-            'row': 1
+            'index': 2
           }
         })
       },
@@ -268,7 +269,6 @@
               '@required': false,
               '@meta': {
                 'index': 0,
-                'row': 0,
                 'title': 'Wait before'
               }
             })
@@ -278,7 +278,6 @@
               '@required': false,
               '@meta': {
                 'index': 1,
-                'row': 0,
                 'title': 'Wait after'
               }
             })
@@ -287,8 +286,7 @@
             '@class': fields.number.extend({}, {
               '@required': false,
               '@meta': {
-                'index': 2,
-                'row': 1
+                'index': 2
               }
             })
           },
@@ -297,7 +295,6 @@
               '@required': false,
               '@meta': {
                 'index': 3,
-                'row': 2,
                 'title': 'Retry count'
               }
             })
@@ -307,7 +304,6 @@
               '@required': false,
               '@meta': {
                 'index': 4,
-                'row': 2,
                 'title': 'Retry delay'
               }
             })
@@ -317,7 +313,6 @@
               '@required': false,
               '@meta': {
                 'index': 5,
-                'row': 3,
                 'title': 'Retry break on'
               }
             })
@@ -330,7 +325,6 @@
       'requires': {
         '@class': fields.string.extend({}, {
           '@meta': {
-            'row': 2,
             'index': 3
           }
         })
@@ -386,7 +380,6 @@
             }
           }, {
             '@meta': {
-              'row': 0,
               'index': 1
             }
           })
@@ -407,7 +400,6 @@
             }
           }, {
             '@meta': {
-              'row': 0,
               'index': 1
             }
           })
@@ -446,8 +438,7 @@
           '@enum': ['reverse', 'direct'],
           '@default': 'direct',
           '@meta': {
-            'index': 1,
-            'row': 0
+            'index': 1
           }
         })
       },
@@ -485,16 +476,13 @@
                 var taskData = child.toJSON();
                 params.id = taskId;
                 self.set(taskPos, TaskFactory(taskData, params));
-              } else if ( op === 'taskRemove' ) {
-                self.removeItem(arg);
               }
             });
             return self;
           }
         }, {
           '@meta': {
-            'index': 5,
-            'group': true
+            'index': 5
           },
           '?': {
             '@class': models.Task,
@@ -511,9 +499,7 @@
         '@class': fields.frozendict.extend({}, {
           '@required': false,
           '@meta': {
-            'index': 4,
-            'group': true,
-            'additive': false
+            'index': 4
           },
           'on-error': {
             '@class': models.yaqllist.extend({}, {
@@ -557,8 +543,7 @@
     models.Actions = fields.dictionary.extend({}, {
       '@required': false,
       '@meta': {
-        'index': 3,
-        'panelIndex': 1
+        'index': 3
       },
       '?': {
         '@class': models.Action
@@ -583,8 +568,7 @@
       }
     }, {
       '@meta': {
-        'index': 4,
-        'panelIndex': 2
+        'index': 4
       },
       '?': {
         '@class': models.Workflow,
@@ -601,9 +585,7 @@
         '@class': fields.string.extend({}, {
           '@enum': ['2.0'],
           '@meta': {
-            'index': 2,
-            'panelIndex': 0,
-            'row': 1
+            'index': 2
           },
           '@default': '2.0'
         })
@@ -611,9 +593,7 @@
       'name': {
         '@class': fields.string.extend({}, {
           '@meta': {
-            'index': 0,
-            'panelIndex': 0,
-            'row': 0
+            'index': 0
           },
           '@constraints': [
             function(value) {
@@ -625,9 +605,7 @@
       'description': {
         '@class': fields.text.extend({}, {
           '@meta': {
-            'index': 1,
-            'panelIndex': 0,
-            'row': 0
+            'index': 1
           },
           '@required': false
         })

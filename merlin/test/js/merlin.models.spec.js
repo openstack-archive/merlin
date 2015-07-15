@@ -47,41 +47,18 @@ describe('merlin models:', function() {
       return value;
     }
 
-    function getCacheIDs() {
-      return dictObj.getValues().map(function(item) {
-        return item.getID();
-      });
-    }
-
-    describe('getValues() method', function() {
-      it('caching works from the very beginning', function() {
-        expect(getCacheIDs()).toEqual(['id1', 'id2']);
-      });
-
-      it('keyValue() getter/setter can be used from the start', function() {
-        var value = getValueFromCache('id1');
-
-        expect(value.keyValue()).toBe('id1');
-
-        value.keyValue('id3');
-        expect(value.keyValue()).toBe('id3');
-        expect(dictObj.getByID('id3')).toBeDefined();
-      });
-    });
-
     describe('add() method', function() {
       it('adds an empty value with given key', function() {
         dictObj.add('id3');
 
         expect(dictObj.getByID('id3').get()).toBe('');
-        expect(getCacheIDs()).toEqual(['id1', 'id2', 'id3']);
       });
 
       it('keyValue() getter/setter can be used for added values', function() {
         var value;
 
         dictObj.add('id3');
-        value = getValueFromCache('id3');
+        value = dictObj.getByID('id3');
 
         expect(value.keyValue()).toBe('id3');
 
@@ -112,31 +89,28 @@ describe('merlin models:', function() {
     });
 
     describe('empty() method', function() {
-      it('removes all entries in model and in cache', function() {
+      it('removes all entries in model', function() {
         dictObj.empty();
 
         expect(dictObj.getIDs().length).toBe(0);
-        expect(dictObj.getValues().length).toBe(0);
       })
     });
 
     describe('resetKeys() method', function() {
-      it('re-sets dictionary contents to given keys, cache included', function() {
+      it('re-sets dictionary contents to given keys', function() {
         dictObj.resetKeys(['key1', 'key2']);
 
         expect(dictObj.getIDs()).toEqual(['key1', 'key2']);
         expect(dictObj.getByID('key1').get()).toBe('');
         expect(dictObj.getByID('key2').get()).toBe('');
-        expect(getCacheIDs()).toEqual(['key1', 'key2']);
       })
     });
 
     describe('removeItem() method', function() {
-      it('removes dictionary entry by key from model and cache', function() {
+      it('removes dictionary entry by key from model', function() {
         dictObj.removeItem('id1');
 
         expect(dictObj.getByID('id1')).toBeUndefined();
-        expect(getCacheIDs()).toEqual(['id2']);
       })
     });
 

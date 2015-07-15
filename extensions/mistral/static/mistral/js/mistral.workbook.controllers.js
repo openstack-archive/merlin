@@ -35,6 +35,20 @@
       });
     };
 
+    // Please see the explanation of how this determinant function works
+    // in the 'extractPanels' filter documentation
+    vm.keyExtractor = function(item, parent) {
+      if (item.instanceof(models.Action)) {
+        return 500 + parent.toArray().indexOf(item);
+      } else if (item.instanceof(models.Workflow)) {
+        return 1000 + parent.toArray().indexOf(item);
+      } else if (item.instanceof(Barricade.Container)) {
+        return null;
+      } else {
+        return 0;
+      }
+    };
+
     function getNextIDSuffix(container, regexp) {
       var max = Math.max.apply(Math, container.getIDs().map(function(id) {
         var match = regexp.exec(id);

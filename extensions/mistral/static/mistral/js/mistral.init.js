@@ -12,7 +12,7 @@
 
   function initModule(templates) {
     templates.prefetch('/static/mistral/templates/fields/',
-      ['varlist', 'yaqllist']);
+      ['yaqlfield']);
   }
 
 })();
