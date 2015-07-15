@@ -26,22 +26,23 @@
 
   function extractPanels(utils) {
     var panelProto = {
-      create: function(itemsOrContainer, id) {
-        if ( angular.isArray(itemsOrContainer) && !itemsOrContainer.length ) {
+      create: function(items) {
+        if ( angular.isArray(items) && !items.length ) {
           return null;
         }
-        if ( angular.isArray(itemsOrContainer) ) {
-          this.items = itemsOrContainer;
-          this.id = itemsOrContainer.reduce(function(prevId, item) {
+        var permanentPanel = !items[0].hasID();
+        var self = this;
+        if (permanentPanel) {
+          this.items = items;
+          this.id = items.reduce(function(prevId, item) {
             return item.uid() + prevId;
           }, '');
         } else {
-          this._barricadeContainer = itemsOrContainer;
-          this._barricadeId = id;
-          var barricadeObj = itemsOrContainer.getByID(id);
-          this.id = barricadeObj.uid();
-          this.items = barricadeObj.getKeys().map(function(key) {
-            return utils.enhanceItemWithID(barricadeObj.get(key), key);
+          this._barricadeObj = items[0];
+          this.id = this._barricadeObj.uid();
+          this.items = this._barricadeObj.getKeys().map(function(key) {
+            //return self._barricadeObj.get(key);
+            return utils.enhanceItemWithID(self._barricadeObj.get(key), key);
           });
           this.removable = true;
         }
@@ -49,59 +50,58 @@
       },
       title: function() {
         var newID;
-        if ( this._barricadeContainer ) {
+        if ( this._barricadeObj ) {
           if ( arguments.length ) {
             newID = arguments[0];
-            this._barricadeContainer.getByID(this._barricadeId).setID(newID);
-            this._barricadeId = newID;
+            this._barricadeObj.setID(newID);
           } else {
-            return this._barricadeId;
+            return this._barricadeObj.getID();
           }
         }
       },
       remove: function() {
-        var container = this._barricadeContainer;
-        var pos = container.getPosByID(this._barricadeId);
-        container.remove(pos);
+        this._barricadeObj.emit('change', 'remove');
       }
     };
 
-    function isPanelsRoot(item) {
-      try {
-        // check for 'actions' and 'workflows' containers
-        return item.instanceof(Barricade.MutableObject);
-      }
-      catch(err) {
-        return false;
-      }
-    }
-
-    function extractPanelsRoot(items) {
-      return isPanelsRoot(items[0]) ? items[0] : null;
-    }
-
-    return _.memoize(function(container) {
-      var items = container._getContents();
+    return _.memoize(function(container, keyExtractor) {
+      var items = [];
+      var data = {};
       var panels = [];
-      utils.groupByMetaKey(items, 'panelIndex').forEach(function(items) {
-        var panelsRoot = extractPanelsRoot(items);
-        if ( panelsRoot ) {
-          panelsRoot.getIDs().forEach(function(id) {
-            panels.push(Object.create(panelProto).create(panelsRoot, id));
-          });
-        } else {
-          panels.push(Object.create(panelProto).create(items));
-        }
+
+      function rec(container) {
+        container.each(function(indexOrKey, item) {
+          var groupingKey = keyExtractor(item, container);
+          if (angular.isNumber(groupingKey)) {
+            items.push(item);
+            data[item.uid()] = {
+              groupingKey: groupingKey,
+              container: container,
+              indexOrKey: indexOrKey
+            };
+          } else {
+            rec(item);
+          }
+        });
+      }
+
+      rec(container);
+
+      function extractKey(item) {
+        return angular.isDefined(item) && data[item.uid()].groupingKey;
+      }
+
+      utils.groupByExtractedKey(items, extractKey).forEach(function(items) {
+        panels.push(Object.create(panelProto).create(items));
       });
       return utils.condense(panels);
     }, function(container) {
       var hash = '';
-      container.getKeys().map(function(key) {
-        var item = container.get(key);
-        if ( isPanelsRoot(item) ) {
-          item.getIDs().forEach(function(id) {
-            hash += item.getByID(id).uid();
-          });
+      container.each(function(key, item) {
+        if (item.instanceof(Barricade.Container)) {
+          item.each(function(id, item) {
+            hash += item.uid();
+          })
         } else {
           hash += item.uid();
         }
