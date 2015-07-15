@@ -39,9 +39,21 @@
      * retrieves a template by its name which is the same as model's type and renders it,
      * recursive <typed-field></..>-s are possible.
      * */
-    .directive('typedField', typedField);
+    .directive('typedField', typedField)
 
-  typedField.$inject = ['$compile', 'merlin.templates'];
+    .directive('labeled', labeled);
+
+  function labeled() {
+    return {
+      restrict: 'E',
+      templateUrl: '/static/merlin/templates/labeled.html',
+      transclude: true,
+      scope: {
+        label: '@',
+        for: '@'
+      }
+    };
+  }
 
   function editable() {
     return {
@@ -100,6 +112,7 @@
     };
   }
 
+  showFocus.$inject = ['$timeout'];
   function showFocus($timeout) {
     return function(scope, element, attrs) {
       // Unused variable created here due to rule 'ng_on_watch': 2
@@ -114,7 +127,7 @@
     };
   }
 
-  function panel($parse) {
+  function panel() {
     return {
       restrict: 'E',
       templateUrl: '/static/merlin/templates/collapsible-panel.html',
@@ -122,9 +135,13 @@
       scope: {
         panel: '=content'
       },
-      link: function(scope, element, attrs) {
-        scope.removable = $parse(attrs.removable)();
-        scope.isCollapsed = false;
+      link: function(scope) {
+        if (angular.isDefined(scope.panel)) {
+          scope.isCollapsed = false;
+          if (angular.isFunction(scope.panel.title)) {
+            scope.editable = true;
+          }
+        }
       }
     };
   }
@@ -136,11 +153,15 @@
       transclude: true,
       scope: {
         group: '=content',
+        title: '=',
         onAdd: '&',
         onRemove: '&'
       },
       link: function(scope, element, attrs) {
         scope.isCollapsed = false;
+        if (angular.isFunction(scope.title)) {
+          scope.editable = true;
+        }
         if ( attrs.onAdd && attrs.additive !== 'false' ) {
           scope.additive = true;
         }
@@ -151,6 +172,7 @@
     };
   }
 
+  validatableWith.$inject = ['$parse'];
   function validatableWith($parse) {
     return {
       restrict: 'A',
@@ -186,6 +208,7 @@
     };
   }
 
+  typedField.$inject = ['$compile', 'merlin.templates'];
   function typedField($compile, templates) {
     return {
       restrict: 'E',
@@ -195,7 +218,7 @@
       },
       link: function(scope, element) {
         templates.templateReady(scope.type).then(function(template) {
-          element.replaceWith($compile(template)(scope));
+          element.append($compile(template)(scope));
         });
       }
     };
