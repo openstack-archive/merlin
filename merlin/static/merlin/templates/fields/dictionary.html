@@ -1,19 +1,34 @@
-<collapsible-group content="value" on-add="value.add()">
-  <div class="three-columns" ng-repeat="subvalue in value.getValues() track by subvalue.keyValue()">
-    <div class="left-column">
-      <div class="form-group">
-        <label for="elem-{$ $id $}.{$ subvalue.uid() $}">
-          <editable ng-model="subvalue.keyValue" ng-model-options="{getterSetter: true}"></editable>
+<div class="row bottom-xs">
+  <div ng-class="value.inline ? 'col-xs-10' : 'col-xs-12'">
+    <div ng-repeat="(key, field) in value | extractFields track by field.uid()">
+      <div ng-if="field.isAtomic()" class="form-group">
+        <label for="{$ field.uid() $}">
+          <editable ng-model="field.keyValue" ng-model-options="{getterSetter: true}"></editable>
         </label>
         <div class="input-group">
-          <input id="elem-{$ $id $}.{$ subvalue.uid() $}" type="text" class="form-control"
-                 ng-model="subvalue.value" ng-model-options="{ getterSetter: true }">
-          <span class="input-group-btn">
-            <button class="btn btn-default fa fa-minus-circle" type="button"
-                ng-click="value.removeItem(subvalue.keyValue())"></button>
-          </span>
+          <typed-field id="{$ field.uid() $}" value="field" type="{$ field.getType() $}"></typed-field>
+        <span class="input-group-btn">
+          <button class="btn btn-default" ng-click="value.removeItem(field.keyValue())">
+            <i class="fa fa-minus-circle"></i>
+          </button>
+        </span>
         </div>
+      </div>
+      <div ng-if="!field.isAtomic()">
+        <collapsible-group ng-if="!field.inline" content="field"
+                           class="col-xs-12"
+                           editable-title="{$ field.hasID() $}"
+                           on-remove="value.removeItem(field.keyValue())"
+                           additive="{$ field.isAdditive() $}" on-add="field.add()">
+          <typed-field value="field" type="{$ field.getType() $}"></typed-field>
+        </collapsible-group>
+        <typed-field ng-if="field.inline"
+                     value="field" type="{$ field.getType() $}"></typed-field>
       </div>
     </div>
   </div>
-</collapsible-group>
+  <div ng-if="value.inline" class="col-xs add-entry" style="margin-bottom: 15px">
+    <button class="btn btn-default btn-sm pull-right" ng-click="value.add()">
+      <i class="fa fa-plus"></i></button>
+  </div>
+</div>
