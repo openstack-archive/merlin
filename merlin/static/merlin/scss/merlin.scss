@@ -13,25 +13,12 @@
   }
 }
 
-.two-columns {
-  @include make-row();
-  .left-column {
-    @include make-xs-column(6);
-  }
-  .right-column {
-    @include make-xs-column(6);
-  }
-}
-
 .three-columns {
   @include make-row();
-  .left-column {
+  .column {
     @include make-xs-column(5);
   }
-  .right-column {
-    @include make-xs-column(5);
-  }
-  .both-columns {
+  .two-columns {
     @include make-xs-column(10);
   }
   .button-column {
@@ -66,6 +53,9 @@ editable {
 .section {
   .form-group {
     padding-left: 15px;
+  }
+  .section-body {
+    margin-left: 10px;
   }
   .section {
     margin-left: 15px;

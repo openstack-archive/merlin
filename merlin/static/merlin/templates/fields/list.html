@@ -1,16 +1,23 @@
-<collapsible-group content="value" on-add="value.add()">
-  <div class="three-columns" ng-repeat="subItem in value.getValues() track by $index">
-    <div class="left-column">
-      <div class="form-group">
+<div class="row bottom-xs">
+  <div ng-class="value.inline ? 'col-xs-10' : 'col-xs-12'">
+    <div ng-repeat="(index, field) in value | extractFields track by field.uid()">
+      <div ng-if="field.isAtomic()" class="form-group">
         <div class="input-group">
-          <input type="text" class="form-control" ng-model="subItem.value" ng-model-options="{ getterSetter: true }">
-          <span class="input-group-btn">
-            <button class="btn btn-default" ng-click="value.remove($index)">
-              <i class="fa fa-minus-circle"></i>
-            </button>
-          </span>
+          <typed-field value="field" type="{$ field.getType() $}"></typed-field>
+        <span class="input-group-btn">
+          <button class="btn btn-default" ng-click="value.remove($index)">
+            <i class="fa fa-minus-circle"></i>
+          </button>
+        </span>
         </div>
+      </div>
+      <div ng-if="!field.isAtomic()">
+        <typed-field value="field" type="{$ field.getType() $}"></typed-field>
       </div>
     </div>
   </div>
-</collapsible-group>
+  <div ng-if="value.inline" class="col-xs add-entry" style="margin-bottom: 15px">
+    <button class="btn btn-default btn-sm pull-right" ng-click="value.add()">
+      <i class="fa fa-plus"></i></button>
+  </div>
+</div>

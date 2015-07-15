@@ -18,11 +18,15 @@
       if ( angular.isUndefined(json) || type === String ) {
         return fields.string.create(json, parameters);
       } else if ( type === Array ) {
-        return fields.list.extend({}, {
+        return fields.list.extend({
+          inline: true
+        }, {
           '*': {'@class': fields.string}
         }).create(json, parameters);
       } else if ( type === Object ) {
-        return fields.dictionary.extend({}, {
+        return fields.dictionary.extend({
+          inline: true
+        }, {
           '?': {'@class': fields.string}
         }).create(json, parameters);
       }
@@ -31,7 +35,7 @@
     models.varlist = fields.list.extend({
       create: function(json, parameters) {
         var self = fields.list.create.call(this, json, parameters);
-        self.setType('varlist');
+        //self.setType('varlist');
         self.on('childChange', function(child, op) {
           if ( op == 'empty' ) {
             self.each(function(index, item) {
@@ -48,6 +52,7 @@
         '@class': fields.frozendict.extend({
           create: function(json, parameters) {
             var self = fields.frozendict.create.call(this, json, parameters);
+            self.isAtomic = function() { return false; };
             self.on('childChange', function(child) {
               if ( child.instanceof(Barricade.Enumerated) ) { // type change
                 var value = self.get('value');
@@ -87,23 +92,23 @@
       }
     });
 
-    models.yaqllist = fields.list.extend({
+    models.YAQLField = fields.frozendict.extend({
       create: function(json, parameters) {
-        var self = fields.list.create.call(this, json, parameters);
-        self.setType('yaqllist');
+        var self = fields.frozendict.create.call(this, json, parameters);
+        self.setType('yaqlfield');
         return self;
       }
     }, {
-      '*': {
-        '@class': fields.frozendict.extend({}, {
-          'yaql': {
-            '@class': fields.string
-          },
-          'action': {
-            '@class': fields.string
-          }
-        })
+      'yaql': {
+        '@class': fields.string
+      },
+      'action': {
+        '@class': fields.string
       }
+    });
+
+    models.yaqllist = fields.list.extend({}, {
+      '*': {'@class': models.YAQLField}
     });
 
     models.Action =  fields.frozendict.extend({
@@ -144,8 +149,16 @@
         '@class': fields.dictionary.extend({
           create: function(json, parameters) {
             var self = fields.dictionary.create.call(this, json, parameters);
+            self.isAdditive = function() { return false; };
             self.setType('frozendict');
             return self;
+          },
+          each: function(callback) {
+            var self = this;
+            this.getIDs().forEach(function(id) {
+              callback.call(self, id, self.getByID(id));
+            });
+            return this;
           }
         }, {
           '@required': false,
@@ -201,7 +214,6 @@
       '@meta': {
         'baseKey': 'task',
         'baseName': 'Task ',
-        'group': true,
         'additive': false,
         'removable': true
       },
@@ -494,7 +506,6 @@
         }, {
           '@meta': {
             'index': 5,
-            'group': true
           },
           '?': {
             '@class': models.Task,
@@ -512,7 +523,6 @@
           '@required': false,
           '@meta': {
             'index': 4,
-            'group': true,
             'additive': false
           },
           'on-error': {
@@ -558,7 +568,7 @@
       create: function(json, parameters) {
         var self = fields.dictionary.create.call(this, json, parameters);
         self.on('childChange', function(child, op) {
-          if (op === 'remove') {
+          if (op === 'removerequest') {
             self.remove(self.getPosByID(child.getID()));
           }
         });
@@ -586,7 +596,7 @@
             params.wfType = child.type;
             params.id = workflowId;
             self.set(workflowPos, workflowFactory(workflowData, params));
-          } else if (op === 'remove') {
+          } else if (op === 'removerequest') {
             self.remove(self.getPosByID(child.getID()));
           }
         });
