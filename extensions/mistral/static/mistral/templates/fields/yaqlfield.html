@@ -1,0 +1,22 @@
+<div class="row">
+  <div class="col-xs" ng-show="value.showYaql">
+    <div class="form-group">
+      <textarea class="form-control" ng-model="value.get('yaql').value"
+                ng-model-options="{getterSetter: true}"></textarea>
+    </div>
+  </div>
+  <div class="col-xs-6">
+    <div class="form-group">
+      <div class="input-group">
+          <span class="input-group-btn">
+            <button class="btn btn-default" ng-click="value.showYaql = !value.showYaql;">
+              <i class="fa"
+                 ng-class="{'fa-lock': value.get('yaql').value(), 'fa-unlock': !value.get('yaql').value()}"></i>
+            </button>
+          </span>
+        <input type="text" class="form-control" ng-model="value.get('action').value"
+               ng-model-options="{getterSetter: true}">
+      </div>
+    </div>
+  </div>
+</div>

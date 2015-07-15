@@ -39,9 +39,23 @@
      * retrieves a template by its name which is the same as model's type and renders it,
      * recursive <typed-field></..>-s are possible.
      * */
-    .directive('typedField', typedField);
+    .directive('typedField', typedField)
+
+    .directive('labeled', labeled);
 
   typedField.$inject = ['$compile', 'merlin.templates'];
+
+  function labeled() {
+    return {
+      restrict: 'E',
+      templateUrl: '/static/merlin/templates/labeled.html',
+      transclude: true,
+      scope: {
+        label: '@',
+        for: '@'
+      }
+    };
+  }
 
   function editable() {
     return {
@@ -136,11 +150,15 @@
       transclude: true,
       scope: {
         group: '=content',
+        title: '=',
         onAdd: '&',
         onRemove: '&'
       },
       link: function(scope, element, attrs) {
         scope.isCollapsed = false;
+        if (angular.isFunction(scope.title)) {
+          scope.editable = true;
+        }
         if ( attrs.onAdd && attrs.additive !== 'false' ) {
           scope.additive = true;
         }
@@ -195,7 +213,7 @@
       },
       link: function(scope, element) {
         templates.templateReady(scope.type).then(function(template) {
-          element.replaceWith($compile(template)(scope));
+          element.append($compile(template)(scope));
         });
       }
     };
