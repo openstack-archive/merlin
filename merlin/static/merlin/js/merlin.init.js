@@ -19,7 +19,7 @@
   function fieldTemplates() {
     return [
       'dictionary', 'frozendict', 'list',
-      'string', 'text', 'group', 'number', 'choices'
+      'string', 'text', 'number', 'choices'
     ];
   }
 
