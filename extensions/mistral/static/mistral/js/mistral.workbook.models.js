@@ -554,11 +554,20 @@
       return workflowTypes[type].create(json, parameters);
     }
 
-    models.Actions = fields.dictionary.extend({}, {
+    models.Actions = fields.dictionary.extend({
+      create: function(json, parameters) {
+        var self = fields.dictionary.create.call(this, json, parameters);
+        self.on('childChange', function(child, op) {
+          if (op === 'remove') {
+            self.remove(self.getPosByID(child.getID()));
+          }
+        });
+        return self;
+      }
+    }, {
       '@required': false,
       '@meta': {
-        'index': 3,
-        'panelIndex': 1
+        'index': 3
       },
       '?': {
         '@class': models.Action
@@ -577,14 +586,15 @@
             params.wfType = child.type;
             params.id = workflowId;
             self.set(workflowPos, workflowFactory(workflowData, params));
+          } else if (op === 'remove') {
+            self.remove(self.getPosByID(child.getID()));
           }
         });
         return self;
       }
     }, {
       '@meta': {
-        'index': 4,
-        'panelIndex': 2
+        'index': 4
       },
       '?': {
         '@class': models.Workflow,
@@ -602,7 +612,6 @@
           '@enum': ['2.0'],
           '@meta': {
             'index': 2,
-            'panelIndex': 0,
             'row': 1
           },
           '@default': '2.0'
@@ -612,7 +621,6 @@
         '@class': fields.string.extend({}, {
           '@meta': {
             'index': 0,
-            'panelIndex': 0,
             'row': 0
           },
           '@constraints': [
@@ -626,7 +634,6 @@
         '@class': fields.text.extend({}, {
           '@meta': {
             'index': 1,
-            'panelIndex': 0,
             'row': 0
           },
           '@required': false

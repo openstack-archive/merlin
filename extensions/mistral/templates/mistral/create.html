@@ -67,7 +67,7 @@
       <!-- Data panel start -->
       <div class="two-panels">
         <div class="left-panel">
-          <panel ng-repeat="panel in wb.workbook | extractPanels track by panel.id"
+          <panel ng-repeat="panel in wb.workbook | extractPanels:wb.keyExtractor track by panel.id"
                  content="panel">
             <div ng-repeat="row in panel | extractRows track by row.id">
               <div ng-class="{'two-columns': row.index !== undefined }">

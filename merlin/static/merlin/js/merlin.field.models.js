@@ -151,9 +151,6 @@
         self.getValues = function() {
           return self.toArray();
         };
-        self._getContents = function() {
-          return self.toArray();
-        };
         meldGroup.call(self);
         return self;
       }
@@ -162,18 +159,13 @@
     var frozendictModel = Barricade.ImmutableObject.extend({
       create: function(json, parameters) {
         var self = Barricade.ImmutableObject.create.call(this, json, parameters);
-        self.getKeys().forEach(function(key) {
-          utils.enhanceItemWithID(self.get(key), key);
-        });
+        //self.getKeys().forEach(function(key) {
+        //  utils.enhanceItemWithID(self.get(key), key);
+        //});
 
         modelMixin.call(self, 'frozendict');
         self.getValues = function() {
           return self._data;
-        };
-        self._getContents = function() {
-          return self.getKeys().map(function(key) {
-            return self.get(key);
-          });
         };
         meldGroup.call(self);
         return self;
@@ -238,9 +230,6 @@
           keys.forEach(function(key) {
             self.push(undefined, {id: key});
           });
-        };
-        self._getContents = function() {
-          return self.toArray();
         };
         self.removeItem = function(key) {
           var pos = self.getPosByID(key);
