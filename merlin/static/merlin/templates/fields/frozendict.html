@@ -1,15 +1,24 @@
-<collapsible-group content="value">
-  <div ng-repeat="row in value | extractRows track by row.id">
-    <div ng-class="{'three-columns': row.index !== undefined}">
-      <div ng-repeat="item in row | extractItems track by item.uid()"
-           ng-class="{'right-column': item.isAtomic() && $odd, 'left-column': item.isAtomic() && $even}">
-        <div class="form-group">
-          <label for="elem-{$ $id $}.{$ item.uid() $}">{$ item.title() $}</label>
-          <input type="text" class="form-control" id="elem-{$ $id $}.{$ item.uid() $}" ng-model="item.value"
-                 ng-model-options="{getterSetter: true}">
-        </div>
-        <div class="clearfix" ng-if="$odd"></div>
+<div class="frozendict">
+  <div ng-repeat="row in value | extractFields | chunks:2 track by $index">
+    <div ng-repeat="(key, field) in row track by field.uid()">
+      <div ng-if="field.isAtomic()" class="col-xs-6">
+        <labeled label="{$ key $}" for="{$ field.uid() $}">
+          <typed-field value="field" type="{$ field.getType() $}"></typed-field>
+        </labeled>
+      </div>
+      <div ng-if="!field.isAtomic()">
+        <collapsible-group ng-if="!field.inline" class="col-xs-12"
+                           content="field" title="key"
+                           additive="{$ field.isAdditive() $}" on-add="field.add()">
+          <div ng-class="field.isPlainStructure() ? 'col-xs-6' : 'col-xs-12'">
+            <typed-field value="field" type="{$ field.getType() $}"></typed-field>
+          </div>
+        </collapsible-group>
+        <labeled ng-if="field.inline" class="col-xs-6"
+                 label="{$ key $}" for="{$ field.uid() $}">
+          <typed-field value="field" type="{$ field.getType() $}"></typed-field>
+        </labeled>
       </div>
     </div>
   </div>
-</collapsible-group>
+</div>
