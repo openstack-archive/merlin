@@ -61,6 +61,19 @@
       return this;
     });
 
+    var plainStructureMixin = Barricade.Blueprint.create(function() {
+      this.isPlainStructure = function() {
+        if (this.getType() == 'frozendict') {
+          return false;
+        }
+        if (!this.instanceof(Barricade.Arraylike) || !this.length()) {
+          return false;
+        }
+        return !this.get(0).instanceof(Barricade.Container);
+      };
+      return this;
+    });
+
     var modelMixin = Barricade.Blueprint.create(function(type) {
       var isValid = true;
       var isValidatable = false;
@@ -90,8 +103,12 @@
         type = _type;
       };
 
+      this.isAdditive = function() {
+        return this.instanceof(Barricade.Arraylike);
+      };
+
       this.isAtomic = function() {
-        return ['number', 'string', 'text', 'choices'].indexOf(this.getType()) > -1;
+        return !this.instanceof(Barricade.Container);
       };
       this.title = function() {
         var title = utils.getMeta(this, 'title');
@@ -148,13 +165,8 @@
         self.add = function() {
           self.push(undefined, parameters);
         };
-        self.getValues = function() {
-          return self.toArray();
-        };
-        self._getContents = function() {
-          return self.toArray();
-        };
         meldGroup.call(self);
+        plainStructureMixin.call(self);
         return self;
       }
     }, {'@type': Array});
@@ -162,20 +174,10 @@
     var frozendictModel = Barricade.ImmutableObject.extend({
       create: function(json, parameters) {
         var self = Barricade.ImmutableObject.create.call(this, json, parameters);
-        self.getKeys().forEach(function(key) {
-          utils.enhanceItemWithID(self.get(key), key);
-        });
 
         modelMixin.call(self, 'frozendict');
-        self.getValues = function() {
-          return self._data;
-        };
-        self._getContents = function() {
-          return self.getKeys().map(function(key) {
-            return self.get(key);
-          });
-        };
         meldGroup.call(self);
+        plainStructureMixin.call(self);
         return self;
       }
     }, {'@type': Object});
@@ -183,15 +185,14 @@
     var dictionaryModel = Barricade.MutableObject.extend({
       create: function(json, parameters) {
         var self = Barricade.MutableObject.create.call(this, json, parameters);
-        var _items = [];
         var _elClass = self._elementClass;
         var baseKey = utils.getMeta(_elClass, 'baseKey') || 'key';
         var baseName = utils.getMeta(_elClass, 'baseName') || utils.makeTitle(baseKey);
 
         modelMixin.call(self, 'dictionary');
+        plainStructureMixin.call(self);
 
-        function makeCacheWrapper(container, key) {
-          var value = container.getByID(key);
+        function initKeyAccessor(value) {
           value.keyValue = function () {
             if ( arguments.length ) {
               value.setID(arguments[0]);
@@ -199,8 +200,13 @@
               return value.getID();
             }
           };
-          return value;
         }
+
+        self.on('change', function(op, index) {
+          if (op === 'add' || op === 'set') {
+            initKeyAccessor(self.get(index));
+          }
+        });
 
         self.add = function(newID) {
           var regexp = new RegExp('(' + baseKey + ')([0-9]+)');
@@ -217,21 +223,11 @@
             newValue = '';
           }
           self.push(newValue, utils.extend(self._parameters, {id: newID}));
-          _items.push(makeCacheWrapper(self, newID));
-        };
-        self.getValues = function() {
-          if ( !_items.length ) {
-            _items = self.toArray().map(function(value) {
-              return makeCacheWrapper(self, value.getID());
-            });
-          }
-          return _items;
         };
         self.empty = function() {
           for ( var i = this._data.length; i > 0; i-- ) {
             self.remove(i - 1);
           }
-          _items = [];
         };
         self.resetKeys = function(keys) {
           self.empty();
@@ -239,17 +235,10 @@
             self.push(undefined, {id: key});
           });
         };
-        self._getContents = function() {
-          return self.toArray();
-        };
         self.removeItem = function(key) {
-          var pos = self.getPosByID(key);
           self.remove(self.getPosByID(key));
-          _items.splice(pos, 1);
         };
         meldGroup.call(self);
-        // initialize cache with starting values
-        self.getValues();
         return self;
       }
     }, {'@type': Object});
