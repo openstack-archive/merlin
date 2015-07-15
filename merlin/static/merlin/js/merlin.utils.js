@@ -23,16 +23,16 @@
       return 'id-' + idCounter;
     }
 
-    function groupByMetaKey(sequence, metaKey, insertAtBeginning) {
+    function groupByExtractedKey(sequence, keyExtractor, insertAtBeginning) {
       var newSequence = [];
       var defaultBucket = [];
       var index;
       sequence.forEach(function(item) {
-        index = getMeta(item, metaKey);
+        index = keyExtractor(item);
         if ( angular.isDefined(index) ) {
           if ( !newSequence[index] ) {
             newSequence[index] = [];
-            newSequence[index][metaKey] = index;
+            newSequence[index][keyExtractor()] = index;
           }
           newSequence[index].push(item);
         } else {
@@ -49,6 +49,17 @@
         }
       }
       return newSequence;
+    }
+
+    function groupByMetaKey(sequence, metaKey, insertAtBeginning) {
+      function keyExtractor(item) {
+        if (angular.isDefined(item)) {
+          return getMeta(item, metaKey);
+        } else {
+          return metaKey;
+        }
+      }
+      return groupByExtractedKey(sequence, keyExtractor, insertAtBeginning);
     }
 
     function getMeta(item, key) {
@@ -103,6 +114,7 @@
       getMeta: getMeta,
       getNewId: getNewId,
       groupByMetaKey: groupByMetaKey,
+      groupByExtractedKey: groupByExtractedKey,
       makeTitle: makeTitle,
       getNextIDSuffix: getNextIDSuffix,
       enhanceItemWithID: enhanceItemWithID,
