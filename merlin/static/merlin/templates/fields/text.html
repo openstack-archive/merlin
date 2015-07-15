@@ -1,7 +1,4 @@
-<div class="form-group">
-  <label for="elem-{$ $id $}">{$ value.title() $}</label>
-  <textarea class="form-control" id="elem-{$ $id $}"
-            ng-model="value.value" ng-model-options="{ getterSetter: true }"
-            validatable-with="value"></textarea>
-  <div ng-show="error" class="alert alert-danger">{$ error $}</div>
-</div>
+<textarea class="form-control" id="{$ value.uid() $}"
+          ng-model="value.value" ng-model-options="{ getterSetter: true }"
+          validatable-with="value"></textarea>
+<div ng-show="error" class="alert alert-danger">{$ error $}</div>

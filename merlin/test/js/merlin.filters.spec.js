@@ -28,778 +28,322 @@ describe('merlin filters', function() {
   });
 
   describe('extractPanels() behavior:', function() {
-    var extractPanels, simpleMerlinObjClass, simpleMerlinObjClassWithMeta;
+    var extractPanels, simpleContainerCls, complexContainerCls;
 
     beforeEach(function() {
       extractPanels = $filter('extractPanels');
 
-      simpleMerlinObjClass = fields.frozendict.extend({}, {
-        'key1': {
-          '@class': fields.string
-        },
-        'key2': {
-          '@class': fields.string
-        }
+      simpleContainerCls = fields.frozendict.extend({}, {
+        'key1': {'@class': fields.string},
+        'key2': {'@class': fields.string}
       });
 
-      simpleMerlinObjClassWithMeta = fields.frozendict.extend({}, {
-        'key1': {
-          '@class': fields.number.extend({}, {
-            '@meta': {
-              'panelIndex': 0
-            }
-          })
-        },
-        'key2': {
-          '@class': fields.string.extend({}, {
-            '@meta': {
-              'panelIndex': 0
-            }
-          })
-        },
-        'key3': {
-          '@class': fields.string.extend({}, {
-            '@meta': {
-              'panelIndex': 1
-            }
+      complexContainerCls = fields.frozendict.extend({}, {
+        'numberKey': {'@class': fields.number},
+        'stringKey': {'@class': fields.string},
+        'containerKey': {
+          '@class': fields.dictionary.extend({}, {
+            '?': {'@class': simpleContainerCls}
           })
         }
       });
 
     });
 
-    it('works properly only with objects created from Merlin classes', function() {
-      var simpleBarricadeObjClass = Barricade.create({
-        '@type': Object,
-        'key1': {
-          '@type': Number
-        },
-        'key2': {
-          '@type': String
+    describe('filter input expectations', function() {
+      it('2 arguments are required: Barricade.Container subclass and a keyExtractor function', function() {
+        var atomicField = fields.string.create();
+        var nonAtomicField = simpleContainerCls.create();
+        function extractor() {}
+        function wrongCall1() {
+          return extractPanels(atomicField, extractor);
         }
-      }),
-        simpleBarricadeObj = simpleBarricadeObjClass.create(),
-        simpleMerlinObj = simpleMerlinObjClass.create();
+        function wrongCall2() {
+          return extractPanels(nonAtomicField);
+        }
+        function properCall() {
+          return extractPanels(nonAtomicField, extractor);
+        }
 
-      expect(function() {
-        return extractPanels(simpleBarricadeObj);
-      }).toThrow();
-
-      expect(function() {
-        return extractPanels(simpleMerlinObj);
-      }).not.toThrow();
-    });
-
-    describe('the filter relies upon `@meta` object with `panelIndex` key', function() {
-      it('and all fields without it are merged into a single panel', function() {
-        var simpleObj = simpleMerlinObjClass.create(),
-          panels = extractPanels(simpleObj);
-
-        expect(panels.length).toBe(1);
-      });
-
-      it('each entry with the same panelIndex is placed in the same panel', function() {
-        var simpleObj = simpleMerlinObjClassWithMeta.create(),
-          panels = extractPanels(simpleObj);
-
-        expect(panels.length).toBe(2);
-        expect(panels[0].items.length).toBe(2);
-        expect(panels[1].items.length).toBe(1);
-      });
-
-      it('the filter is applied only to the top-level entries of the passed object', function() {
-        var merlinObjWithNestedPanelIndices = fields.frozendict.extend({}, {
-          'key1': {
-            '@class': fields.number.extend({}, {
-              '@meta': {
-                'panelIndex': 0
-              }
-            })
-          },
-          'key2': {
-            '@class': fields.frozendict.extend({}, {
-              'key3': {
-                '@class': fields.string.extend({}, {
-                  '@meta': {
-                    'panelIndex': 1
-                  }
-                })
-              },
-              '@meta': {
-                'panelIndex': 0
-              }
-            })
-          }
-        }).create(),
-          panels = extractPanels(merlinObjWithNestedPanelIndices);
-
-        expect(panels.length).toBe(1);
+        expect(wrongCall1).toThrow();
+        expect(wrongCall2).toThrow();
+        expect(properCall).not.toThrow();
       });
 
     });
 
-    describe('panels generated from Barricade.MutableObject (non-permanent panels)', function() {
-      var topLevelObj;
+    describe('filter output guarantees', function() {
+      var panels, container;
+      function extractor(field) {
+        return field.instanceof(fields.string) ? 0 : null;
+      }
 
       beforeEach(function() {
-        topLevelObj = fields.frozendict.extend({}, {
-          'key2': {
-            '@class': fields.dictionary.extend({}, {
-              '@meta': {
-                'panelIndex': 0
-              },
-              '?': {
-                '@class': fields.frozendict.extend({}, {
-                  'name': {'@class': fields.string}
-                })
-              }
-            })
-          }
-        }).create();
+        container = simpleContainerCls.create({'key1': 'first', 'key2': 'second'});
+        panels = extractPanels(container, extractor);
       });
 
-      it('are given a separate panel for each MutableObject entry', function() {
-        var panels;
-        topLevelObj.set('key2', {
-          'id1': {'name': 'String1'},
-          'id2': {'name': 'String2'}
-        });
-        panels = extractPanels(topLevelObj);
-
-        expect(panels.length).toBe(2);
+      it('a panel in an output provides .each() method', function() {
+        expect(panels[0].each).toBeDefined();
       });
 
-      describe('', function() {
-        var panels;
-
-        beforeEach(function() {
-          topLevelObj.set('key2', {'id1': {'name': 'some name'}});
-          panels = extractPanels(topLevelObj);
+      it('.each() method could be used for panel contents enumeration', function() {
+        var fields = {};
+        panels[0].each(function(key, field) {
+          fields[key] = field;
         });
 
-        it('have their title exposed via .title() which mirrors their id', function() {
-          expect(panels[0].title()).toBe('id1');
-        });
-
-        it("panel's title() acts also as a setter of the underlying object id", function() {
-          panels[0].title('id2');
-
-          expect(panels[0].title()).toBe('id2');
-          expect(topLevelObj.get('key2').getByID('id2')).toBeDefined();
-        });
-
-        it('are removable (thus are not permanent)', function() {
-          expect(panels[0].removable).toBe(true);
-        });
-
-        it('remove() function actually removes a panel', function() {
-          panels[0].remove();
-          panels = extractPanels(topLevelObj);
-
-          expect(panels.length).toBe(0);
-        });
-
+        expect(fields.key1.get()).toEqual('first');
+        expect(fields.key2.get()).toEqual('second');
       });
-
     });
 
-    describe('panels generated from objects other than Barricade.MutableObject (permanent panels)', function() {
-      it('have fields marked with the same `panelIndex` in the one panel', function() {
-        var immutableObj = fields.frozendict.extend({}, {
-          'key1': {
-            '@class': fields.string.extend({}, {
-              '@meta': {
-                'panelIndex': 23
-              }
-            })
-          },
-          'key2': {
-            '@class': fields.string.extend({}, {
-              '@meta': {
-                'panelIndex': 23
-              }
-            })
-          },
-          'key3': {
-            '@class': fields.string.extend({}, {
-              '@meta': {
-                'panelIndex': 25
-              }
-            })
+    describe('keyExtractor function expectations', function() {
+      var collectedFields, container, panels;
+      beforeEach(function() {
+        collectedFields = {};
+      });
+
+      it('only fields for which it returns a numeric value get to the panel', function() {
+        container = simpleContainerCls.create({'key1': 'first', 'key2': 'second'});
+        function extractor(field) {
+          return field.get() == 'first' && 1;
+        }
+
+        panels = extractPanels(container, extractor);
+        panels[0].each(function(key, field) {
+          collectedFields[key] = field;
+        });
+
+        expect(collectedFields.key1).toBeDefined();
+        expect(collectedFields.key2).not.toBeDefined();
+      });
+
+      it('container fields yielding numeric value get to panel as is', function() {
+        container = complexContainerCls.create({
+          'containerKey': {'container1': {'key1': 'first', 'key2': 'second'}}
+        });
+        function extractor(field) {
+          return field.instanceof(simpleContainerCls) && 1;
+        }
+
+        panels = extractPanels(container, extractor);
+        panels[0].each(function(key, field) {
+          collectedFields[key] = field;
+        });
+
+        expect(panels.length).toBe(1);
+        expect(collectedFields.key1.get()).toEqual('first');
+        expect(collectedFields.key2.get()).toEqual('second');
+
+      });
+
+      it('same numeric value puts the fields into the same panel', function() {
+        container = complexContainerCls.create(
+          {
+            'numberKey': 10,
+            'stringKey': 'some'
+          });
+
+        function extractor(field) {
+          return field.instanceof(simpleContainerCls) ? null : 1;
+        }
+
+        panels = extractPanels(container, extractor);
+        panels[0].each(function(key, field) {
+          collectedFields[key] = field;
+        });
+
+        expect(panels.length).toBe(1);
+        expect(collectedFields.numberKey.get()).toEqual(10);
+        expect(collectedFields.stringKey.get()).toEqual('some');
+      });
+
+      it('panels are ordered by extracted numeric value', function() {
+        collectedFields = [];
+        container = complexContainerCls.create({
+          'numberKey': 10,
+          'stringKey': 'some'
+        });
+        function extractor(field) {
+          if (field.instanceof(fields.number)) {
+            return 1;
+          } else if (field.instanceof(fields.string)) {
+            return 2;
           }
-        }).create(),
-          panels = extractPanels(immutableObj);
+        }
+
+        panels = extractPanels(container, extractor);
+        panels.forEach(function(panel, index) {
+          collectedFields[index] = {};
+          panel.each(function(key, field) {
+            collectedFields[index][key] = field;
+          });
+        });
 
         expect(panels.length).toBe(2);
-        expect(panels[0].items.panelIndex).toBe(23);
-
+        expect(collectedFields[0].numberKey.get()).toEqual(10);
+        expect(collectedFields[1].stringKey.get()).toEqual('some');
       });
 
-      it('number of panels is defined by number of different `panelIndex` keys', function() {
-        var immutableObj = fields.frozendict.extend({}, {
-          'key1': {
-            '@class': fields.string.extend({}, {
-              '@meta': {
-                'panelIndex': 23
-              }
-            })
-          },
-          'key2': {
-            '@class': fields.string.extend({}, {
-              '@meta': {
-                'panelIndex': 24
-              }
-            })
-          },
-          'key3': {
-            '@class': fields.string.extend({}, {
-              '@meta': {
-                'panelIndex': 25
-              }
-            })
+      it('second argument to extractor is the parent container', function() {
+        collectedFields = [];
+        container = complexContainerCls.create({
+          'containerKey': {
+            'container1': {'key1': 'first', 'key2': 'second'},
+            'container2': {'key1': 'third', 'key2': 'fourth'}
           }
-        }).create(),
-          panels = extractPanels(immutableObj);
+        });
+        function extractor(field, parent) {
+          if (field.instanceof(simpleContainerCls)) {
+            return 10 + parent.toArray().indexOf(field);
+          } else if (field.instanceof(Barricade.Container)) {
+            return null;
+          }
+        }
 
-        expect(panels.length).toBe(3);
+        panels = extractPanels(container, extractor);
+        panels.forEach(function(panel, index) {
+          collectedFields[index] = {};
+          panel.each(function(key, field) {
+            collectedFields[index][key] = field;
+          });
+        });
+
+        expect(panels.length).toBe(2);
+        expect(collectedFields[0].key1.get()).toEqual('first');
+        expect(collectedFields[0].key2.get()).toEqual('second');
+        expect(collectedFields[1].key1.get()).toEqual('third');
+        expect(collectedFields[1].key2.get()).toEqual('fourth');
       });
-
-      it('are ordered by the `panelIndex` ascension', function() {
-        var immutableObj = fields.frozendict.extend({}, {
-          'key1': {
-            '@class': fields.string.extend({}, {
-              '@meta': {
-                'panelIndex': 25
-              }
-            })
-          },
-          'key2': {
-            '@class': fields.string.extend({}, {
-              '@meta': {
-                'panelIndex': 24
-              }
-            })
-          },
-          'key3': {
-            '@class': fields.string.extend({}, {
-              '@meta': {
-                'panelIndex': 23
-              }
-            })
-          }
-        }).create(),
-          panels = extractPanels(immutableObj);
-
-        expect(panels[0].items.panelIndex).toBe(23);
-        expect(panels[1].items.panelIndex).toBe(24);
-        expect(panels[2].items.panelIndex).toBe(25);
-      });
-
-      it('have no title returned from .getTitle()', function() {
-        var immutableObj = fields.frozendict.extend({}, {
-          'key1': {
-            '@class': fields.string.extend({}, {
-              '@meta': {
-                'panelIndex': 25
-              }
-            })
-          }
-        }).create(),
-          panels = extractPanels(immutableObj);
-
-        expect(panels[0].title()).toBeUndefined();
-      });
-
-      it('are not removable (thus are permanent)', function() {
-        var immutableObj = fields.frozendict.extend({}, {
-          'key1': {
-            '@class': fields.string.extend({}, {
-              '@meta': {
-                'panelIndex': 25
-              }
-            })
-          }
-        }).create(),
-          panels = extractPanels(immutableObj);
-
-        expect(panels[0].removable).toBeUndefined();
-      })
-
     });
 
     describe('panels are cached,', function() {
-      var immutableObj;
-
+      var container, panels1, panels2;
       beforeEach(function() {
-        immutableObj = fields.frozendict.extend({}, {
-          'key1': {
-            '@class': fields.string
+        container = complexContainerCls.create({
+          'numberKey': 10,
+          'stringKey': 'some',
+          'containerKey': {
+            'container1': {'key1': 'first', 'key2': 'second'},
+            'container2': {'key1': 'third', 'key2': 'fourth'}
           }
-        }).create();
+        });
+
       });
 
       it('and 2 consequent filter calls return the identical results', function() {
-        var panels1, panels2;
-
-        immutableObj.get('key1').set('String_1');
-        panels1 = extractPanels(immutableObj);
-        panels2 = extractPanels(immutableObj);
-
-        expect(panels1).toBe(panels2);
-      });
-
-      it("still totally replacing the elements that go to permanent panels doesn't reset the cache", function() {
-        var panels1, panels2;
-
-        immutableObj.get('key1').set('String_1');
-        panels1 = extractPanels(immutableObj);
-        immutableObj.get('key1').set('String_2');
-        panels2 = extractPanels(immutableObj);
-
-        expect(panels1).toBe(panels2);
-      });
-
-      it('while totally replacing the top-level object of a non-permanent panel resets the cache', function() {
-        var immutableObj = fields.frozendict.extend({}, {
-          'key2': {
-            '@class': fields.dictionary.extend({}, {
-              '@meta': {
-                'panelIndex': 0
-              },
-              '?': {
-                '@class': fields.frozendict.extend({}, {
-                  'key1': {'@class': fields.string}
-                })
-              }
-            })
+        function extractor(field, parent) {
+          if (field.instanceof(simpleContainerCls)) {
+            return 10 + parent.toArray().indexOf(field);
+          } else if (field.instanceof(Barricade.Container)) {
+            return null;
+          } else {
+            return 0;
           }
-        }).create(),
-          panels1, panels2;
-
-        immutableObj.set('key2', {'id_1': {key1: 'String_1'}});
-        panels1 = extractPanels(immutableObj);
-
-        immutableObj.get('key2').removeItem('id_1');
-        immutableObj.set('key2', {'id_1': {key1: 'String_1'}});
-        panels2 = extractPanels(immutableObj);
-
-        expect(panels1).not.toBe(panels2);
-      });
-
-      it("but totally replacing the object contained within top-level object of a " +
-        "non-permanent panel doesn't reset the cache", function() {
-        var immutableObj = fields.frozendict.extend({}, {
-          'key2': {
-            '@class': fields.dictionary.extend({}, {
-              '@meta': {
-                'panelIndex': 0
-              },
-              '?': {
-                '@class': fields.frozendict.extend({}, {
-                  'key1': {'@class': fields.string}
-                })
-              }
-            })
-          }
-        }).create(),
-          panels1, panels2;
-
-        immutableObj.set('key2', {'id_1': {key1: 'String_1'}});
-        panels1 = extractPanels(immutableObj);
-
-        immutableObj.get('key2').getByID('id_1').get('key1').set('String_2');
-        panels2 = extractPanels(immutableObj);
-
-        expect(panels1).toBe(panels2);
-      });
-
-    });
-
-  });
-
-  describe('extractRows() behavior:', function() {
-    var extractRows, extractPanels;
-
-    beforeEach(function() {
-      extractPanels = $filter('extractPanels');
-      extractRows = $filter('extractRows');
-    });
-
-    describe('the filter is meant to be chainable', function() {
-      var immutableObj;
-
-      beforeEach(function() {
-        immutableObj = fields.frozendict.extend({}, {
-          'key1': {
-            '@class': fields.number.extend({}, {
-              '@meta': {
-                'row': 0
-              }
-            })
-          }
-        }).create();
-      });
-
-      it('with extractPanels() results', function() {
-        var firstPanel = extractPanels(immutableObj)[0],
-          rows = extractRows(firstPanel);
-
-        expect(rows.length).toBe(1);
-      });
-
-      it('with Barricade.ImmutableObject contents', function() {
-        var rows = extractRows(immutableObj);
-
-        expect(rows.length).toBe(1);
-      });
-
-      it('even with Barricade.MutableObject contents', function() {
-        var mutableObj = fields.dictionary.extend({}, {
-            '?': {
-              '@class': fields.string.extend({}, {
-                '@meta': {'row': 0}
-              })
-            }
-          }).create(),
-          rows;
-
-        mutableObj.push('string1', {id: 'id1'});
-        mutableObj.push('string2', {id: 'id2'});
-        rows = extractRows(mutableObj);
-
-        expect(rows.length).toBe(1);
-      });
-
-    });
-
-    it("the filter is not meant to be chainable with Barricade " +
-    "objects other MutableObject or ImmutableObject", function() {
-      function test() {
-        var arrayObj = fields.list.extend({}, {
-            '*': {
-              '@class': fields.string.extend({}, {
-                '@meta': {
-                  'row': 0
-                }
-              })
-            }
-          }).create();
-
-        arrayObj.push('string1');
-        arrayObj.push('string2');
-        return extractRows(arrayObj);
-      }
-
-      expect(test).toThrow();
-    });
-
-
-    describe('the filter relies upon `@meta` object with `row` key', function() {
-      it('and all fields without it are put into the same row', function() {
-        var immutableObj = fields.frozendict.extend({}, {
-          'key1': {
-            '@class': fields.string
-          },
-          'key2': {
-            '@class': fields.string
-          }
-        }).create(),
-          rows = extractRows(immutableObj);
-
-        expect(rows.length).toBe(1);
-      });
-
-      it('the filter is applied only to the top-level entries of the passed object', function() {
-        var immutableObj = fields.frozendict.extend({}, {
-          'key1': {
-            '@class': fields.string.extend({}, {
-              '@meta': {
-                'row': 1
-              }
-            })
-          },
-          'key2': {
-            '@class': fields.frozendict.extend({}, {
-              '@meta': {
-                'row': 2
-              },
-              'key3': {
-                '@class': fields.string.extend({}, {
-                  '@meta': {
-                    'row': 3
-                  }
-                })
-              }
-            })
-          }
-        }).create(),
-          rows = extractRows(immutableObj);
-
-        expect(rows.length).toBe(2);
-      });
-
-      it('2 fields with the same `row` key are placed in the same row', function() {
-        var immutableObj = fields.frozendict.extend({}, {
-          'key1': {
-            '@class': fields.string.extend({}, {
-              '@meta': {
-                'row': 0
-              }
-            })
-          },
-          'key2': {
-            '@class': fields.string.extend({}, {
-              '@meta': {
-                'row': 0
-              }
-            })
-          }
-        }).create(),
-          rows = extractRows(immutableObj);
-
-        expect(rows.length).toBe(1);
-      });
-
-      it('rows are ordered by the `row` key ascension', function() {
-        var immutableObj = fields.frozendict.extend({}, {
-          'key3': {
-            '@class': fields.string.extend({}, {
-              '@meta': {
-                'row': 2
-              }
-            })
-          },
-          'key2': {
-            '@class': fields.string.extend({}, {
-              '@meta': {
-                'row': 1
-              }
-            })
-          },
-          'key1': {
-            '@class': fields.string.extend({}, {
-              '@meta': {
-                'row': 0
-              }
-            })
-          }
-        }).create({key1: 'String_1', key2: 'String_2', key3: 'String_3'}),
-          rows = extractRows(immutableObj);
-
-        expect(rows[0].items[0].get()).toBe('String_1');
-        expect(rows[1].items[0].get()).toBe('String_2');
-        expect(rows[2].items[0].get()).toBe('String_3');
-      });
-
-    });
-
-    describe('rows are cached,', function() {
-      var immutableObj;
-
-      beforeEach(function () {
-        immutableObj = fields.frozendict.extend({}, {
-          'key1': {
-            '@class': fields.frozendict.extend({}, {
-              'key2': {
-                '@class': fields.string.extend({}, {
-                  '@meta': {
-                    'row': 1
-                  }
-                })
-              },
-              'key3': {
-                '@class': fields.string.extend({}, {
-                  '@meta': {
-                    'row': 1
-                  }
-                })
-              }
-            })
-          }
-        }).create({'key1': {'key2': 'string1', 'key3': 'string2'}});
-      });
-
-      it('and 2 consequent filter calls return the identical results', function () {
-        var panels = extractPanels(immutableObj),
-          rows1 = extractRows(panels[0]),
-          rows2 = extractRows(panels[0]);
-
-        expect(rows1).toBe(rows2);
-      });
-
-      describe('but totally replacing one of the elements that are contained within', function () {
-        it("panel resets the cache", function () {
-          var panels = extractPanels(immutableObj),
-            rows1 = extractRows(panels[0]),
-            rows2;
-
-          immutableObj.set('key1', {'key2': 'string1', 'key3': 'string2'});
-          panels = extractPanels(immutableObj);
-          rows2 = extractRows(panels[0]);
-
-          expect(rows2).not.toBe(rows1);
-        });
-
-        it("ImmutableObject resets the cache", function () {
-          var obj = immutableObj.get('key1'),
-            rows1 = extractRows(obj),
-            rows2;
-
-          obj.set('key2', 'string5');
-          rows2 = extractRows(obj);
-
-          expect(rows2).not.toBe(rows1);
-        });
-
-        it("MutableObject resets the cache", function () {
-          var mutableObj = fields.dictionary.extend({}, {
-              '?': {
-                '@class': fields.string.extend({}, {
-                  '@meta': {
-                    'row': 0
-                  }
-                })
-              }
-            }).create({'id1': 'string1', 'id2': 'string2'}),
-            rows1 = extractRows(mutableObj),
-            rows2;
-
-          mutableObj.removeItem('id1');
-          mutableObj.push('string1', {id: 'id1'});
-          rows2 = extractRows(mutableObj);
-
-          expect(rows2).not.toBe(rows1);
-        });
-
-        it("yet totally replacing the Object somewhere deeper doesn't reset the cache", function () {
-          var immutableObj = fields.frozendict.extend({}, {
-            'key1': {
-              '@class': fields.string.extend({}, {
-                '@meta': {
-                  'row': 1
-                }
-              })
-            },
-            'key2': {
-              '@class': fields.frozendict.extend({}, {
-                'key3': {
-                  '@class': fields.string.extend({}, {
-                    '@meta': {
-                      'row': 1
-                    }
-                  })
-                },
-                'key4': {
-                  '@class': fields.string
-                },
-                '@meta': {
-                  'row': 1
-                }
-              })
-            }
-          }).create({
-            'key1': 'string1',
-            'key2': {'key3': 'string3', 'key4': 'string4'}
-          }),
-            rows1 = extractRows(immutableObj),
-            rows2;
-
-          immutableObj.get('key2').set('key3', 'string5');
-          rows2 = extractRows(immutableObj);
-
-          expect(rows2).toBe(rows1);
-        })
-      });
-    });
-
-  });
-
-  describe('extractItems() behavior:', function() {
-    var extractPanels, extractRows,  extractItems, immutableObj;
-
-    beforeEach(function() {
-      extractPanels = $filter('extractPanels');
-      extractRows = $filter('extractRows');
-      extractItems = $filter('extractItems');
-      immutableObj = fields.frozendict.extend({}, {
-        'key1': {
-          '@class': fields.string.extend({}, {
-            '@meta': {
-              'panelIndex': 0,
-              'row': 0,
-              'index': 0
-            }
-          })
-        },
-        'key2': {
-          '@class': fields.string.extend({}, {
-            '@meta': {
-              'panelIndex': 0,
-              'row': 0,
-              'index': 1
-            }
-          })
-        },
-        'key3': {
-          '@class': fields.string.extend({}, {
-            '@meta': {
-              'panelIndex': 0,
-              'row': 0
-            }
-          })
-        },
-        'key4': {
-          '@class': fields.string.extend({}, {
-            '@meta': {
-              'panelIndex': 0,
-              'index': 0
-            }
-          })
-        },
-        'key5': {
-          '@class': fields.string.extend({}, {
-            '@meta': {
-              'panelIndex': 0,
-              'index': 1
-            }
-          })
         }
-      }).create({
-        'key1': 'string1', 'key2': 'string2', 'key3': 'string3',
-        'key4': 'string4', 'key5': 'string5'
-      });
-    });
 
-    it('the filter is meant to be chainable only with extractRows() results', function() {
-      var panels = extractPanels(immutableObj),
-        rows = extractRows(panels[0]),
-        items = extractItems(rows[0]);
+        panels1 = extractPanels(container, extractor);
+        panels2 = extractPanels(container, extractor);
 
-      expect(items.length).toBe(3);
-    });
-
-    describe('the filter relies upon `@meta` object with `index` key', function() {
-      describe('fields are ordered by the `index` key ascension, this applies', function() {
-        it('to the fields with `row` key defined (ordering within a row)', function() {
-          var panels = extractPanels(immutableObj),
-            rows = extractRows(panels[0]),
-            items = extractItems(rows[0]);
-
-          expect(items[0].get()).toBe('string1');
-          expect(items[1].get()).toBe('string2');
-        });
-
-        it('to the fields w/o `row` key defined (ordering of anonymous rows)', function() {
-          var panels = extractPanels(immutableObj),
-            rows = extractRows(panels[0]),
-            items = extractItems(rows[1]);
-
-          expect(items[0].get()).toBe('string4');
-          expect(items[1].get()).toBe('string5');
-        });
+        expect(panels1).toBe(panels2);
       });
 
+      describe('yet adding/removing entity tracked by keyExtractor causes panels recalculation', function() {
+        it('the change is being tracked by extractor', function() {
+          function extractor(field, parent) {
+            if (field.instanceof(simpleContainerCls)) {
+              return 10 + parent.toArray().indexOf(field);
+            } else if (field.instanceof(Barricade.Container)) {
+              return null;
+            } else {
+              return 0;
+            }
+          }
+
+          panels1 = extractPanels(container, extractor);
+          container.get('containerKey').push(
+            {'key1': 'fifth', 'key2': 'sixth'}, {id: 'container3'});
+          panels2 = extractPanels(container, extractor);
+
+          expect(panels1).not.toBe(panels2);
+        });
+
+        it('the same change is not being tracked by a different extractor', function() {
+          function extractor(field) {
+            if (field.instanceof(fields.dictionary)) {
+              return 10;
+            } else if (field.instanceof(Barricade.Container)) {
+              return null;
+            } else {
+              return 0;
+            }
+          }
+
+          panels1 = extractPanels(container, extractor);
+          container.get('containerKey').push(
+            {'key1': 'fifth', 'key2': 'sixth'}, {id: 'container3'});
+          panels2 = extractPanels(container, extractor);
+
+          expect(panels1).toBe(panels2);
+        });
+      });
     });
+  });
+
+  describe('extractFields() behavior:', function() {
+    var extractFields, obj;
+    beforeEach(function() {
+      extractFields = $filter('extractFields');
+      obj = {
+        each: function(callback) {
+          var key;
+          for (key in this) {
+            if (this.hasOwnProperty(key) && key !== 'each') {
+              callback(key, this[key]);
+            }
+          }
+        }
+      }
+    });
+
+    describe('basic expectations', function() {
+      var value1 = {value: 'some', uid: function() { return 1; }};
+      var value2 = {value: 'more', uid: function() { return 2; }};
+      function wrongCall() {
+        var wrongObj = {
+          key1: value1,
+          key2: value2
+        };
+        return extractFields(wrongObj);
+      }
+      function properCall() {
+        return extractFields(obj);
+      }
+      beforeEach(function() {
+        obj.key1 = value1;
+        obj.key2 = value2;
+      });
+
+      it('consumes any object implementing .each() method', function() {
+        expect(wrongCall).toThrow();
+        expect(properCall).not.toThrow();
+      });
+
+      it('produces plain JS object', function() {
+        var collectedFields = properCall();
+
+        expect(collectedFields).toEqual({key1: value1, 'key2': value2});
+      })
+    });
+
+    // TODO: describe caching behavior as soon as fields sorting is added to extractFields
 
   });
+
+  describe('chunks() behavior:', function() {
+    // TODO: describe chunks behavior as soon as its responsibilities are fleshed out
+    // (inline propagation? other features? naming?)
+  });
+
 });
