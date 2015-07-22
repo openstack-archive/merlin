@@ -49,8 +49,13 @@
       templateUrl: '/static/merlin/templates/labeled.html',
       transclude: true,
       scope: {
-        label: '@',
+        label: '=',
         for: '@'
+      },
+      link: function(scope) {
+        if (angular.isFunction(scope.label)) {
+          scope.editable = true;
+        }
       }
     };
   }
