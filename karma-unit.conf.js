@@ -40,8 +40,8 @@ module.exports = function (config) {
       'bower_components/jquery/dist/jquery.min.js',
       'bower_components/angular/angular.js',
       'bower_components/angular-mocks/angular-mocks.js',
-      'merlin/static/merlin/js/libs/underscore/underscore-min.js',
-      'merlin/static/merlin/js/libs/js-yaml/dist/js-yaml.min.js',
+      'merlin/static/merlin/libs/underscore/underscore-min.js',
+      'merlin/static/merlin/libs/js-yaml/dist/js-yaml.min.js',
       'merlin/static/merlin/js/custom-libs/barricade.js',
       'merlin/static/merlin/js/custom-libs/ui-bootstrap-tpls-0.12.1.js',
       // explicitly require first module definition file to avoid errors
