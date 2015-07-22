@@ -1,10 +1,7 @@
 <div class="row bottom-xs dictionary">
   <div ng-class="value.inline ? 'col-xs-10' : 'col-xs-12'">
     <div ng-repeat="(key, field) in value | extractFields track by field.uid()">
-      <div ng-if="field.isAtomic()" class="form-group">
-        <label for="{$ field.uid() $}">
-          <editable ng-model="field.keyValue" ng-model-options="{getterSetter: true}"></editable>
-        </label>
+      <labeled ng-if="field.isAtomic()" label="field.keyValue" for="{$ field.uid() $}">
         <div class="input-group">
           <typed-field id="{$ field.uid() $}" value="field" type="{$ field.getType() $}"></typed-field>
         <span class="input-group-btn">
@@ -13,7 +10,7 @@
           </button>
         </span>
         </div>
-      </div>
+      </labeled>
       <div ng-if="!field.isAtomic()">
         <collapsible-group ng-if="!field.inline" content="field"
                            class="col-xs-12"
