@@ -41,6 +41,7 @@
      * */
     .directive('typedField', typedField)
 
+    .directive('editableTitle', editableTitle)
     .directive('labeled', labeled);
 
   function labeled() {
@@ -49,8 +50,23 @@
       templateUrl: '/static/merlin/templates/labeled.html',
       transclude: true,
       scope: {
-        label: '@',
+        label: '=',
         for: '@'
+      }
+    };
+  }
+
+  function editableTitle() {
+    return {
+      restrict: 'E',
+      templateUrl: '/static/merlin/templates/title.html',
+      scope: {
+        ngModel: '='
+      },
+      link: function(scope) {
+        if (angular.isFunction(scope.ngModel)) {
+          scope.editable = true;
+        }
       }
     };
   }
@@ -136,12 +152,7 @@
         panel: '=content'
       },
       link: function(scope) {
-        if (angular.isDefined(scope.panel)) {
-          scope.isCollapsed = false;
-          if (angular.isFunction(scope.panel.title)) {
-            scope.editable = true;
-          }
-        }
+        scope.isCollapsed = false;
       }
     };
   }
@@ -159,9 +170,6 @@
       },
       link: function(scope, element, attrs) {
         scope.isCollapsed = false;
-        if (angular.isFunction(scope.title)) {
-          scope.editable = true;
-        }
         if ( attrs.onAdd && attrs.additive !== 'false' ) {
           scope.additive = true;
         }

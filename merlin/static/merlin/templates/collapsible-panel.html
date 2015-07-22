@@ -3,9 +3,7 @@
     <h4 class="panel-title">
       <a ng-click="isCollapsed = !isCollapsed" href="">
         <i class="fa fa-lg" ng-class="isCollapsed ? 'fa-caret-right' : 'fa-caret-down'"></i></a>
-      <editable ng-if="editable" ng-model="panel.title"
-                ng-model-options="{getterSetter: true}"></editable>
-      <span ng-if="!editable">{$ ::panel.title $}</span>
+      <editable-title ng-model="panel.title"></editable-title>
       <a href="" ng-show="panel.removable" ng-click="panel.remove()">
         <i class="fa fa-times-circle pull-right"></i></a>
     </h4>

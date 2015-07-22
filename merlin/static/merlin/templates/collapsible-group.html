@@ -3,9 +3,7 @@
     <div class="col-xs-10">
       <h5><a ng-click="isCollapsed = !isCollapsed" class="collapse-entries" href="">
         <i class="fa" ng-class="isCollapsed ? 'fa-plus-square-o' : 'fa-minus-square-o'"></i></a>
-        <editable ng-if="editable" ng-model="title"
-                  ng-model-options="{getterSetter: true}"></editable>
-        <span ng-if="!editable">{$ ::title $}</span>
+        <editable-title ng-model="title"></editable-title>
       </h5>
     </div>
     <div ng-if="additive" class="add-btn col-xs add-entry">
