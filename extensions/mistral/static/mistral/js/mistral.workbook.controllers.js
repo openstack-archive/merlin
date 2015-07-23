@@ -35,14 +35,32 @@
       });
     };
 
-    vm.keyExtractor = function(item, parent) {
+    vm.keyExtractor = function(item, parent, context) {
       if (item.instanceof(models.Action)) {
+        if (angular.isDefined(context)) {
+          context.fieldsOrdering = [
+            'base', 'base-input', 'input', 'output'];
+        }
         return 500 + parent.toArray().indexOf(item);
       } else if (item.instanceof(models.Workflow)) {
+        if (angular.isDefined(context)) {
+          context.fieldsOrdering = [
+            'type', 'input', 'output',
+            ['task-defaults', 'on-error', 'on-success', 'on-complete'],
+            ['tasks', 'type', 'action', 'workflow', 'description',
+              'input', 'publish',
+              ['policies', 'wait-before', 'wait-after', 'timeout', 'retry-count',
+                'retry-delay', 'retry-break-on'],
+              'on-error', 'on-success', 'on-complete']
+          ];
+        }
         return 1000 + parent.toArray().indexOf(item);
       } else if (item.instanceof(Barricade.Container)) {
         return null;
       } else {
+        if (angular.isDefined(context)) {
+          context.fieldsOrdering = ['name', 'description', 'version'];
+        }
         return 0;
       }
     };

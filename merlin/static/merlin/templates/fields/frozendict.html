@@ -1,5 +1,5 @@
 <div class="frozendict">
-  <div ng-repeat="row in value | extractFields | chunks:2 track by $index">
+  <div ng-repeat="row in value | extractFields:value.fieldsOrdering | chunks:2 track by $index">
     <div ng-repeat="(key, field) in row track by field.uid()">
       <div ng-if="field.isAtomic()" class="col-xs-6">
         <labeled label="key" for="{$ field.uid() $}">
