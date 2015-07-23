@@ -46,6 +46,7 @@
       create: function(enumerator, obj, context) {
         this.$$obj = obj;
         this.$$enumerator = enumerator;
+        this.fieldsOrdering = context.fieldsOrdering;
         this.removable = false;
         if (this.$$obj) {
           this.id = this.$$obj.uid();
@@ -96,13 +97,15 @@
       */
       function rec(container) {
         container.each(function(indexOrKey, item) {
-          var groupingKey = keyExtractor(item, container);
+          var context = {};
+          var groupingKey = keyExtractor(item, container, context);
           if (angular.isNumber(groupingKey)) {
             items.push(item);
             _data[item.uid()] = {
               groupingKey: groupingKey,
               container: container,
-              indexOrKey: indexOrKey
+              indexOrKey: indexOrKey,
+              fieldsOrdering: context.fieldsOrdering
             };
           } else if (item.instanceof(Barricade.Container)) {
             rec(item);
@@ -117,15 +120,21 @@
       }
 
       utils.groupByExtractedKey(items, extractKey).forEach(function(items) {
-        var parent, enumerator, obj, context;
+        var parent, enumerator, obj;
+        var context = _data[items[0].uid()];
+        var itemsMap = {};
+        items.forEach(function(item) {
+          itemsMap[_data[item.uid()].indexOrKey] = item;
+        });
         if (items.length > 1 || !items[0].instanceof(Barricade.Container)) {
           parent = _data[items[0].uid()].container;
           // the enumerator function mimicking the behavior of built-in .each()
           // method which aggregate panels do not have
-          enumerator = function(callback) {
-            items.forEach(function(item) {
+          enumerator = function(callback, comparator) {
+            Object.keys(itemsMap).sort(comparator).forEach(function(key) {
+              var item = itemsMap[key];
               if (_data[item.uid()].container === parent) {
-                callback(_data[item.uid()].indexOrKey, item);
+                callback(key, item);
               }
             });
           };
@@ -155,17 +164,54 @@
   }
 
   function extractFields() {
-    return _.memoize(function(container) {
-      var fields = {};
-      container.each(function(key, item) {
-        fields[key] = item;
+    function makeComparator(fieldsOrdering) {
+      if (angular.isArray(fieldsOrdering)) {
+        fieldsOrdering = fieldsOrdering.map(function(key) {
+          return angular.isArray(key) ? key[0] : key;
+        });
+        return function(a, b) {
+          return fieldsOrdering.indexOf(a) - fieldsOrdering.indexOf(b);
+        };
+      } else {
+        return function() { return 0; };
+      }
+    }
+
+    function filterNestedKeys(fieldsOrdering) {
+      var nestedKeys = {};
+      fieldsOrdering.forEach(function(key) {
+        if (angular.isArray(key)) {
+          nestedKeys[key[0]] = _.rest(key);
+        }
       });
+      return nestedKeys;
+    }
+
+    function isContainer(item) {
+      return item.instanceof && item.instanceof(Barricade.Container);
+    }
+
+    return _.memoize(function(container, fieldsOrdering) {
+      var fields = {};
+      var nestedKeys = {};
+
+      if (angular.isArray(fieldsOrdering)) {
+        nestedKeys = filterNestedKeys(fieldsOrdering);
+      }
+      container.each(function(key, item) {
+        if (angular.isUndefined(fieldsOrdering) && isContainer(item)) {
+          item.fieldsOrdering = container.fieldsOrdering;
+        } else if (key in nestedKeys) {
+          item.fieldsOrdering = nestedKeys[key];
+        }
+        fields[key] = item;
+      }, makeComparator(fieldsOrdering));
       return fields;
-    }, function(panel) {
+    }, function(panel, fieldsOrdering) {
       var hash = '';
       panel.each(function(key, item) {
         hash += item.uid();
-      });
+      }, makeComparator(fieldsOrdering));
       return hash;
     });
   }

@@ -137,10 +137,6 @@
             parameters.substitutedEntryID = 'standardActions';
             return fields.linkedcollection.create.call(this, json, parameters);
           }
-        }, {
-          '@meta': {
-            'index': 1
-          }
         })
       },
       'base-input': {
@@ -166,25 +162,17 @@
           '@required': false,
           '?': {'@class': fields.string},
           '@meta': {
-            'index': 2,
             'title': 'Base Input'
           }
         })
       },
       'input': {
         '@class': fields.list.extend({}, {
-          '@meta': {
-            'index': 3
-          },
           '*': {'@class': fields.string}
         })
       },
       'output': {
-        '@class': models.varlist.extend({}, {
-          '@meta': {
-            'index': 4
-          }
-        })
+        '@class': models.varlist
       }
     });
 
@@ -215,24 +203,14 @@
           }, {
             value: 'workflow', label: 'Workflow-based'
           }],
-          '@default': 'action',
-          '@meta': {
-            'index': 0
-          }
+          '@default': 'action'
         })
       },
       'description': {
-        '@class': fields.text.extend({}, {
-          '@meta': {
-            'index': 2
-          }
-        })
+        '@class': fields.text
       },
       'input': {
         '@class': fields.dictionary.extend({}, {
-          '@meta': {
-            'index': 4
-          },
           '?': {
             '@class': fields.string
           }
@@ -240,9 +218,6 @@
       },
       'publish': {
         '@class': fields.dictionary.extend({}, {
-          '@meta': {
-            'index': 5
-          },
           '?': {
             '@class': fields.string
           }
@@ -260,15 +235,11 @@
             return json;
           }
         }, {
-          '@meta': {
-            'index': 9
-          },
           '@required': false,
           'wait-before': {
             '@class': fields.number.extend({}, {
               '@required': false,
               '@meta': {
-                'index': 0,
                 'title': 'Wait before'
               }
             })
@@ -277,24 +248,19 @@
             '@class': fields.number.extend({}, {
               '@required': false,
               '@meta': {
-                'index': 1,
                 'title': 'Wait after'
               }
             })
           },
           'timeout': {
             '@class': fields.number.extend({}, {
-              '@required': false,
-              '@meta': {
-                'index': 2
-              }
+              '@required': false
             })
           },
           'retry-count': {
             '@class': fields.number.extend({}, {
               '@required': false,
               '@meta': {
-                'index': 3,
                 'title': 'Retry count'
               }
             })
@@ -303,7 +269,6 @@
             '@class': fields.number.extend({}, {
               '@required': false,
               '@meta': {
-                'index': 4,
                 'title': 'Retry delay'
               }
             })
@@ -312,7 +277,6 @@
             '@class': fields.number.extend({}, {
               '@required': false,
               '@meta': {
-                'index': 5,
                 'title': 'Retry break on'
               }
             })
@@ -323,11 +287,7 @@
 
     models.ReverseWFTask = models.Task.extend({}, {
       'requires': {
-        '@class': fields.string.extend({}, {
-          '@meta': {
-            'index': 3
-          }
-        })
+        '@class': fields.string
       }
     });
 
@@ -335,8 +295,7 @@
       'on-error': {
         '@class': fields.list.extend({}, {
           '@meta': {
-            'title': 'On error',
-            'index': 6
+            'title': 'On error'
           },
           '*': {
             '@class': fields.string
@@ -346,8 +305,7 @@
       'on-success': {
         '@class': fields.list.extend({}, {
           '@meta': {
-            'title': 'On success',
-            'index': 7
+            'title': 'On success'
           },
           '*': {
             '@class': fields.string
@@ -357,8 +315,7 @@
       'on-complete': {
         '@class': fields.list.extend({}, {
           '@meta': {
-            'title': 'On complete',
-            'index': 8
+            'title': 'On complete'
           },
           '*': {
             '@class': fields.string
@@ -378,10 +335,6 @@
               parameters.substitutedEntryID = 'actions';
               return fields.linkedcollection.create.call(this, json, parameters);
             }
-          }, {
-            '@meta': {
-              'index': 1
-            }
           })
         }
       });
@@ -397,10 +350,6 @@
               parameters.neededCls = models.Workbook;
               parameters.substitutedEntryID = 'workflows';
               return fields.linkedcollection.create.call(this, json, parameters);
-            }
-          }, {
-            '@meta': {
-              'index': 1
             }
           })
         }
@@ -436,18 +385,12 @@
       'type': {
         '@class': fields.string.extend({}, {
           '@enum': ['reverse', 'direct'],
-          '@default': 'direct',
-          '@meta': {
-            'index': 1
-          }
+          '@default': 'direct'
         })
       },
       'input': {
         '@class': fields.list.extend({}, {
           '@required': false,
-          '@meta': {
-            'index': 2
-          },
           '*': {
             '@class': fields.string
           }
@@ -456,9 +399,6 @@
       'output': {
         '@class': fields.list.extend({}, {
           '@required': false,
-          '@meta': {
-            'index': 3
-          },
           '*': {
             '@class': fields.string
           }
@@ -481,9 +421,6 @@
             return self;
           }
         }, {
-          '@meta': {
-            'index': 5
-          },
           '?': {
             '@class': models.Task,
             '@factory': TaskFactory
@@ -498,30 +435,24 @@
       'task-defaults': {
         '@class': fields.frozendict.extend({}, {
           '@required': false,
-          '@meta': {
-            'index': 4
-          },
           'on-error': {
             '@class': models.yaqllist.extend({}, {
               '@meta': {
-                'title': 'On error',
-                'index': 0
+                'title': 'On error'
               }
             })
           },
           'on-success': {
             '@class': models.yaqllist.extend({}, {
               '@meta': {
-                'title': 'On success',
-                'index': 1
+                'title': 'On success'
               }
             })
           },
           'on-complete': {
             '@class': models.yaqllist.extend({}, {
               '@meta': {
-                'title': 'On complete',
-                'index': 2
+                'title': 'On complete'
               }
             })
           }
@@ -542,9 +473,6 @@
 
     models.Actions = fields.dictionary.extend({}, {
       '@required': false,
-      '@meta': {
-        'index': 3
-      },
       '?': {
         '@class': models.Action
       }
@@ -567,9 +495,6 @@
         return self;
       }
     }, {
-      '@meta': {
-        'index': 4
-      },
       '?': {
         '@class': models.Workflow,
         '@factory': workflowFactory
@@ -584,17 +509,11 @@
       'version': {
         '@class': fields.string.extend({}, {
           '@enum': ['2.0'],
-          '@meta': {
-            'index': 2
-          },
           '@default': '2.0'
         })
       },
       'name': {
         '@class': fields.string.extend({}, {
-          '@meta': {
-            'index': 0
-          },
           '@constraints': [
             function(value) {
               return value !== 'workbook1' ? true : 'The sample validation failure.';
@@ -604,9 +523,6 @@
       },
       'description': {
         '@class': fields.text.extend({}, {
-          '@meta': {
-            'index': 1
-          },
           '@required': false
         })
       },
