@@ -8,10 +8,10 @@
     .module('mistral', ['merlin'])
     .run(initModule);
 
-  initModule.$inject = ['merlin.templates'];
+  initModule.$inject = ['merlin.templates', 'webroot'];
 
-  function initModule(templates) {
-    templates.prefetch('/static/mistral/templates/fields/',
+  function initModule(templates, webroot) {
+    templates.prefetch(webroot + '/static/mistral/templates/fields/',
       ['yaqlfield']);
   }
 
