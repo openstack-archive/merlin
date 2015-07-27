@@ -44,10 +44,11 @@
     .directive('editableTitle', editableTitle)
     .directive('labeled', labeled);
 
-  function labeled() {
+  labeled.$inject = ['webroot'];
+  function labeled(webroot) {
     return {
       restrict: 'E',
-      templateUrl: '/static/merlin/templates/labeled.html',
+      templateUrl: webroot + '/static/merlin/templates/labeled.html',
       transclude: true,
       scope: {
         label: '=',
@@ -56,10 +57,11 @@
     };
   }
 
-  function editableTitle() {
+  editableTitle.$inject = ['webroot'];
+  function editableTitle(webroot) {
     return {
       restrict: 'E',
-      templateUrl: '/static/merlin/templates/title.html',
+      templateUrl: webroot + '/static/merlin/templates/title.html',
       scope: {
         ngModel: '='
       },
@@ -71,10 +73,11 @@
     };
   }
 
-  function editable() {
+  editable.$inject = ['webroot'];
+  function editable(webroot) {
     return {
       restrict: 'E',
-      templateUrl: '/static/merlin/templates/editable.html',
+      templateUrl: webroot + '/static/merlin/templates/editable.html',
       require: 'ngModel',
       scope: true,
       link: function(scope, element, attrs, ngModelCtrl) {
@@ -143,10 +146,11 @@
     };
   }
 
-  function panel() {
+  panel.$inject = ['webroot'];
+  function panel(webroot) {
     return {
       restrict: 'E',
-      templateUrl: '/static/merlin/templates/collapsible-panel.html',
+      templateUrl: webroot + '/static/merlin/templates/collapsible-panel.html',
       transclude: true,
       scope: {
         panel: '=content'
@@ -157,10 +161,11 @@
     };
   }
 
-  function collapsibleGroup() {
+  collapsibleGroup.$inject = ['webroot'];
+  function collapsibleGroup(webroot) {
     return {
       restrict: 'E',
-      templateUrl: '/static/merlin/templates/collapsible-group.html',
+      templateUrl: webroot + '/static/merlin/templates/collapsible-group.html',
       transclude: true,
       scope: {
         title: '=',
