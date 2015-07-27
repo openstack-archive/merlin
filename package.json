@@ -4,7 +4,8 @@
   "private": true,
   "devDependencies": {
     "bower": "1.3.12",
-    "eslint": "0.24.0",
+    "eslint": "^0.23.0",
+    "eslint-config-openstack": "1.2.0",
     "eslint-plugin-angular": "0.0.15",
     "grunt": "0.4.5",
     "grunt-bower-task": "0.4.0",
