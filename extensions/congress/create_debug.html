@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load url from future %}
+{% load static %}
+{% load compress %}
+{% block title %}{% trans "Create Workbook" %}{% endblock %}
+
+{% block page_header %}
+  {% include "horizon/common/_page_header.html" with title=_("Workbooks") %}
+{% endblock page_header %}
+
+{% block js %}
+{% include "horizon/_scripts.html" %}
+<script type="text/javascript" src="{{ STATIC_URL }}merlin/js/custom-libs/barricade.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}merlin/js/libs/js-yaml/dist/js-yaml.min.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}merlin/js/libs/underscore/underscore-min.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}merlin/js/merlin.init.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}merlin/js/merlin.templates.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}merlin/js/merlin.filters.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}merlin/js/merlin.directives.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}merlin/js/merlin.field.models.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}merlin/js/merlin.panel.models.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}merlin/js/merlin.utils.js"></script>
+
+<script type="text/javascript" src="{{ STATIC_URL }}congress/js/congress.init.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}congress/js/congress.controllers.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}congress/js/congress.models.js"></script>
+
+{% endblock %}
+
+{% block css %}
+  {% include "_stylesheets.html" %}
+  {% compress css %}
+    <link href='{{ STATIC_URL }}merlin/scss/merlin.scss' type='text/scss' media='screen' rel='stylesheet' />
+  {% endcompress %}
+  {% block merlin-css %}{% endblock %}
+{% endblock %}
+
+{% block main %}
+<h3>Create Policy</h3>
+  <div ng-cloak ng-controller="policyCtrl">
+   {$ policyID $}
+  </div>
+
+  <div id="create-workbook" class="fluid-container" ng-cloak ng-controller="policyCtrl"
+       ng-init="init({{ id|default:'undefined' }}, '{{ yaml }}', '{{ commit_url }}', '{{ discard_url }}')">
+    <div class="well">
+      <div class="two-panels">
+        <div class="left-panel">
+          <div class="pull-left">
+            <h4><strong>{$ 'New Rule' $}</strong></h4>
+          </div>
+          <div class="pull-right">
+          </div>
+        </div>
+        <div class="right-panel">
+          <div class="btn-group btn-toggle pull-right">
+            <button ng-click="isGraphMode = false" class="btn btn-sm"
+                ng-class="!isGraphMode ? 'active btn-primary' : 'btn-default'">Datalog</button>
+          </div>
+        </div>
+      </div>
+      <!-- Data panel start -->
+      <div class="two-panels">
+        <div class="left-panel">
+
+          <panel ng-repeat="panel in rule | extractPanels track by panel.id"
+                 content="panel">
+
+            <div ng-repeat="row in panel | extractRows track by row.id">
+              <div ng-class="{'two-columns': row.index !== undefined }">
+
+                <div ng-repeat="item in row | extractItems track by item.id"
+                     ng-class="{'right-column': item.isAtomic() && $odd, 'left-column': item.isAtomic() && $even}">
+
+                  <typed-field value="item" type="{$ item.getType() $}"></typed-field>
+
+                  <div class="clearfix" ng-if="$odd"></div>
+                </div>
+              </div>
+            </div>
+          </panel>
+        </div>
+
+
+        <!-- YAML Panel -->
+        <div class="right-panel">
+          <div class="panel panel-default">
+            <div class="panel-body" ng-show="!isGraphMode">
+              <pre>{$ rule.toDatalog() $}</pre>
+              <pre>{$ '' $}</pre>
+            </div>
+            <div class="panel-body" ng-show="isGraphMode">
+              Here will be a fancy Graph View as soon as we implement it!
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- page footer -->
+      <div class="two-panels">
+        <div class="full-width">
+          <div class="pull-right">
+            <button ng-click="discardWorkbook()" class="btn btn-default cancel">Cancel</button>
+            <button ng-click="commitWorkbook()" class="btn btn-primary">
+              {$ workbookID ? 'Modify' : 'Create' $}
+              </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
