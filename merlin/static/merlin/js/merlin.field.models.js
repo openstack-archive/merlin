@@ -207,7 +207,9 @@
           };
         }
 
-        self.on('change', function(op, index) {
+        self.each(function(key, value) {
+          initKeyAccessor(value);
+        }).on('change', function(op, index) {
           if (op === 'add' || op === 'set') {
             initKeyAccessor(self.get(index));
           }
