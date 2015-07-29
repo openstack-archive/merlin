@@ -6,9 +6,9 @@
     .module('merlin')
     .factory('merlin.field.models', merlinFieldModels);
 
-  merlinFieldModels.$inject = ['merlin.utils', 'merlin.panel.models', '$http'];
+  merlinFieldModels.$inject = ['merlin.utils'];
 
-  function merlinFieldModels(utils, panels, $http) {
+  function merlinFieldModels(utils) {
     var wildcardMixin = Barricade.Blueprint.create(function() {
       return this;
     });
@@ -134,12 +134,6 @@
       return this;
     });
 
-    function meldGroup() {
-      if ( utils.getMeta(this, 'group') ) {
-        panels.groupmixin.call(this);
-      }
-    }
-
     var stringModel = Barricade.Primitive.extend({
       create: function(json, parameters) {
         var self = Barricade.Primitive.create.call(this, json, parameters);
@@ -170,7 +164,6 @@
         self.add = function() {
           self.push(undefined, parameters);
         };
-        meldGroup.call(self);
         plainStructureMixin.call(self);
         return self;
       }
@@ -181,7 +174,6 @@
         var self = Barricade.ImmutableObject.create.call(this, json, parameters);
 
         modelMixin.call(self, 'frozendict');
-        meldGroup.call(self);
         plainStructureMixin.call(self);
         return self;
       }
@@ -245,7 +237,6 @@
         self.removeItem = function(key) {
           self.remove(self.getPosByID(key));
         };
-        meldGroup.call(self);
         return self;
       }
     }, {'@type': Object});
