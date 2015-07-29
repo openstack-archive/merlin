@@ -84,7 +84,7 @@
             })
           },
           'value': {
-            '@class': fields.wildcard,
+            '@class': fields.generic,
             '@factory': varlistValueFactory
           }
         })

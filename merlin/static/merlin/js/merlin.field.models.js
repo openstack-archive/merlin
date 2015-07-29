@@ -9,10 +9,6 @@
   merlinFieldModels.$inject = ['merlin.utils'];
 
   function merlinFieldModels(utils) {
-    var wildcardMixin = Barricade.Blueprint.create(function() {
-      return this;
-    });
-
     var viewChoicesMixin = Barricade.Blueprint.create(function() {
       var self = this;
       var dropDownLimit = this._dropDownLimit || 5;
@@ -127,7 +123,6 @@
         }
         return title;
       };
-      wildcardMixin.call(this);
       if ( this.getEnumValues ) {
         viewChoicesMixin.call(this);
       }
@@ -290,7 +285,7 @@
       linkedcollection: linkedCollectionModel,
       dictionary: dictionaryModel,
       frozendict: frozendictModel,
-      wildcard: wildcardMixin // use for most general type-checks
+      generic: modelMixin // use for most general type-checks
     };
   }
 })();
