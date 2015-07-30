@@ -66,7 +66,7 @@ describe('merlin directives', function() {
       return element;
     }
 
-    it('shows panel heading when and only when its title() is not false', function() {
+    it('shows panel heading when and only when its title is defined', function() {
       var title = 'My Panel',
         element1, element2;
 
