@@ -216,15 +216,37 @@
     };
   }
 
-  typedField.$inject = ['$compile', 'merlin.templates'];
-  function typedField($compile, templates) {
+  typedField.$inject = ['$compile', 'merlin.templates', 'merlin.field.models', 'merlin.utils'];
+  function typedField($compile, templates, fields, utils) {
     return {
       restrict: 'E',
       scope: {
         value: '='
       },
       link: function(scope, element) {
-        var type = scope.value.getType();
+        var field = scope.value;
+        var type;
+        if (!field.instanceof(fields.generic)) {
+          if (field.instanceof(Barricade.Primitive)) {
+            type = Barricade.getType(field.get());
+            if (type === String) {
+              if (utils.getMeta(field, 'widget') === 'text') {
+                fields.generic.call(field, 'text');
+              } else {
+                fields.generic.call(field, 'string');
+              }
+            } else if (type === Number) {
+              fields.generic.call(field, 'number');
+            }
+          } else if (field.instanceof(Barricade.ImmutableObject)) {
+            fields.frozendictmixin.call(field);
+          } else if (field.instanceof(Barricade.MutableObject)) {
+            fields.dictionarymixin.call(field);
+          } else if (field.instanceof(Barricade.Array)) {
+            fields.listmixin.call(field);
+          }
+        }
+        type = scope.value.getType();
         templates.templateReady(type).then(function(template) {
           element.append($compile(template)(scope));
         });
