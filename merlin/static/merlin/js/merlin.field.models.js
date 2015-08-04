@@ -150,89 +150,102 @@
       }
     }, {'@type': Number});
 
+    var listMixin = Barricade.Blueprint.create(function() {
+      var self = this;
+      modelMixin.call(self, 'list');
+
+      self.add = function() {
+        self.push(undefined, self._parameters);
+      };
+      plainStructureMixin.call(self);
+      return self;
+    });
+
     var listModel = Barricade.Array.extend({
       create: function(json, parameters) {
         var self = Barricade.Array.create.call(this, json, parameters);
-
-        modelMixin.call(self, 'list');
-
-        self.add = function() {
-          self.push(undefined, parameters);
-        };
-        plainStructureMixin.call(self);
-        return self;
+        return listMixin.call(self);
       }
     }, {'@type': Array});
 
     var frozendictModel = Barricade.ImmutableObject.extend({
       create: function(json, parameters) {
         var self = Barricade.ImmutableObject.create.call(this, json, parameters);
-
-        modelMixin.call(self, 'frozendict');
-        plainStructureMixin.call(self);
-        return self;
+        return frozendictMixin.call(self);
       }
     }, {'@type': Object});
+
+    var frozendictMixin = Barricade.Blueprint.create(function() {
+      var self = this;
+      modelMixin.call(self, 'frozendict');
+      plainStructureMixin.call(self);
+      return self;
+    });
+
+    var dictionaryMixin = Barricade.Blueprint.create(function() {
+      var self = this;
+      var _elClass = self._elementClass;
+      var baseKey = utils.getMeta(_elClass, 'baseKey') || 'key';
+      var baseName = utils.getMeta(_elClass, 'baseName') || utils.makeTitle(baseKey);
+
+      modelMixin.call(self, 'dictionary');
+      plainStructureMixin.call(self);
+
+      function initKeyAccessor(value) {
+        value.keyValue = function () {
+          if ( arguments.length ) {
+            value.setID(arguments[0]);
+          } else {
+            return value.getID();
+          }
+        };
+      }
+
+      self.each(function(key, value) {
+        initKeyAccessor(value);
+      }).on('change', function(op, index) {
+        if (op === 'add' || op === 'set') {
+          initKeyAccessor(self.get(index));
+        }
+      });
+
+      self.add = function(newID) {
+        var regexp = new RegExp('(' + baseKey + ')([0-9]+)');
+        var newValue;
+        newID = newID || baseKey + utils.getNextIDSuffix(self, regexp);
+        if ( _elClass.instanceof(Barricade.ImmutableObject) ) {
+          if ( 'name' in _elClass._schema ) {
+            var nameNum = utils.getNextIDSuffix(self, regexp);
+            newValue = {name: baseName + nameNum};
+          } else {
+            newValue = {};
+          }
+        } else { // usually, it's either frozendict inside or string
+          newValue = '';
+        }
+        self.push(newValue, utils.extend(self._parameters, {id: newID}));
+      };
+      self.empty = function() {
+        for ( var i = this._data.length; i > 0; i-- ) {
+          self.remove(i - 1);
+        }
+      };
+      self.resetKeys = function(keys) {
+        self.empty();
+        keys.forEach(function(key) {
+          self.push(undefined, {id: key});
+        });
+      };
+      self.removeItem = function(key) {
+        self.remove(self.getPosByID(key));
+      };
+      return self;
+    });
 
     var dictionaryModel = Barricade.MutableObject.extend({
       create: function(json, parameters) {
         var self = Barricade.MutableObject.create.call(this, json, parameters);
-        var _elClass = self._elementClass;
-        var baseKey = utils.getMeta(_elClass, 'baseKey') || 'key';
-        var baseName = utils.getMeta(_elClass, 'baseName') || utils.makeTitle(baseKey);
-
-        modelMixin.call(self, 'dictionary');
-        plainStructureMixin.call(self);
-
-        function initKeyAccessor(value) {
-          value.keyValue = function () {
-            if ( arguments.length ) {
-              value.setID(arguments[0]);
-            } else {
-              return value.getID();
-            }
-          };
-        }
-
-        self.each(function(key, value) {
-          initKeyAccessor(value);
-        }).on('change', function(op, index) {
-          if (op === 'add' || op === 'set') {
-            initKeyAccessor(self.get(index));
-          }
-        });
-
-        self.add = function(newID) {
-          var regexp = new RegExp('(' + baseKey + ')([0-9]+)');
-          var newValue;
-          newID = newID || baseKey + utils.getNextIDSuffix(self, regexp);
-          if ( _elClass.instanceof(Barricade.ImmutableObject) ) {
-            if ( 'name' in _elClass._schema ) {
-              var nameNum = utils.getNextIDSuffix(self, regexp);
-              newValue = {name: baseName + nameNum};
-            } else {
-              newValue = {};
-            }
-          } else { // usually, it's either frozendict inside or string
-            newValue = '';
-          }
-          self.push(newValue, utils.extend(self._parameters, {id: newID}));
-        };
-        self.empty = function() {
-          for ( var i = this._data.length; i > 0; i-- ) {
-            self.remove(i - 1);
-          }
-        };
-        self.resetKeys = function(keys) {
-          self.empty();
-          keys.forEach(function(key) {
-            self.push(undefined, {id: key});
-          });
-        };
-        self.removeItem = function(key) {
-          self.remove(self.getPosByID(key));
-        };
-        return self;
+        return dictionaryMixin.call(self);
       }
     }, {'@type': Object});
 
@@ -282,6 +295,9 @@
       text: textModel,
       number: numberModel,
       list: listModel,
+      listmixin: listMixin,
+      frozendictmixin: frozendictMixin,
+      dictionarymixin: dictionaryMixin,
       linkedcollection: linkedCollectionModel,
       dictionary: dictionaryModel,
       frozendict: frozendictModel,
