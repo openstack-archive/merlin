@@ -235,12 +235,12 @@ describe('merlin directives', function() {
         '<div><typed-field ' + contents + '></typed-field></div>')($scope);
     }
 
-    it('type of resulting field is determined by `type` attribute', function() {
+    it('type of resulting field is determined by `value.getType` method', function() {
       var element1, element2;
-      $scope.value1 = {type: 'text'};
-      $scope.value2 = {type: 'number'};
-      element1 = makeFieldElem('value="value1" type="{$ value1.type $}"');
-      element2 = makeFieldElem('value="value2" type="{$ value2.type $}"');
+      $scope.value1 = {getType: function() { return 'text'; }};
+      $scope.value2 = {getType: function() { return 'number'; }};
+      element1 = makeFieldElem('value="value1"');
+      element2 = makeFieldElem('value="value2"');
       $httpBackend.flush();
       $scope.$digest();
 
@@ -250,8 +250,8 @@ describe('merlin directives', function() {
 
     it('field is not rendered until the corresponding template has been served', function() {
       var element;
-      $scope.value = {type: 'text'};
-      element = makeFieldElem('value="value" type="{$ value.type $}"');
+      $scope.value = {getType: function() {return 'text'; }};
+      element = makeFieldElem('value="value"');
       expect(element.html()).not.toContain('<textarea');
 
       $httpBackend.flush();
