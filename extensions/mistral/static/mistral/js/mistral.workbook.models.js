@@ -15,26 +15,29 @@
 
     function varlistValueFactory(json, parameters) {
       var type = Barricade.getType(json);
+      var value;
       if ( angular.isUndefined(json) || type === String ) {
-        return fields.string.create(json, parameters);
+        return Barricade.create({
+          '@type': String
+        }).create(json, parameters);
       } else if ( type === Array ) {
-        return fields.list.extend({
-          inline: true
-        }, {
-          '*': {'@class': fields.string}
+        value = Barricade.create({
+          '@type': Array,
+          '*': {'@type': String}
         }).create(json, parameters);
       } else if ( type === Object ) {
-        return fields.dictionary.extend({
-          inline: true
-        }, {
-          '?': {'@class': fields.string}
+        value = Barricade.create({
+          '@type': Object,
+          '?': {'@type': String}
         }).create(json, parameters);
       }
+      value.inline = true;
+      return value;
     }
 
-    models.varlist = fields.list.extend({
+    models.varlist = Barricade.Array.extend({
       create: function(json, parameters) {
-        var self = fields.list.create.call(this, json, parameters);
+        var self = Barricade.Array.create.call(this, json, parameters);
         self.on('childChange', function(child, op) {
           if ( op == 'empty' ) {
             self.each(function(index, item) {
@@ -47,10 +50,11 @@
         return self;
       }
     }, {
+      '@type': Array,
       '*': {
-        '@class': fields.frozendict.extend({
+        '@class': Barricade.ImmutableObject.extend({
           create: function(json, parameters) {
-            var self = fields.frozendict.create.call(this, json, parameters);
+            var self = Barricade.ImmutableObject.create.call(this, json, parameters);
             self.isAtomic = function() { return false; };
             self.on('childChange', function(child) {
               if ( child.instanceof(Barricade.Enumerated) ) { // type change
@@ -73,15 +77,15 @@
             return self;
           },
           _getPrettyJSON: function() {
-            var json = fields.frozendict._getPrettyJSON.apply(this, arguments);
+            var json = Barricade.ImmutableObject._getPrettyJSON.apply(this, arguments);
             return json.value;
           }
         }, {
+          '@type': Object,
           'type': {
-            '@class': fields.string.extend({}, {
-              '@enum': ['string', 'list', 'dictionary'],
-              '@default': 'string'
-            })
+            '@type': String,
+            '@enum': ['string', 'list', 'dictionary'],
+            '@default': 'string'
           },
           'value': {
             '@class': fields.generic,
@@ -99,20 +103,21 @@
       }
     }, {
       'yaql': {
-        '@class': fields.string
+        '@type': String
       },
       'action': {
-        '@class': fields.string
+        '@type': String
       }
     });
 
-    models.yaqllist = fields.list.extend({}, {
+    models.yaqllist = Barricade.create({
+      '@type': Array,
       '*': {'@class': models.YAQLField}
     });
 
-    models.Action =  fields.frozendict.extend({
+    models.Action =  Barricade.ImmutableObject.extend({
       create: function(json, parameters) {
-        var self = fields.frozendict.create.call(this, json, parameters);
+        var self = Barricade.ImmutableObject.create.call(this, json, parameters);
         var base = self.get('base');
         base.on('change', function(operation) {
           var argsEntry, pos, entry;
@@ -128,6 +133,7 @@
         return self;
       }
     }, {
+      '@type': Object,
       'base': {
         '@class': fields.linkedcollection.extend({
           create: function(json, parameters) {
@@ -164,7 +170,7 @@
           }
         }, {
           '@required': false,
-          '?': {'@class': fields.string},
+          '?': {'@type': String},
           '@meta': {
             'index': 2,
             'title': 'Base Input'
@@ -172,12 +178,11 @@
         })
       },
       'input': {
-        '@class': fields.list.extend({}, {
-          '@meta': {
-            'index': 3
-          },
-          '*': {'@class': fields.string}
-        })
+        '@type': Array,
+        '@meta': {
+          'index': 3
+        },
+        '*': {'@type': String}
       },
       'output': {
         '@class': models.varlist.extend({}, {
@@ -188,9 +193,9 @@
       }
     });
 
-    models.Task = fields.frozendict.extend({
+    models.Task = Barricade.ImmutableObject.extend({
       create: function(json, parameters) {
-        var self = fields.frozendict.create.call(this, json, parameters);
+        var self = Barricade.ImmutableObject.create.call(this, json, parameters);
         self.on('childChange', function(child, op) {
           if ( child === self.get('type') && op !== 'id' ) {
             self.emit('change', 'taskType');
@@ -199,59 +204,57 @@
         return self;
       },
       _getPrettyJSON: function() {
-        var json = fields.frozendict._getPrettyJSON.apply(this, arguments);
+        var json = Barricade.ImmutableObject._getPrettyJSON.apply(this, arguments);
         delete json.type;
         return json;
       }
     }, {
+      '@type': Object,
       '@meta': {
         'baseKey': 'task',
         'baseName': 'Task '
       },
       'type': {
-        '@class': fields.string.extend({}, {
-          '@enum': [{
-            value: 'action', label: 'Action-based'
-          }, {
-            value: 'workflow', label: 'Workflow-based'
-          }],
-          '@default': 'action',
-          '@meta': {
-            'index': 0
-          }
-        })
+        '@type': String,
+        '@enum': [{
+          value: 'action', label: 'Action-based'
+        }, {
+          value: 'workflow', label: 'Workflow-based'
+        }],
+        '@default': 'action',
+        '@meta': {
+          'index': 0
+        }
       },
       'description': {
-        '@class': fields.text.extend({}, {
-          '@meta': {
-            'index': 2
-          }
-        })
+        '@type': String,
+        '@meta': {
+          'widget': 'text',
+          'index': 2
+        }
       },
       'input': {
-        '@class': fields.dictionary.extend({}, {
-          '@meta': {
-            'index': 4
-          },
-          '?': {
-            '@class': fields.string
-          }
-        })
+        '@type': Object,
+        '@meta': {
+          'index': 4
+        },
+        '?': {
+          '@type': String
+        }
       },
       'publish': {
-        '@class': fields.dictionary.extend({}, {
-          '@meta': {
-            'index': 5
-          },
-          '?': {
-            '@class': fields.string
-          }
-        })
+        '@type': Object,
+        '@meta': {
+          'index': 5
+        },
+        '?': {
+          '@type': String
+        }
       },
       'policies': {
-        '@class': fields.frozendict.extend({
+        '@class': Barricade.ImmutableObject.extend({
           _getPrettyJSON: function() {
-            var json = fields.frozendict._getPrettyJSON.apply(this, arguments);
+            var json = Barricade.ImmutableObject._getPrettyJSON.apply(this, arguments);
             json.retry = {
               count: utils.pop(json, 'retry-count'),
               delay: utils.pop(json, 'retry-delay'),
@@ -260,62 +263,57 @@
             return json;
           }
         }, {
+          '@type': Object,
           '@meta': {
             'index': 9
           },
           '@required': false,
           'wait-before': {
-            '@class': fields.number.extend({}, {
-              '@required': false,
-              '@meta': {
-                'index': 0,
-                'title': 'Wait before'
-              }
-            })
+            '@type': Number,
+            '@required': false,
+            '@meta': {
+              'index': 0,
+              'title': 'Wait before'
+            }
           },
           'wait-after': {
-            '@class': fields.number.extend({}, {
-              '@required': false,
-              '@meta': {
-                'index': 1,
-                'title': 'Wait after'
-              }
-            })
+            '@type': Number,
+            '@required': false,
+            '@meta': {
+              'index': 1,
+              'title': 'Wait after'
+            }
           },
           'timeout': {
-            '@class': fields.number.extend({}, {
-              '@required': false,
-              '@meta': {
-                'index': 2
-              }
-            })
+            '@type': Number,
+            '@required': false,
+            '@meta': {
+              'index': 2
+            }
           },
           'retry-count': {
-            '@class': fields.number.extend({}, {
-              '@required': false,
-              '@meta': {
-                'index': 3,
-                'title': 'Retry count'
-              }
-            })
+            '@type': Number,
+            '@required': false,
+            '@meta': {
+              'index': 3,
+              'title': 'Retry count'
+            }
           },
           'retry-delay': {
-            '@class': fields.number.extend({}, {
-              '@required': false,
-              '@meta': {
-                'index': 4,
-                'title': 'Retry delay'
-              }
-            })
+            '@type': Number,
+            '@required': false,
+            '@meta': {
+              'index': 4,
+              'title': 'Retry delay'
+            }
           },
           'retry-break-on': {
-            '@class': fields.number.extend({}, {
-              '@required': false,
-              '@meta': {
-                'index': 5,
-                'title': 'Retry break on'
-              }
-            })
+            '@type': Number,
+            '@required': false,
+            '@meta': {
+              'index': 5,
+              'title': 'Retry break on'
+            }
           }
         })
       }
@@ -323,47 +321,43 @@
 
     models.ReverseWFTask = models.Task.extend({}, {
       'requires': {
-        '@class': fields.string.extend({}, {
-          '@meta': {
-            'index': 3
-          }
-        })
+        'type': String,
+        '@meta': {
+          'index': 3
+        }
       }
     });
 
     models.DirectWFTask = models.Task.extend({}, {
       'on-error': {
-        '@class': fields.list.extend({}, {
-          '@meta': {
-            'title': 'On error',
-            'index': 6
-          },
-          '*': {
-            '@class': fields.string
-          }
-        })
+        '@type': Array,
+        '@meta': {
+          'title': 'On error',
+          'index': 6
+        },
+        '*': {
+          '@type': String
+        }
       },
       'on-success': {
-        '@class': fields.list.extend({}, {
-          '@meta': {
-            'title': 'On success',
-            'index': 7
-          },
-          '*': {
-            '@class': fields.string
-          }
-        })
+        '@type': Array,
+        '@meta': {
+          'title': 'On success',
+          'index': 7
+        },
+        '*': {
+          '@type': String
+        }
       },
       'on-complete': {
-        '@class': fields.list.extend({}, {
-          '@meta': {
-            'title': 'On complete',
-            'index': 8
-          },
-          '*': {
-            '@class': fields.string
-          }
-        })
+        '@type': Array,
+        '@meta': {
+          'title': 'On complete',
+          'index': 8
+        },
+        '*': {
+          '@type': String
+        }
       }
     });
 
@@ -422,9 +416,9 @@
       return taskClass.create(json, parameters);
     }
 
-    models.Workflow = fields.frozendict.extend({
+    models.Workflow = Barricade.ImmutableObject.extend({
       create: function(json, parameters) {
-        var self = fields.frozendict.create.call(this, json, parameters);
+        var self = Barricade.ImmutableObject.create.call(this, json, parameters);
         self.on('childChange', function(child, op) {
           if ( child === self.get('type') && op !== 'id' ) {
             self.emit('change', 'workflowType');
@@ -433,41 +427,39 @@
         return self;
       }
     }, {
+      '@type': Object,
       'type': {
-        '@class': fields.string.extend({}, {
-          '@enum': ['reverse', 'direct'],
-          '@default': 'direct',
-          '@meta': {
-            'index': 1
-          }
-        })
+        '@type': String,
+        '@enum': ['reverse', 'direct'],
+        '@default': 'direct',
+        '@meta': {
+          'index': 1
+        }
       },
       'input': {
-        '@class': fields.list.extend({}, {
-          '@required': false,
-          '@meta': {
-            'index': 2
-          },
-          '*': {
-            '@class': fields.string
-          }
-        })
+        '@type': Array,
+        '@required': false,
+        '@meta': {
+          'index': 2
+        },
+        '*': {
+          '@type': String
+        }
       },
       'output': {
-        '@class': fields.list.extend({}, {
-          '@required': false,
-          '@meta': {
-            'index': 3
-          },
-          '*': {
-            '@class': fields.string
-          }
-        })
+        '@type': Array,
+        '@required': false,
+        '@meta': {
+          'index': 3
+        },
+        '*': {
+          '@type': String
+        }
       },
       'tasks': {
-        '@class': fields.dictionary.extend({
+        '@class': Barricade.MutableObject.extend({
           create: function(json, parameters) {
-            var self = fields.dictionary.create.call(this, json, parameters);
+            var self = Barricade.MutableObject.create.call(this, json, parameters);
             self.on('childChange', function(child, op, arg) {
               if ( op === 'taskType' ) {
                 var taskId = child.getID();
@@ -481,6 +473,7 @@
             return self;
           }
         }, {
+          '@type': Object,
           '@meta': {
             'index': 5
           },
@@ -496,36 +489,36 @@
     models.ReverseWorkflow = models.Workflow.extend({});
     models.DirectWorkflow = models.Workflow.extend({}, {
       'task-defaults': {
-        '@class': fields.frozendict.extend({}, {
-          '@required': false,
-          '@meta': {
-            'index': 4
-          },
-          'on-error': {
-            '@class': models.yaqllist.extend({}, {
-              '@meta': {
-                'title': 'On error',
-                'index': 0
-              }
-            })
-          },
-          'on-success': {
-            '@class': models.yaqllist.extend({}, {
-              '@meta': {
-                'title': 'On success',
-                'index': 1
-              }
-            })
-          },
-          'on-complete': {
-            '@class': models.yaqllist.extend({}, {
-              '@meta': {
-                'title': 'On complete',
-                'index': 2
-              }
-            })
-          }
-        })
+        '@type': Object,
+        '@required': false,
+        '@meta': {
+          'index': 4
+        },
+        'on-error': {
+          '@class': models.yaqllist.extend({}, {
+            '@meta': {
+              'title': 'On error',
+              'index': 0
+            }
+          })
+        },
+        'on-success': {
+          '@class': models.yaqllist.extend({}, {
+            '@meta': {
+              'title': 'On success',
+              'index': 1
+            }
+          })
+        },
+        'on-complete': {
+          '@class': models.yaqllist.extend({}, {
+            '@meta': {
+              'title': 'On complete',
+              'index': 2
+            }
+          })
+        }
+
       }
     });
 
@@ -540,7 +533,8 @@
       return workflowTypes[type].create(json, parameters);
     }
 
-    models.Actions = fields.dictionary.extend({}, {
+    models.Actions = Barricade.create({
+      '@type': Object,
       '@required': false,
       '@meta': {
         'index': 3
@@ -550,9 +544,9 @@
       }
     });
 
-    models.Workflows = fields.dictionary.extend({
+    models.Workflows = Barricade.MutableObject.extend({
       create: function(json, parameters) {
-        var self = fields.dictionary.create.call(this, json, parameters);
+        var self = Barricade.MutableObject.create.call(this, json, parameters);
         self.on('childChange', function(child, op) {
           if ( op === 'workflowType' ) {
             var workflowId = child.getID();
@@ -567,6 +561,7 @@
         return self;
       }
     }, {
+      '@type': Object,
       '@meta': {
         'index': 4
       },
@@ -576,39 +571,38 @@
       }
     });
 
-    models.Workbook = fields.frozendict.extend({
+    models.Workbook = Barricade.ImmutableObject.extend({
       toYAML: function() {
         return jsyaml.dump(this.toJSON({pretty: true}));
       }
     }, {
+      '@type': Object,
       'version': {
-        '@class': fields.string.extend({}, {
-          '@enum': ['2.0'],
-          '@meta': {
-            'index': 2
-          },
-          '@default': '2.0'
-        })
+        '@type': String,
+        '@enum': ['2.0'],
+        '@meta': {
+          'index': 2
+        },
+        '@default': '2.0'
       },
       'name': {
-        '@class': fields.string.extend({}, {
-          '@meta': {
-            'index': 0
-          },
-          '@constraints': [
-            function(value) {
-              return value !== 'workbook1' ? true : 'The sample validation failure.';
-            }
-          ]
-        })
+        '@type': String,
+        '@meta': {
+          'index': 0
+        },
+        '@constraints': [
+          function(value) {
+            return value !== 'workbook1' ? true : 'The sample validation failure.';
+          }
+        ]
       },
       'description': {
-        '@class': fields.text.extend({}, {
-          '@meta': {
-            'index': 1
-          },
-          '@required': false
-        })
+        '@type': String,
+        '@meta': {
+          'index': 1,
+          'widget': 'text'
+        },
+        '@required': false
       },
       'actions': {
         '@class': models.Actions
