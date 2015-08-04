@@ -14,12 +14,13 @@
     under the License.
 */
 describe('workbook model logic', function() {
-  var models, utils, workbook;
+  var models, fields, utils, workbook;
 
   beforeEach(function() {
     module('mistral');
     inject(function($injector) {
       models = $injector.get('mistral.workbook.models');
+      fields = $injector.get('merlin.field.models');
       utils = $injector.get('merlin.utils');
     });
     workbook = models.Workbook.create();
@@ -42,7 +43,7 @@ describe('workbook model logic', function() {
         'neutron.create_network': ['name', 'create_subnet'],
         'glance.create_image': ['image_url']
       });
-      workbook.get('actions').add('action1');
+      fields.applyMixins(workbook.get('actions')).add('action1');
       action1 = workbook.get('actions').getByID('action1');
     });
 
@@ -102,7 +103,7 @@ describe('workbook model logic', function() {
     }
 
     beforeEach(function() {
-      workbook.get('workflows').add(workflowID);
+      fields.applyMixins(workbook.get('workflows')).add(workflowID);
     });
 
     describe('', function() {
@@ -145,10 +146,11 @@ describe('workbook model logic', function() {
       });
 
       it("'action'-based task offers available custom actions for its Action field", function() {
-        workbook.get('actions').add('action1');
+        var actions = fields.applyMixins(workbook.get('actions'));
+        actions.add('action1');
         expect(getTask(taskID).get('action').getValues()).toEqual(['action1']);
 
-        workbook.get('actions').add('action2');
+        actions.add('action2');
         expect(getTask(taskID).get('action').getValues()).toEqual(['action1', 'action2']);
       });
 
@@ -212,10 +214,11 @@ describe('workbook model logic', function() {
       });
 
       it("'action'-based task offers available custom actions for its Action field", function() {
-        workbook.get('actions').add('action1');
+        var actions = fields.applyMixins(workbook.get('actions'));
+        actions.add('action1');
         expect(getTask(taskID).get('action').getValues()).toEqual(['action1']);
 
-        workbook.get('actions').add('action2');
+        actions.add('action2');
         expect(getTask(taskID).get('action').getValues()).toEqual(['action1', 'action2']);
       });
 

@@ -232,7 +232,8 @@ describe('merlin directives', function() {
         '<div><typed-field ' + contents + '></typed-field></div>')($scope);
     }
 
-    it('type of resulting field is determined by `value.getType` method', function() {
+    // next 2 tests are disabled until we switch to Barricade v1.0
+    xit('type of resulting field is determined by `value.getType` method', function() {
       var element1, element2;
       $scope.value1 = {getType: function() { return 'text'; }};
       $scope.value2 = {getType: function() { return 'number'; }};
@@ -245,7 +246,7 @@ describe('merlin directives', function() {
       expect(element2).toContainElement('input[type=number]');
     });
 
-    it('field is not rendered until the corresponding template has been served', function() {
+    xit('field is not rendered until the corresponding template has been served', function() {
       var element;
       $scope.value = {getType: function() {return 'text'; }};
       element = makeFieldElem('value="value"');

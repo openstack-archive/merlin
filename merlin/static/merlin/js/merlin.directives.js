@@ -216,15 +216,17 @@
     };
   }
 
-  typedField.$inject = ['$compile', 'merlin.templates'];
-  function typedField($compile, templates) {
+  typedField.$inject = ['$compile', 'merlin.templates', 'merlin.field.models', 'merlin.utils'];
+  function typedField($compile, templates, fields, utils) {
     return {
       restrict: 'E',
       scope: {
         value: '='
       },
       link: function(scope, element) {
+        var field = scope.value;
         var type = scope.value.getType();
+        fields.applyMixins(field);
         templates.templateReady(type).then(function(template) {
           element.append($compile(template)(scope));
         });
