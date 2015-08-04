@@ -3,7 +3,7 @@
     <div ng-repeat="(key, field) in value | extractFields track by field.uid()">
       <labeled ng-if="field.isAtomic()" label="field.keyValue" for="{$ field.uid() $}">
         <div class="input-group">
-          <typed-field id="{$ field.uid() $}" value="field" type="{$ field.getType() $}"></typed-field>
+          <typed-field id="{$ field.uid() $}" value="field"></typed-field>
         <span class="input-group-btn">
           <button class="btn btn-default" ng-click="value.removeItem(field.keyValue())">
             <i class="fa fa-minus-circle"></i>
@@ -15,10 +15,9 @@
         <collapsible-group ng-if="!field.inline" class="col-xs-12" title="field.keyValue"
                            on-remove="value.removeItem(field.keyValue())"
                            additive="{$ field.isAdditive() $}" on-add="field.add()">
-          <typed-field value="field" type="{$ field.getType() $}"></typed-field>
+          <typed-field value="field"></typed-field>
         </collapsible-group>
-        <typed-field ng-if="field.inline"
-                     value="field" type="{$ field.getType() $}"></typed-field>
+        <typed-field ng-if="field.inline" value="field"></typed-field>
       </div>
     </div>
   </div>

@@ -3,7 +3,7 @@
     <div ng-repeat="(index, field) in value | extractFields track by field.uid()">
       <div ng-if="field.isAtomic()" class="form-group">
         <div class="input-group">
-          <typed-field value="field" type="{$ field.getType() $}"></typed-field>
+          <typed-field value="field"></typed-field>
         <span class="input-group-btn">
           <button class="btn btn-default" ng-click="value.remove($index)">
             <i class="fa fa-minus-circle"></i>
@@ -12,7 +12,7 @@
         </div>
       </div>
       <div ng-if="!field.isAtomic()">
-        <typed-field value="field" type="{$ field.getType() $}"></typed-field>
+        <typed-field value="field"></typed-field>
       </div>
     </div>
   </div>

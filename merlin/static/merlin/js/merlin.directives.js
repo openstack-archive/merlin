@@ -221,11 +221,11 @@
     return {
       restrict: 'E',
       scope: {
-        value: '=',
-        type: '@'
+        value: '='
       },
       link: function(scope, element) {
-        templates.templateReady(scope.type).then(function(template) {
+        var type = scope.value.getType();
+        templates.templateReady(type).then(function(template) {
           element.append($compile(template)(scope));
         });
       }
