@@ -17,7 +17,7 @@ import json
 from django.views.generic import TemplateView, View
 from django.http import HttpResponse
 
-from hotbuilder import api
+from openstack_dashboard.api import heat
 
 
 class JSONView(View):
@@ -33,12 +33,12 @@ class JSONView(View):
 class ResourceTypesView(JSONView):
     def get_data(self, request, *args, **kwargs):
         return [resource.resource_type for resource in
-                api.resource_type_list(request)]
+                heat.resource_types_list(request)]
 
 
 class ShowResourceView(JSONView):
     def get_data(self, request, *args, **kwargs):
-        return api.resource_type_show(request, kwargs['resource_type'])
+        return heat.resource_type_get(request, kwargs['resource_type'])
 
 
 class IndexView(TemplateView):
