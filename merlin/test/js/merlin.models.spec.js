@@ -131,11 +131,12 @@ describe('merlin models:', function() {
         },
         'linkedField': {
           '@class': fields.linkedcollection.extend({
-            create: function(json, parameters) {
-              parameters = Object.create(parameters);
-              parameters.toCls = collectionCls;
-              parameters.neededCls = linkedObjCls;
-              parameters.substitutedEntryID = 'realCollection';
+            create: function(json) {
+              var parameters = {
+                toCls: collectionCls,
+                neededCls: linkedObjCls,
+                substitutedEntryID: 'realCollection'
+              };
               return fields.linkedcollection.create.call(this, json, parameters);
             },
             _dropDownLimit: 4
