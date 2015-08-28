@@ -131,11 +131,12 @@
       '@type': Object,
       'base': {
         '@class': fields.linkedcollection.extend({
-          create: function(json, parameters) {
-            parameters = Object.create(parameters);
-            parameters.toCls = models.StandardActions;
-            parameters.neededCls = models.Root;
-            parameters.substitutedEntryID = 'standardActions';
+          create: function(json) {
+            var parameters = {
+              toCls: models.StandardActions,
+              neededCls: models.Root,
+              substitutedEntryID: 'standardActions'
+            };
             return fields.linkedcollection.create.call(this, json, parameters);
           }
         }, {
@@ -360,11 +361,12 @@
       return this.extend({}, {
         'action': {
           '@class': fields.linkedcollection.extend({
-            create: function(json, parameters) {
-              parameters = Object.create(parameters);
-              parameters.toCls = models.Actions;
-              parameters.neededCls = models.Workbook;
-              parameters.substitutedEntryID = 'actions';
+            create: function(json) {
+              var parameters = {
+                toCls: models.Actions,
+                neededCls: models.Workbook,
+                substitutedEntryID: 'actions'
+              };
               return fields.linkedcollection.create.call(this, json, parameters);
             }
           }, {
@@ -380,11 +382,12 @@
       return this.extend({}, {
         'workflow': {
           '@class': fields.linkedcollection.extend({
-            create: function(json, parameters) {
-              parameters = Object.create(parameters);
-              parameters.toCls = models.Workflows;
-              parameters.neededCls = models.Workbook;
-              parameters.substitutedEntryID = 'workflows';
+            create: function(json) {
+              var parameters = {
+                toCls: models.Workflows,
+                neededCls: models.Workbook,
+                substitutedEntryID: 'workflows'
+              };
               return fields.linkedcollection.create.call(this, json, parameters);
             }
           }, {
@@ -403,12 +406,28 @@
       'workflow': models.WorkflowTaskMixin
     };
 
-    function TaskFactory(json, parameters) {
-      var type = json.type || 'action';
-      var baseClass = taskTypes[parameters.wfType];
-      var mixinClass = taskTypes[type];
-      var taskClass = mixinClass.call(baseClass);
-      return taskClass.create(json, parameters);
+    function TaskFactoryFactory(baseClass) {
+      return function TaskFactory(json, parameters) {
+        var type = json.type || 'action';
+        var mixinClass = taskTypes[type];
+        var taskClass = mixinClass.call(baseClass);
+        return taskClass.create(json, parameters);
+      }
+    }
+
+    function createTaskFactory(baseClass) {
+      return function(json, parameters) {
+        var self = Barricade.MutableObject.create.call(this, json, parameters);
+        self.on('childChange', function(child, op) {
+          if ( op === 'taskType' ) {
+            var taskId = child.getID();
+            var taskPos = self.getPosByID(taskId);
+            var taskData = child.toJSON();
+            self.set(taskPos, TaskFactoryFactory(baseClass)(taskData, {id: taskId}));
+          }
+        });
+        return self;
+      }
     }
 
     models.Workflow = Barricade.ImmutableObject.extend({
@@ -450,23 +469,13 @@
         '*': {
           '@type': String
         }
-      },
+      }
+    });
+
+    models.ReverseWorkflow = models.Workflow.extend({}, {
       'tasks': {
         '@class': Barricade.MutableObject.extend({
-          create: function(json, parameters) {
-            var self = Barricade.MutableObject.create.call(this, json, parameters);
-            self.on('childChange', function(child, op, arg) {
-              if ( op === 'taskType' ) {
-                var taskId = child.getID();
-                var params = child._parameters;
-                var taskPos = self.getPosByID(taskId);
-                var taskData = child.toJSON();
-                params.id = taskId;
-                self.set(taskPos, TaskFactory(taskData, params));
-              }
-            });
-            return self;
-          }
+          create: createTaskFactory(models.ReverseWFTask)
         }, {
           '@type': Object,
           '@meta': {
@@ -474,14 +483,11 @@
           },
           '?': {
             '@class': models.Task,
-            '@factory': TaskFactory
+            '@factory': TaskFactoryFactory(models.ReverseWFTask)
           }
         })
       }
-
     });
-
-    models.ReverseWorkflow = models.Workflow.extend({});
     models.DirectWorkflow = models.Workflow.extend({}, {
       'task-defaults': {
         '@type': Object,
@@ -513,7 +519,20 @@
             }
           })
         }
-
+      },
+      'tasks': {
+        '@class': Barricade.MutableObject.extend({
+          create: createTaskFactory(models.DirectWFTask)
+        }, {
+          '@type': Object,
+          '@meta': {
+            'index': 5
+          },
+          '?': {
+            '@class': models.Task,
+            '@factory': TaskFactoryFactory(models.DirectWFTask)
+          }
+        })
       }
     });
 
@@ -524,7 +543,6 @@
 
     function workflowFactory(json, parameters) {
       var type = json.type || 'direct';
-      parameters.wfType = type;
       return workflowTypes[type].create(json, parameters);
     }
 
@@ -546,11 +564,8 @@
           if ( op === 'workflowType' ) {
             var workflowId = child.getID();
             var workflowPos = self.getPosByID(workflowId);
-            var params = child._parameters;
             var workflowData = child.toJSON();
-            params.wfType = child.type;
-            params.id = workflowId;
-            self.set(workflowPos, workflowFactory(workflowData, params));
+            self.set(workflowPos, workflowFactory(workflowData, {id: workflowId}));
           }
         });
         return self;
