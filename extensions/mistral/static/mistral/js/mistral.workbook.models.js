@@ -51,9 +51,10 @@
     }, {
       '@type': Array,
       '*': {
-        '@class': fields.frozendict.extend({
+        '@class': Barricade.Base.extend({
           create: function(json, parameters) {
-            var self = fields.frozendict.create.call(this, json, parameters);
+            var self = Barricade.Base.create.call(this, json, parameters);
+            fields.frozendictmixin.call(self);
             self.isAtomic = function() { return false; };
             self.on('childChange', function(child) {
               if ( child.instanceof(Barricade.Enumerated) ) { // type change
