@@ -19,7 +19,7 @@ var Barricade = (function () {
     var Array_, Arraylike, BarricadeMain, Base, Blueprint, Container,
         Deferrable, Deferred, Enumerated, Extendable, Identifiable,
         ImmutableObject, InstanceofMixin, MutableObject, Observable, Omittable,
-        Primitive, Validatable;
+        Schema, Validatable;
 
     /**
     * Blueprints are used to define mixins. They can be used to enable private
@@ -62,50 +62,6 @@ var Barricade = (function () {
     * @memberof Barricade
     */
     Extendable = Blueprint.create(function () {
-        function deepClone(object) {
-            if (isPlainObject(object)) {
-                return forInKeys(object).reduce(function (clone, key) {
-                    clone[key] = deepClone(object[key]);
-                    return clone;
-                }, {});
-            }
-            return object;
-        }
-
-        function extend(extension) {
-            return Object.keys(extension).reduce(function (object, prop) {
-                return Object.defineProperty(object, prop, {
-                    enumerable: true,
-                    writable: true,
-                    configurable: true,
-                    value: extension[prop]
-                });
-            }, Object.create(this));
-        }
-
-        function forInKeys(obj) {
-            var key, keys = [];
-            for (key in obj) { keys.push(key); }
-            return keys;
-        }
-
-        function isPlainObject(obj) {
-            return getType(obj) === Object &&
-                Object.getPrototypeOf(Object.getPrototypeOf(obj)) === null;
-        }
-
-        function merge(target, source) {
-            forInKeys(source).forEach(function (key) {
-                if (Object.prototype.hasOwnProperty.call(target, key) &&
-                        isPlainObject(target[key]) &&
-                        isPlainObject(source[key])) {
-                    merge(target[key], source[key]);
-                } else {
-                    target[key] = deepClone(source[key]);
-                }
-            });
-        }
-
         /**
         * Extends the object, returning a new object with the original object as
           its prototype.
@@ -121,14 +77,31 @@ var Barricade = (function () {
             enumerable: false,
             writable: false,
             value: function (extension, schema) {
-                if (schema) {
-                    extension._schema = deepClone(this._schema) || {};
-                    merge(extension._schema, schema);
+                var self = Object.create(this);
+
+                if (getType(extension) === Function) {
+                    self = extension.call(self);
+                    extension = {};
                 }
-                return extend.call(this, extension);
+
+                if (schema) {
+                    self._schema = self._schema.extend(self, schema);
+                }
+                return Extendable.addProps(self, extension);
             }
         });
     });
+
+    Extendable.addProps = function (target, props) {
+        return Object.keys(props).reduce(function (object, prop) {
+            return Object.defineProperty(object, prop, {
+                enumerable: true,
+                writable: true,
+                configurable: true,
+                value: props[prop]
+            });
+        }, target);
+    };
 
     /**
     * @mixin
@@ -227,7 +200,16 @@ var Barricade = (function () {
     * @mixin
     * @memberof Barricade
     */
-    Omittable = Blueprint.create(function (isUsed) {
+    Omittable = Blueprint.create(function () {
+        var self = this,
+            isUsed;
+
+        function onChange(changeType) {
+            if (changeType !== 'isUsed') {
+                isUsed = !self.isEmpty();
+            }
+        }
+
         /**
         * Returns whether object is being used or not.
         * @method isUsed
@@ -249,12 +231,12 @@ var Barricade = (function () {
         */
         this.setIsUsed = function (newUsedValue) {
             isUsed = !!newUsedValue;
-            return this;
+            return this.emit('change', 'isUsed');
         };
 
-        this.on('change', function () {
-            isUsed = !this.isEmpty();
-        });
+        this.on('change', onChange);
+        this.on('childChange', onChange);
+        onChange();
     });
 
     /**
@@ -264,20 +246,20 @@ var Barricade = (function () {
     Deferrable = Blueprint.create(function (schema) {
         var self = this,
             needed,
-            deferred = schema.hasOwnProperty('@ref')
-                ? Deferred.create(schema['@ref'].needs, getter, resolver)
+            deferred = schema.has('ref')
+                ? Deferred.create(schema.get('ref').needs, getter, resolver)
                 : null;
 
-        if (schema.hasOwnProperty('@ref') && !schema['@ref'].processor) {
-            schema['@ref'].processor = function (o) { return o.val; };
+        if (schema.has('ref') && !schema.get('ref').processor) {
+            schema.get('ref').processor = function (o) { return o.val; };
         }
 
         function getter(neededVal) {
-            return schema['@ref'].getter({standIn: self, needed: neededVal});
+            return schema.get('ref').getter({standIn: self, needed: neededVal});
         }
 
         function resolver(retrievedValue) {
-            self.emit('replace', schema['@ref'].processor({
+            self.emit('replace', schema.get('ref').processor({
                 val: retrievedValue,
                 standIn: self,
                 needed: needed
@@ -317,7 +299,7 @@ var Barricade = (function () {
     * @memberof Barricade
     */
     Validatable = Blueprint.create(function (schema) {
-        var constraints = schema['@constraints'],
+        var constraints = schema.get('constraints'),
             error = null;
 
         if (getType(constraints) !== Array) {
@@ -541,186 +523,11 @@ var Barricade = (function () {
     /**
     * @class
     * @memberof Barricade
-    * @mixes   Barricade.Extendable
-    * @extends Barricade.Extendable
-    * @mixes   Barricade.InstanceofMixin
-    * @extends Barricade.InstanceofMixin
-    * @mixes   Barricade.Observable
-    * @extends Barricade.Observable
-    * @mixes   Barricade.Omittable
-    * @extends Barricade.Omittable
-    * @mixes   Barricade.Deferrable
-    * @extends Barricade.Deferrable
-    * @mixes   Barricade.Validatable
-    * @extends Barricade.Validatable
-    * @mixes   Barricade.Enumerated
-    * @extends Barricade.Enumerated
-    * @mixes   Barricade.Identifiable
-    * @extends Barricade.Identifiable
-    */
-    Base = Extendable.call(InstanceofMixin.call({
-        /**
-        * Creates a `Base` instance
-        * @memberof Barricade.Base
-        * @param {JSON} json
-        * @param {Object} parameters
-        * @returns {Barricade.Base}
-        */
-        create: function (json, parameters) {
-            var self = this.extend({}),
-                schema = self._schema,
-                isUsed;
-
-            self._parameters = parameters = parameters || {};
-
-            if (schema.hasOwnProperty('@inputMassager')) {
-                json = schema['@inputMassager'](json);
-            }
-
-            isUsed = self._setData(json);
-
-            if (schema.hasOwnProperty('@toJSON')) {
-                self.toJSON = schema['@toJSON'];
-            }
-
-            Observable.call(self);
-            Omittable.call(self, isUsed);
-            Deferrable.call(self, schema);
-            Validatable.call(self, schema);
-
-            if (schema.hasOwnProperty('@enum')) {
-                Enumerated.call(self, schema['@enum']);
-            }
-
-            Identifiable.call(self, parameters.id);
-
-            return self;
-        },
-
-        /**
-        * @memberof Barricade.Base
-        * @private
-        */
-        _uidPrefix: 'obj-',
-
-        /**
-        * @memberof Barricade.Base
-        * @private
-        */
-        _getDefaultValue: function () {
-            return this._schema.hasOwnProperty('@default')
-                ? typeof this._schema['@default'] === 'function'
-                    ? this._schema['@default'].call(this)
-                    : this._schema['@default']
-                : this._schema['@type']();
-        },
-
-        /**
-        * @memberof Barricade.Base
-        * @private
-        */
-        _setData: function(json) {
-            var isUsed = true,
-                type = this._schema['@type'];
-
-            if (getType(json) !== type) {
-                if (json) {
-                    logError("Type mismatch. JSON: ", json,
-                             "schema: ", this._schema);
-                } else {
-                    isUsed = false;
-                }
-                // Replace bad type (does not change original)
-                json = this._getDefaultValue();
-            }
-            this._data = this._sift(json, this._parameters);
-
-            return isUsed;
-        },
-
-        /**
-        * @memberof Barricade.Base
-        * @private
-        */
-        _safeInstanceof: function (instance, class_) {
-            return getType(instance) === Object &&
-                ('instanceof' in instance) &&
-                instance.instanceof(class_);
-        },
-
-        /**
-        * @memberof Barricade.Base
-        * @private
-        */
-        _sift: function () {
-            throw new Error("sift() must be overridden in subclass");
-        },
-
-        /**
-        * @memberof Barricade.Base
-        * @private
-        */
-        _getPrettyJSON: function (options) {
-            return this._getJSON(options);
-        },
-
-        /**
-        * Returns the primitive type of the Barricade object.
-        * @memberof Barricade.Base
-        * @instance
-        * @returns {constructor}
-        */
-        getPrimitiveType: function () {
-            return this._schema['@type'];
-        },
-
-        /**
-        * @memberof Barricade.Base
-        * @instance
-        * @virtual
-        */
-        isEmpty: function () {
-            throw new Error('Subclass should override isEmpty()');
-        },
-
-        /**
-        * Returns whether the Barricade object is required or not. Usually
-          affects output of `toJSON()`. Use the `@required` tag in the schema to
-          specify this option.
-        * @memberof Barricade.Base
-        * @instance
-        * @returns {Boolean}
-        */
-        isRequired: function () {
-            return this._schema['@required'] !== false;
-        },
-
-        /**
-        * Returns the JSON representation of the Barricade object.
-        * @memberof Barricade.Base
-        * @instance
-        * @param {Object} [options]
-                 An object containing options that affect the JSON result.
-                 Current supported options are ignoreUnused (Boolean, defaults
-                 to false), which skips keys with values that are unused in
-                 objects, and pretty (Boolean, defaults to false), which gives
-                 control to the method `_getPrettyJSON`.
-        * @returns {JSON}
-        */
-        toJSON: function (options) {
-            options = options || {};
-            return options.pretty
-                ? this._getPrettyJSON(options)
-                : this._getJSON(options);
-        }
-    }));
-
-    /**
-    * @class
-    * @memberof Barricade
     * @extends Barricade.Base
     */
-    Container = Base.extend({
+    Container = Blueprint.create(function () {
+        var oldCreate = this.create;
+
         /**
         * Creates a `Container` instance.
         * @memberof Barricade.Container
@@ -728,8 +535,8 @@ var Barricade = (function () {
         * @param {Object} parameters
         * @returns {Barricade.Container}
         */
-        create: function (json, parameters) {
-            var self = Base.create.call(this, json, parameters);
+        this.create = function (json, parameters) {
+            var self = oldCreate.call(this, json, parameters);
 
             return self.on('_addedElement', function (key) {
                 self._attachListeners(key);
@@ -738,13 +545,13 @@ var Barricade = (function () {
                 self._attachListeners(index);
                 value.resolveWith(self);
             });
-        },
+        };
 
         /**
         * @memberof Barricade.Container
         * @private
         */
-        _attachListeners: function (key) {
+        this._attachListeners = function (key) {
             var self = this,
                 element = this.get(key),
                 slice = Array.prototype.slice,
@@ -777,59 +584,38 @@ var Barricade = (function () {
             Object.keys(events).forEach(function (eName) {
                 element.on(eName, events[eName]);
             });
-        },
+        };
 
         /**
         * @memberof Barricade.Container
         * @private
         */
-        _getKeyClass: function (key) {
-            return this._schema[key].hasOwnProperty('@class')
-                ? this._schema[key]['@class']
-                : BarricadeMain.create(this._schema[key]);
-        },
-
-        /**
-        * @memberof Barricade.Container
-        * @private
-        */
-        _isCorrectType: function (instance, class_) {
+        this._isCorrectType = function (instance, class_) {
             var self = this;
 
             function isRefTo() {
-                if (typeof class_._schema['@ref'].to === 'function') {
-                    return self._safeInstanceof(instance,
-                                                class_._schema['@ref'].to());
-                } else if (typeof class_._schema['@ref'].to === 'object') {
-                    return self._safeInstanceof(instance,
-                                                class_._schema['@ref'].to);
+                var ref = class_.schema().get('ref');
+                if (typeof ref.to === 'function') {
+                    return self._safeInstanceof(instance, ref.to());
+                } else if (typeof ref.to === 'object') {
+                    return self._safeInstanceof(instance, ref.to);
                 }
-                throw new Error('Ref.to was ' + class_._schema['@ref'].to);
+                throw new Error('Ref.to was ' + ref.to);
             }
 
             return this._safeInstanceof(instance, class_) ||
-                (class_._schema.hasOwnProperty('@ref') && isRefTo());
-        },
+                (class_.schema().has('ref') && isRefTo());
+        };
 
         /**
         * @memberof Barricade.Container
         * @private
         */
-        _keyClassCreate: function (key, keyClass, json, parameters) {
-            return this._schema[key].hasOwnProperty('@factory')
-                ? this._schema[key]['@factory'](json, parameters)
-                : keyClass.create(json, parameters);
-        },
-
-        /**
-        * @memberof Barricade.Container
-        * @private
-        */
-        _tryResolveOn: function (value) {
+        this._tryResolveOn = function (value) {
             if (!value.resolveWith(this)) {
                 this.emit('_resolveUp', value);
             }
-        },
+        };
 
         /**
         * @memberof Barricade.Container
@@ -838,12 +624,12 @@ var Barricade = (function () {
         * @param {Element} value
         * @returns {self}
         */
-        set: function (key, value) {
+        this.set = function (key, value) {
             this.get(key).emit('removeFrom', this);
             this._doSet(key, value);
             this._attachListeners(key);
             return this;
-        }
+        };
     });
 
     /**
@@ -851,64 +637,50 @@ var Barricade = (function () {
     * @memberof Barricade
     * @extends Barricade.Container
     */
-    Arraylike = Container.extend({
-        /**
-        * Creates an Arraylike.
-        * @memberof Barricade.Arraylike
-        * @returns {Barricade.Arraylike} New Arraylike instance.
-        */
-        create: function (json, parameters) {
-            if (!this.hasOwnProperty('_elementClass')) {
-                Object.defineProperty(this, '_elementClass', {
-                    enumerable: false,
-                    writable: true,
-                    value: this._getKeyClass(this._elSymbol)
-                });
-            }
-            return Container.create.call(this, json, parameters);
-        },
+    Arraylike = Blueprint.create(function () {
+        Container.call(this);
 
         /**
         * @memberof Barricade.Arraylike
         * @private
         */
-        _doSet: function (index, newVal, newParameters) {
-            var oldVal = this._data[index];
+        this._doSet = function (index, newVal, newParameters) {
+            var oldVal = this._data[index],
+                elClass = this.schema().keyClass(this._elSymbol);
 
-            this._data[index] = this._isCorrectType(newVal, this._elementClass)
+            this._data[index] = this._isCorrectType(newVal, elClass)
                 ? this._data[index] = newVal
-                : this._keyClassCreate(this._elSymbol, this._elementClass,
-                                       newVal, newParameters);
+                : this.schema().keyClassCreate(this._elSymbol, newVal,
+                                               newParameters);
 
             this.emit('change', 'set', index, this._data[index], oldVal);
-        },
+        };
 
         /**
         * @memberof Barricade.Arraylike
         * @private
         */
-        _elSymbol: '*',
+        this._elSymbol = '*';
 
         /**
         * @memberof Barricade.Arraylike
         * @private
         */
-        _sift: function (json) {
+        this._sift = function (json) {
             return json.map(function (el) {
-                return this._keyClassCreate(
-                    this._elSymbol, this._elementClass, el);
+                return this.schema().keyClassCreate(this._elSymbol, el);
             }, this);
-        }, 
+        };
 
         /**
         * @memberof Barricade.Arraylike
         * @private
         */
-        _getJSON: function (options) {
+        this._getJSON = function (options) {
             return this._data.map(function (el) {
                 return el.toJSON(options);
             });
-        },
+        };
 
         /**
         * @callback Barricade.Arraylike.eachCB
@@ -926,7 +698,7 @@ var Barricade = (function () {
                  Comparator in the form that JavaScript's Array.sort() expects
         * @returns {self}
         */
-        each: function (functionIn, comparatorIn) {
+        this.each = function (functionIn, comparatorIn) {
             var arr = this._data.slice();
 
             if (comparatorIn) {
@@ -938,7 +710,7 @@ var Barricade = (function () {
             });
 
             return this;
-        },
+        };
 
         /**
         * @memberof Barricade.Arraylike
@@ -946,9 +718,9 @@ var Barricade = (function () {
         * @param {Integer} index
         * @returns {Element}
         */
-        get: function (index) {
+        this.get = function (index) {
             return this._data[index];
-        },
+        };
 
         /**
         * Returns true if no elements are present, false otherwise.
@@ -956,9 +728,9 @@ var Barricade = (function () {
         * @instance
         * @returns {Boolean}
         */
-        isEmpty: function () {
+        this.isEmpty = function () {
             return !this._data.length;
-        },
+        };
 
         /**
         * Returns number of elements in Arraylike
@@ -966,9 +738,9 @@ var Barricade = (function () {
         * @instance
         * @returns {Number}
         */
-        length: function () {
+        this.length = function () {
             return this._data.length;
-        },
+        };
 
         /**
         * Appends an element to the end of the Arraylike.
@@ -982,16 +754,17 @@ var Barricade = (function () {
                  passed in.
         * @returns {self}
         */
-        push: function (newValue, newParameters) {
+        this.push = function (newValue, newParameters) {
+            var elClass = this.schema().keyClass(this._elSymbol);
             this._data.push(
-                this._isCorrectType(newValue, this._elementClass)
+                this._isCorrectType(newValue, elClass)
                     ? newValue
-                    : this._keyClassCreate(this._elSymbol, this._elementClass,
-                                           newValue, newParameters));
+                    : this.schema().keyClassCreate(this._elSymbol, newValue,
+                                                   newParameters));
 
             return this.emit('_addedElement', this._data.length - 1)
                        .emit('change', 'add', this._data.length - 1);
-        },
+        };
 
         /**
         * Removes element at specified index.
@@ -1000,11 +773,11 @@ var Barricade = (function () {
         * @param {Integer} index
         * @returns {self}
         */
-        remove: function (index) {
+        this.remove = function (index) {
             this._data[index].emit('removeFrom', this);
             this._data.splice(index, 1);
             return this.emit('change', 'remove', index);
-        },
+        };
 
         /**
         * Returns an array containing the Arraylike's elements
@@ -1012,9 +785,9 @@ var Barricade = (function () {
         * @instance
         * @returns {Array}
         */
-        toArray: function () {
+        this.toArray = function () {
             return this._data.slice(); // Shallow copy to prevent mutation
-        }
+        };
     });
 
     /**
@@ -1024,71 +797,58 @@ var Barricade = (function () {
     * @extends Barricade.Arraylike
     * @memberof Barricade
     */
-    Array_ = Arraylike.extend({});
+    Array_ = Blueprint.create(function () {
+        Arraylike.call(this);
+    });
 
     /**
     * @class
     * @memberof Barricade
     * @extends Barricade.Container
     */
-    ImmutableObject = Container.extend({
-        create: function (json, parameters) {
-            var self = this;
-            if (!this.hasOwnProperty('_keyClasses')) {
-                Object.defineProperty(this, '_keyClasses', {
-                    enumerable: false,
-                    writable: true,
-                    value: this.getKeys().reduce(function (classes, key) {
-                        classes[key] = self._getKeyClass(key);
-                        return classes;
-                    }, {})
-                });
-            }
-
-            return Container.create.call(this, json, parameters);
-        },
+    ImmutableObject = Blueprint.create(function () {
+        Container.call(this);
 
         /**
         * @memberof Barricade.ImmutableObject
         * @private
         */
-        _sift: function (json) {
+        this._sift = function (json) {
             var self = this;
             return this.getKeys().reduce(function (objOut, key) {
-                objOut[key] =
-                    self._keyClassCreate(key, self._keyClasses[key], json[key]);
+                objOut[key] = self.schema().keyClassCreate(key, json[key]);
                 return objOut;
             }, {});
-        },
+        };
 
         /**
         * @memberof Barricade.ImmutableObject
         * @private
         */
-        _doSet: function (key, newValue, newParameters) {
+        this._doSet = function (key, newValue, newParameters) {
             var oldVal = this._data[key];
 
-            if (this._schema.hasOwnProperty(key)) {
-                if (this._isCorrectType(newValue, this._keyClasses[key])) {
+            if (this.schema().hasKeyClass(key)) {
+                if (this._isCorrectType(newValue,
+                                        this.schema().keyClass(key))) {
                     this._data[key] = newValue;
                 } else {
-                    this._data[key] =
-                        this._keyClassCreate(key, this._keyClasses[key],
-                                             newValue, newParameters);
+                    this._data[key] = this.schema().keyClassCreate(
+                                          key, newValue, newParameters);
                 }
 
                 this.emit('change', 'set', key, this._data[key], oldVal);
             } else {
                 logError('object does not have key: ', key,
-                         ' schema: ', this._schema);
+                         ' keys: ', this.schema().keyClassList());
             }
-        },
+        };
 
         /**
         * @memberof Barricade.ImmutableObject
         * @private
         */
-        _getJSON: function (options) {
+        this._getJSON = function (options) {
             var data = this._data;
             return this.getKeys().reduce(function (jsonOut, key) {
                 if (options.ignoreUnused !== true || data[key].isUsed()) {
@@ -1096,7 +856,7 @@ var Barricade = (function () {
                 }
                 return jsonOut;
             }, {});
-        },
+        };
 
         /**
         * @callback Barricade.ImmutableObject.eachCB
@@ -1114,7 +874,7 @@ var Barricade = (function () {
                  Comparator in the form that JavaScript's Array.sort() expects
         * @returns {self}
         */
-        each: function (functionIn, comparatorIn) {
+        this.each = function (functionIn, comparatorIn) {
             var self = this,
                 keys = this.getKeys();
 
@@ -1127,7 +887,7 @@ var Barricade = (function () {
             });
 
             return this;
-        },
+        };
 
         /**
         * @memberof Barricade.Arraylike
@@ -1135,9 +895,9 @@ var Barricade = (function () {
         * @param {String} key
         * @returns {Element}
         */
-        get: function (key) {
+        this.get = function (key) {
             return this._data[key];
-        },
+        };
 
         /**
         * Returns all keys in the ImmutableObject
@@ -1145,11 +905,9 @@ var Barricade = (function () {
         * @instance
         * @returns {Array}
         */
-        getKeys: function () {
-            return Object.keys(this._schema).filter(function (key) {
-                return key.charAt(0) !== '@';
-            });
-        },
+        this.getKeys = function () {
+            return this.schema().keyClassList();
+        };
 
         /**
         * Returns true if ImmutableObject has no keys, false otherwise.
@@ -1157,9 +915,9 @@ var Barricade = (function () {
         * @instance
         * @returns {Boolean}
         */
-        isEmpty: function () {
+        this.isEmpty = function () {
             return !Object.keys(this._data).length;
-        }
+        };
     });
 
     /**
@@ -1167,18 +925,21 @@ var Barricade = (function () {
     * @memberof Barricade
     * @extends Barricade.Arraylike
     */
-    MutableObject = Arraylike.extend({
-        /**
-        * @memberof Barricade.MutableObject
-        * @private
-        */
-        _elSymbol: '?',
+    MutableObject = Blueprint.create(function () {
+        Arraylike.call(this);
+        var oldPush = this.push;
 
         /**
         * @memberof Barricade.MutableObject
         * @private
         */
-        _getJSON: function (options) {
+        this._elSymbol = '?';
+
+        /**
+        * @memberof Barricade.MutableObject
+        * @private
+        */
+        this._getJSON = function (options) {
             return this.toArray().reduce(function (jsonOut, element) {
                 if (jsonOut.hasOwnProperty(element.getID())) {
                     logError("ID found multiple times: " + element.getID());
@@ -1187,18 +948,18 @@ var Barricade = (function () {
                 }
                 return jsonOut;
             }, {});
-        },
+        };
 
         /**
         * @memberof Barricade.MutableObject
         * @private
         */
-        _sift: function (json) {
+        this._sift = function (json) {
             return Object.keys(json).map(function (key) {
-                return this._keyClassCreate(this._elSymbol, this._elementClass,
-                                            json[key], {id: key});
+                return this.schema().keyClassCreate(this._elSymbol, json[key],
+                                                    {id: key});
             }, this);
-        },
+        };
 
         /**
         * Returns true if MutableObject contains `element`, false otherwise.
@@ -1207,11 +968,11 @@ var Barricade = (function () {
         * @param element Element to check for.
         * @returns {Boolean}
         */
-        contains: function (element) {
+        this.contains = function (element) {
             return this.toArray().some(function (value) {
                 return element === value;
             });
-        },
+        };
 
         /**
         * Retrieves element with specified ID.
@@ -1220,9 +981,9 @@ var Barricade = (function () {
         * @param {String} id
         * @returns {Element}
         */
-        getByID: function (id) {
+        this.getByID = function (id) {
             return this.get(this.getPosByID(id));
-        },
+        };
 
         /**
         * Returns an array of the IDs of the elements of the MutableObject.
@@ -1230,11 +991,11 @@ var Barricade = (function () {
         * @instance
         * @returns {Array}
         */
-        getIDs: function () {
+        this.getIDs = function () {
             return this.toArray().map(function (value) {
                 return value.getID();
             });
-        },
+        };
 
         /**
         * Returns index of the element with the specified ID.
@@ -1243,9 +1004,9 @@ var Barricade = (function () {
         * @param {String} id
         * @returns {Integer}
         */
-        getPosByID: function (id) {
+        this.getPosByID = function (id) {
             return this.getIDs().indexOf(id);
-        },
+        };
 
         /**
         * Adds a new element to the MutableObject.
@@ -1259,33 +1020,358 @@ var Barricade = (function () {
                  least an `id` property is required.
         * @returns {self}
         */
-        push: function (newJson, newParameters) {
-            if (!this._safeInstanceof(newJson, this._elementClass) &&
+        this.push = function (newJson, newParameters) {
+            var elClass = this.schema().keyClass(this._elSymbol);
+            if (!this._safeInstanceof(newJson, elClass) &&
                     (getType(newParameters) !== Object ||
                     !newParameters.hasOwnProperty('id'))) {
                 logError('ID should be passed in with parameters object');
             } else {
-                return Arraylike.push.call(this, newJson, newParameters);
+                return oldPush.call(this, newJson, newParameters);
             }
+        };
+    });
+
+    Schema = InstanceofMixin.call({
+        /**
+        * @memberof Barricade.Schema
+        * @private
+        */
+        _applyBlueprintIfNeeded: function (class_, blueprint) {
+            if (!class_.instanceof(blueprint)) {
+                blueprint.call(class_);
+            }
+        },
+
+        /**
+        * @memberof Barricade.Schema
+        * @private
+        */
+        _handlers: {
+            '@type': function (type) {
+                this._type = type;
+            },
+            '@ref': function (ref) {
+                this._ref = ref;
+            },
+            '@toJSON': function (toJSON) {
+                this._toJSON = toJSON;
+            },
+            '@enum': function (enum_) {
+                this._enum = enum_;
+            },
+            '@default': function (default_) {
+                this._default = default_;
+            },
+            '@inputMassager': function (inputMassager) {
+                this._inputMassager = inputMassager;
+            },
+            '@constraints': function (constraints) {
+                this._constraints = constraints;
+            },
+            '@required': function (required) {
+                this._required = required;
+            },
+            '@factory': function () {
+                // do nothing for now
+            },
+            normalKey: function (key, extension, outerClass) {
+                if (!Object.hasOwnProperty.call(this, '_keyClasses')) {
+                    this._keyClasses = Object.create(this._keyClasses);
+                    this._factories = Object.create(this._factories);
+                }
+
+                if (!(key in this._keyClasses)) {
+                    this._keyClassList = this._keyClassList.concat(key);
+                }
+
+                if ('@factory' in extension) {
+                    this._factories[key] = extension['@factory'];
+                }
+
+                if ('@class' in extension) {
+                    this._keyClasses[key] = extension['@class'];
+                } else {
+                    this._keyClasses[key] = key in this._keyClasses
+                        ? this._keyClasses[key].extend({}, extension)
+                        : Base.extend({}, extension);
+                }
+
+                if (key === '*') {
+                    this._applyBlueprintIfNeeded(outerClass, Array_);
+                } else if (key === '?') {
+                    this._applyBlueprintIfNeeded(outerClass, MutableObject);
+                } else {
+                    this._applyBlueprintIfNeeded(outerClass, ImmutableObject);
+                }
+            }
+        },
+
+        /**
+        * @memberof Barricade.Schema
+        * @private
+        */
+        _keyClasses: {},
+
+        /**
+        * @memberof Barricade.Schema
+        * @private
+        */
+        _factories: {},
+
+        /**
+        * @memberof Barricade.Schema
+        * @private
+        */
+        _keyClassList: [],
+
+        /**
+        * @memberof Barricade.Schema
+        * @private
+        */
+        _class: null,
+
+        /**
+        * @memberof Barricade.Schema
+        * @private
+        */
+        _constraints: null,
+
+        /**
+        * @memberof Barricade.Schema
+        * @private
+        */
+        _default: null,
+
+        /**
+        * @memberof Barricade.Schema
+        * @private
+        */
+        _enum: null,
+
+        /**
+        * @memberof Barricade.Schema
+        * @private
+        */
+        _inputMassager: null,
+
+        /**
+        * @memberof Barricade.Schema
+        * @private
+        */
+        _ref: null,
+
+        /**
+        * @memberof Barricade.Schema
+        * @private
+        */
+        _required: null,
+
+        /**
+        * @memberof Barricade.Schema
+        * @private
+        */
+        _toJSON: null,
+
+        /**
+        * @memberof Barricade.Schema
+        * @private
+        */
+        _type: null,
+
+        /**
+        * Creates a new Schema object that inherits from the one this method is
+          called upon. Sub-schemas, such as those for properties of objects and
+          elements in arrays, will also be extended, recursively. This operation
+          does not affect the original Schema object.
+        * @memberof Barricade.Schema
+        * @param {Class} outerClass
+                 The class that this schema is inside of. The extension of the
+                 schema sometimes requires modification of the outer class, for
+                 example to add the Array, ImmutableObject, or MutableObject
+                 mixin, which will add their specific methods.
+          @param {Object} extension
+                 Schema-specific properties to extend the schema with.
+          @returns {Barricade.Schema}
+                   New Schema object that inherits from the one being extended.
+        */
+        extend: function (outerClass, extension) {
+            var self = Object.create(this);
+
+            Object.keys(extension).forEach(function (key) {
+                if (key[0] !== '@') {
+                    self._handlers.normalKey.call(self, key, extension[key],
+                                                  outerClass);
+                } else if (key in self._handlers) {
+                    self._handlers[key].call(self, extension[key], outerClass);
+                } else {
+                    throw new Error(key + ' is not a supported key.');
+                }
+            });
+
+            return self;
+        },
+
+        /**
+        * Retrieves a schema key.
+        * @memberof Barricade.Schema
+        * @param {String} key
+                 Schema key to retrieve, without the leading `@`
+          @returns Value of schema key, or null if one does not exist.
+        */
+        get: function (key) {
+            if (('@' + key) in this._handlers) {
+                return this['_' + key];
+            }
+            throw new Error(key + ' is an invalid key');
+        },
+
+        /**
+        * Checks to see if schema has a particular key defined.
+        * @memberof Barricade.Schema
+        * @param {String} key
+                 Schema key to check, without the leading `@`
+          @returns {Boolean}
+        */
+        has: function (key) {
+            if (('@' + key) in this._handlers) {
+                return this['_' + key] !== null;
+            }
+            throw new Error(key + ' is an invalid key');
+        },
+
+        /**
+        * Checks to see if schema has a particular key class defined. The key
+          classes are created when sub-schemas are defined, such as those for
+          Object properties and Array elements.
+        * @memberof Barricade.Schema
+        * @param {String} key
+                 Sub-schema key to check for
+          @returns {Boolean}
+        */
+        hasKeyClass: function (key) {
+            return key in this._keyClasses;
+        },
+
+        /**
+        * Retrieves a key class. The key classes are created when sub-schemas
+          are defined, such as those for Object properties and Array elements.
+        * @memberof Barricade.Schema
+        * @param {String} key
+                 Sub-schema class to retrieve
+          @returns {Barricade.Base}
+                   Sub-schema class
+        */
+        keyClass: function (key) {
+            return this._keyClasses[key];
+        },
+
+        /**
+        * Instantiates a key class. If there is a factory method defined for the
+          key (using @factory), it will be used instead of the key class.
+        * @memberof Barricade.Schema
+        * @param {String} key
+                 Sub-schema class to instantiate
+        * @param {JSON} json
+        * @param {Object} parameters
+          @returns {Barricade.Base}
+                   Instance of sub-schema class
+        */
+        keyClassCreate: function (key, json, parameters) {
+            return key in this._factories
+                ? this._factories[key](json, parameters)
+                : this.keyClass(key).create(json, parameters);
+        },
+
+        /**
+        * Returns a list of the keys for which sub-schema classes are defined.
+        * @memberof Barricade.Schema
+          @returns {Array}
+                   Keys of the sub-schema classes
+        */
+        keyClassList: function () {
+            return this._keyClassList;
         }
     });
 
     /**
     * @class
     * @memberof Barricade
-    * @extends Barricade.Base
+    * @mixes   Barricade.Extendable
+    * @extends Barricade.Extendable
+    * @mixes   Barricade.InstanceofMixin
+    * @extends Barricade.InstanceofMixin
+    * @mixes   Barricade.Observable
+    * @extends Barricade.Observable
+    * @mixes   Barricade.Omittable
+    * @extends Barricade.Omittable
+    * @mixes   Barricade.Deferrable
+    * @extends Barricade.Deferrable
+    * @mixes   Barricade.Validatable
+    * @extends Barricade.Validatable
+    * @mixes   Barricade.Enumerated
+    * @extends Barricade.Enumerated
+    * @mixes   Barricade.Identifiable
+    * @extends Barricade.Identifiable
     */
-    Primitive = Base.extend({
+    Base = Extendable.call(InstanceofMixin.call({
         /**
-        * @memberof Barricade.Primitive
-        * @private
+        * Creates a `Base` instance
+        * @memberof Barricade.Base
+        * @param {JSON} json
+        * @param {Object} parameters
+        * @returns {Barricade.Base}
         */
-        _sift: function (json) {
-            return json;
+        create: function (json, parameters) {
+            var self = this.extend({}),
+                schema = self.schema();
+
+            self._parameters = parameters = parameters || {};
+
+            if (schema.has('inputMassager')) {
+                json = schema.get('inputMassager')(json);
+            }
+
+            self._setData(json);
+
+            if (schema.has('toJSON')) {
+                self.toJSON = schema.get('toJSON');
+            }
+
+            Observable.call(self);
+            Omittable.call(self);
+            Deferrable.call(self, schema);
+            Validatable.call(self, schema);
+
+            if (schema.has('enum')) {
+                Enumerated.call(self, schema.get('enum'));
+            }
+
+            Identifiable.call(self, parameters.id);
+
+            return self;
         },
 
         /**
-        * @memberof Barricade.Primitive
+        * @memberof Barricade.Base
+        * @private
+        */
+        _uidPrefix: 'obj-',
+
+        /**
+        * @memberof Barricade.Base
+        * @private
+        */
+        _getDefaultValue: function () {
+            return this.schema().has('default')
+                ? typeof this.schema().get('default') === 'function'
+                    ? this.schema().get('default').call(this)
+                    : this.schema().get('default')
+                : this.schema().get('type')();
+        },
+
+        /**
+        * @memberof Barricade.Base
         * @private
         */
         _getJSON: function () {
@@ -1293,8 +1379,58 @@ var Barricade = (function () {
         },
 
         /**
-        * Retrieves the Primitive's value.
-        * @memberof Barricade.Primitive
+        * @memberof Barricade.Base
+        * @private
+        */
+        _setData: function(json) {
+            var type = this.schema().get('type');
+
+            if (getType(json) !== type) {
+                if (json) {
+                    logError("Type mismatch. JSON: ", json,
+                             " expected type: ", type);
+                }
+                // Replace bad type (does not change original)
+                json = this._getDefaultValue();
+            }
+            this._data = this._sift(json, this._parameters);
+        },
+
+        /**
+        * @memberof Barricade.Base
+        * @private
+        */
+        _safeInstanceof: function (instance, class_) {
+            return getType(instance) === Object &&
+                ('instanceof' in instance) &&
+                instance.instanceof(class_);
+        },
+
+        /**
+        * @memberof Barricade.Base
+        * @private
+        */
+        _schema: Schema,
+
+        /**
+        * @memberof Barricade.Base
+        * @private
+        */
+        _sift: function (json) {
+            return json;
+        },
+
+        /**
+        * @memberof Barricade.Base
+        * @private
+        */
+        _getPrettyJSON: function (options) {
+            return this._getJSON(options);
+        },
+
+        /**
+        * Retrieves the value.
+        * @memberof Barricade.Base
         * @instance
         * @returns {JSON}
         */
@@ -1303,34 +1439,66 @@ var Barricade = (function () {
         },
 
         /**
-        * Returns true if the Primitive's data is empty. This depends on the
-          type; Arrays and Objects are considered empty if they have no
-          elements, while Strings, Numbers, and Booleans are empty if they are
-          equivalent to a newly-constructed instance.
-        * @memberof Barricade.Primitive
+        * Returns the primitive type of the Barricade object.
+        * @memberof Barricade.Base
+        * @instance
+        * @returns {constructor}
+        */
+        getPrimitiveType: function () {
+            return this.schema().get('type');
+        },
+
+        /**
+        * Returns true if the data is empty. This depends on the type; Arrays
+          and Objects are considered empty if they have no elements, while
+          Strings, Numbers, and Booleans are empty if they are equivalent to a
+          newly-constructed instance.
+        * @memberof Barricade.Base
         * @instance
         * @returns {Boolean}
         */
         isEmpty: function () {
-            if (this._schema['@type'] === Array) {
+            if (this.getPrimitiveType() === Array) {
                 return !this._data.length;
-            } else if (this._schema['@type'] === Object) {
+            } else if (this.getPrimitiveType() === Object) {
                 return !Object.keys(this._data).length;
             }
-            return this._data === this._schema['@type']();
+            return this._data === this.getPrimitiveType()();
+        },
+
+
+        /**
+        * Returns whether the Barricade object is required or not. Usually
+          affects output of `toJSON()`. Use the `@required` tag in the schema to
+          specify this option.
+        * @memberof Barricade.Base
+        * @instance
+        * @returns {Boolean}
+        */
+        isRequired: function () {
+            return this.schema().get('required') !== false;
         },
 
         /**
-        * @memberof Barricade.Primitive
+        * @memberof Barricade.Base
+        * @instance
+        * @returns {Barricade.Schema}
+        */
+        schema: function () {
+            return this._schema;
+        },
+
+        /**
+        * @memberof Barricade.Base
         * @instance
         * @param newVal
         * @returns {self}
         */
         set: function (newVal) {
-            var schema = this._schema;
+            var schema = this.schema();
 
             function typeMatches(newVal) {
-                return getType(newVal) === schema['@type'];
+                return getType(newVal) === schema.get('type');
             }
 
             if (typeMatches(newVal) && this._validate(newVal)) {
@@ -1342,10 +1510,29 @@ var Barricade = (function () {
             }
 
             logError("Setter - new value (", newVal, ")",
-                     " did not match schema: ", schema);
+                     " did not match expected type: ", schema.get('type'));
             return this;
+        },
+
+        /**
+        * Returns the JSON representation of the Barricade object.
+        * @memberof Barricade.Base
+        * @instance
+        * @param {Object} [options]
+                 An object containing options that affect the JSON result.
+                 Current supported options are ignoreUnused (Boolean, defaults
+                 to false), which skips keys with values that are unused in
+                 objects, and pretty (Boolean, defaults to false), which gives
+                 control to the method `_getPrettyJSON`.
+        * @returns {JSON}
+        */
+        toJSON: function (options) {
+            options = options || {};
+            return options.pretty
+                ? this._getPrettyJSON(options)
+                : this._getJSON(options);
         }
-    });
+    }));
 
     var getType = (function () {
         var toString = Object.prototype.toString,
@@ -1387,26 +1574,9 @@ var Barricade = (function () {
         'MutableObject': MutableObject,
         'Observable': Observable,
         'Omittable': Omittable,
-        'Primitive': Primitive,
+        'Schema': Schema,
         'create': function (schema) {
-            function schemaIsMutable() {
-                return schema.hasOwnProperty('?');
-            }
-
-            function schemaIsImmutable() {
-                return Object.keys(schema).some(function (key) {
-                    return key.charAt(0) !== '@' && key !== '?';
-                });
-            }
-
-            if (schema['@type'] === Object && schemaIsImmutable()) {
-                return ImmutableObject.extend({}, schema);
-            } else if (schema['@type'] === Object && schemaIsMutable()) {
-                return MutableObject.extend({}, schema);
-            } else if (schema['@type'] === Array && '*' in schema) {
-                return Array_.extend({}, schema);
-            }
-            return Primitive.extend({}, schema);
+            return Base.extend({}, schema);
         }
     };
 
