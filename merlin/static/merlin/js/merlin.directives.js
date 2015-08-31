@@ -225,8 +225,8 @@
       },
       link: function(scope, element) {
         var field = scope.value;
-        var type = scope.value.getType();
         fields.applyMixins(field);
+        var type = field.getType();
         templates.templateReady(type).then(function(template) {
           element.append($compile(template)(scope));
         });

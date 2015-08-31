@@ -31,9 +31,12 @@
       return value;
     }
 
-    models.varlist = Barricade.Array.extend({
+    models.varlist = Barricade.Base.extend({
       create: function(json, parameters) {
-        var self = Barricade.Array.create.call(this, json, parameters);
+        var self = Barricade.Base.create.call(this, json, parameters);
+        if (!self.instanceof(Barricade.Array)) {
+          Barricade.Array.call(self);
+        }
         self.on('childChange', function(child, op) {
           if ( op == 'empty' ) {
             self.each(function(index, item) {
@@ -73,7 +76,7 @@
             return self;
           },
           _getPrettyJSON: function() {
-            var json = Barricade.ImmutableObject._getPrettyJSON.apply(this, arguments);
+            var json = Barricade.Base._getPrettyJSON.apply(this, arguments);
             return json.value;
           }
         }, {
@@ -110,9 +113,12 @@
       '*': {'@class': models.YAQLField}
     });
 
-    models.Action =  Barricade.ImmutableObject.extend({
+    models.Action =  Barricade.Base.extend({
       create: function(json, parameters) {
-        var self = Barricade.ImmutableObject.create.call(this, json, parameters);
+        var self = Barricade.Base.create.call(this, json, parameters);
+        if (!self.instanceof(Barricade.ImmutableObject)) {
+          Barricade.ImmutableObject.call(self);
+        }
         var base = self.get('base');
         base.on('change', function(operation) {
           var argsEntry, pos, entry;
@@ -189,9 +195,12 @@
       }
     });
 
-    models.Task = Barricade.ImmutableObject.extend({
+    models.Task = Barricade.Base.extend({
       create: function(json, parameters) {
-        var self = Barricade.ImmutableObject.create.call(this, json, parameters);
+        var self = Barricade.Base.create.call(this, json, parameters);
+        if (!self.instanceof(Barricade.ImmutableObject)) {
+          Barricade.ImmutableObject.call(self);
+        }
         self.on('childChange', function(child, op) {
           if ( child === self.get('type') && op !== 'id' ) {
             self.emit('change', 'taskType');
@@ -200,7 +209,7 @@
         return self;
       },
       _getPrettyJSON: function() {
-        var json = Barricade.ImmutableObject._getPrettyJSON.apply(this, arguments);
+        var json = Barricade.Base._getPrettyJSON.apply(this, arguments);
         delete json.type;
         return json;
       }
@@ -248,9 +257,12 @@
         }
       },
       'policies': {
-        '@class': Barricade.ImmutableObject.extend({
+        '@class': Barricade.Base.extend({
           _getPrettyJSON: function() {
-            var json = Barricade.ImmutableObject._getPrettyJSON.apply(this, arguments);
+            var json = Barricade.Base._getPrettyJSON.apply(this, arguments);
+            if (!self.instanceof(Barricade.ImmutableObject)) {
+              Barricade.ImmutableObject.call(self);
+            }
             json.retry = {
               count: utils.pop(json, 'retry-count'),
               delay: utils.pop(json, 'retry-delay'),
@@ -417,7 +429,7 @@
 
     function createTaskFactory(baseClass) {
       return function(json, parameters) {
-        var self = Barricade.MutableObject.create.call(this, json, parameters);
+        var self = Barricade.Base.create.call(this, json, parameters);
         self.on('childChange', function(child, op) {
           if ( op === 'taskType' ) {
             var taskId = child.getID();
@@ -430,9 +442,12 @@
       }
     }
 
-    models.Workflow = Barricade.ImmutableObject.extend({
+    models.Workflow = Barricade.Base.extend({
       create: function(json, parameters) {
-        var self = Barricade.ImmutableObject.create.call(this, json, parameters);
+        var self = Barricade.Base.create.call(this, json, parameters);
+        if (!self.instanceof(Barricade.ImmutableObject)) {
+          Barricade.ImmutableObject.call(self);
+        }
         self.on('childChange', function(child, op) {
           if ( child === self.get('type') && op !== 'id' ) {
             self.emit('change', 'workflowType');
@@ -474,7 +489,7 @@
 
     models.ReverseWorkflow = models.Workflow.extend({}, {
       'tasks': {
-        '@class': Barricade.MutableObject.extend({
+        '@class': Barricade.Base.extend({
           create: createTaskFactory(models.ReverseWFTask)
         }, {
           '@type': Object,
@@ -521,7 +536,7 @@
         }
       },
       'tasks': {
-        '@class': Barricade.MutableObject.extend({
+        '@class': Barricade.Base.extend({
           create: createTaskFactory(models.DirectWFTask)
         }, {
           '@type': Object,
@@ -557,9 +572,12 @@
       }
     });
 
-    models.Workflows = Barricade.MutableObject.extend({
+    models.Workflows = Barricade.Base.extend({
       create: function(json, parameters) {
-        var self = Barricade.MutableObject.create.call(this, json, parameters);
+        var self = Barricade.Base.create.call(this, json, parameters);
+        if (!self.instanceof(Barricade.MutableObject)) {
+          Barricade.MutableObject.call(self);
+        }
         self.on('childChange', function(child, op) {
           if ( op === 'workflowType' ) {
             var workflowId = child.getID();
@@ -581,7 +599,7 @@
       }
     });
 
-    models.Workbook = Barricade.ImmutableObject.extend({
+    models.Workbook = Barricade.Base.extend({
       toYAML: function() {
         return jsyaml.dump(this.toJSON({pretty: true}));
       }
@@ -632,7 +650,7 @@
       }
     });
 
-    models.Root = Barricade.ImmutableObject.extend({}, {
+    models.Root = Barricade.create({
       '@type': Object,
       'standardActions': {
         '@class': models.StandardActions

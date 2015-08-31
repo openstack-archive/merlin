@@ -129,23 +129,23 @@
       return this;
     });
 
-    var stringModel = Barricade.Primitive.extend({
+    var stringModel = Barricade.Base.extend({
       create: function(json, parameters) {
-        var self = Barricade.Primitive.create.call(this, json, parameters);
+        var self = Barricade.Base.create.call(this, json, parameters);
         return modelMixin.call(self, 'string');
       }
     }, {'@type': String});
 
-    var textModel = Barricade.Primitive.extend({
+    var textModel = Barricade.Base.extend({
       create: function(json, parameters) {
-        var self = Barricade.Primitive.create.call(this, json, parameters);
+        var self = Barricade.Base.create.call(this, json, parameters);
         return modelMixin.call(self, 'text');
       }
     }, {'@type': String});
 
-    var numberModel = Barricade.Primitive.extend({
+    var numberModel = Barricade.Base.extend({
       create: function(json, parameters) {
-        var self = Barricade.Primitive.create.call(this, json, parameters);
+        var self = Barricade.Base.create.call(this, json, parameters);
         return modelMixin.call(self, 'number');
       }
     }, {'@type': Number});
@@ -161,16 +161,22 @@
       return self;
     });
 
-    var listModel = Barricade.Array.extend({
+    var listModel = Barricade.Base.extend({
       create: function(json, parameters) {
-        var self = Barricade.Array.create.call(this, json, parameters);
+        var self = Barricade.Base.create.call(this, json, parameters);
+        if (!self.instanceof(Barricade.Array)) {
+          Barricade.Array.call(self);
+        }
         return listMixin.call(self);
       }
     }, {'@type': Array});
 
-    var frozendictModel = Barricade.ImmutableObject.extend({
+    var frozendictModel = Barricade.Base.extend({
       create: function(json, parameters) {
-        var self = Barricade.ImmutableObject.create.call(this, json, parameters);
+        var self = Barricade.Base.create.call(this, json, parameters);
+        if (!self.instanceof(Barricade.ImmutableObject)) {
+          Barricade.ImmutableObject.call(self);
+        }
         return frozendictMixin.call(self);
       }
     }, {'@type': Object});
@@ -184,7 +190,7 @@
 
     var dictionaryMixin = Barricade.Blueprint.create(function() {
       var self = this;
-      var _elClass = self._elementClass;
+      var _elClass = self.schema().keyClass(self._elSymbol);
       var baseKey = utils.getMeta(_elClass, 'baseKey') || 'key';
       var baseName = utils.getMeta(_elClass, 'baseName') || utils.makeTitle(baseKey);
 
@@ -242,9 +248,12 @@
       return self;
     });
 
-    var dictionaryModel = Barricade.MutableObject.extend({
+    var dictionaryModel = Barricade.Base.extend({
       create: function(json, parameters) {
-        var self = Barricade.MutableObject.create.call(this, json, parameters);
+        var self = Barricade.Base.create.call(this, json, parameters);
+        if (!self.instanceof(Barricade.MutableObject)) {
+          Barricade.MutableObject.call(self);
+        }
         return dictionaryMixin.call(self);
       }
     }, {'@type': Object});
@@ -293,7 +302,13 @@
     function applyMixins(field) {
       var type;
       if (!field.instanceof(modelMixin)) {
-        if (field.instanceof(Barricade.Primitive)) {
+        if (field.instanceof(Barricade.ImmutableObject)) {
+          frozendictMixin.call(field);
+        } else if (field.instanceof(Barricade.MutableObject)) {
+          dictionaryMixin.call(field);
+        } else if (field.instanceof(Barricade.Array)) {
+          listMixin.call(field);
+        } else if (field.instanceof(Barricade.Base)) {
           type = Barricade.getType(field.get());
           if (type === String) {
             if (utils.getMeta(field, 'widget') === 'text') {
@@ -304,12 +319,6 @@
           } else if (type === Number) {
             modelMixin.call(field, 'number');
           }
-        } else if (field.instanceof(Barricade.ImmutableObject)) {
-          frozendictMixin.call(field);
-        } else if (field.instanceof(Barricade.MutableObject)) {
-          dictionaryMixin.call(field);
-        } else if (field.instanceof(Barricade.Array)) {
-          listMixin.call(field);
         }
       }
       return field;

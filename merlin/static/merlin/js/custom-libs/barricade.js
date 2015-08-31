@@ -1069,6 +1069,9 @@ var Barricade = (function () {
             '@constraints': function (constraints) {
                 this._constraints = constraints;
             },
+            '@meta': function(meta) {
+                this._meta = meta;
+            },
             '@required': function (required) {
                 this._required = required;
             },
@@ -1136,6 +1139,8 @@ var Barricade = (function () {
         * @private
         */
         _constraints: null,
+
+        _meta: null,
 
         /**
         * @memberof Barricade.Schema
