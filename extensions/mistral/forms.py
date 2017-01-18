@@ -25,11 +25,11 @@ class BaseWorkbookForm(forms.SelfHandlingForm):
 
 class CreateWorkbookForm(BaseWorkbookForm):
     def handle(self, request, data):
-        json = yaml.load(data['workbook'])
+        json = yaml.safe_load(data['workbook'])
         return api.create_workbook(request, json)
 
 
 class EditWorkbookForm(BaseWorkbookForm):
     def handle(self, request, data):
-        json = yaml.load(data['workbook'])
+        json = yaml.safe_load(data['workbook'])
         return api.modify_workbook(request, json)
